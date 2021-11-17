@@ -30,3 +30,13 @@ class Visualizer:
         """
         Constructor for the visualizer.
         """
+        pass
+
+    def run_visualization(self):
+        """
+        Run the visualization.
+
+        Returns
+        -------
+        Launches the visualization.
+        """
