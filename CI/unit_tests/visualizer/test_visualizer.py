@@ -1,5 +1,6 @@
 """
 ZnVis: A Zincwarecode package.
+
 License
 -------
 This program and the accompanying materials are made available under the terms
@@ -12,6 +13,7 @@ Contact Information
 email: zincwarecode@gmail.com
 github: https://github.com/zincware
 web: https://zincwarecode.com/
+
 Citation
 --------
 If you use this module please cite us with:
@@ -28,8 +30,8 @@ import open3d as o3d
 
 from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
-from znvis.visualizer.visualizer import Visualizer
 from znvis.testing.znvis_process import Process
+from znvis.visualizer.visualizer import Visualizer
 
 
 class TestVisualizer(unittest.TestCase):
