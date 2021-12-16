@@ -23,6 +23,7 @@ Test the visualizer module.
 import multiprocessing
 import time
 import unittest
+import traceback
 
 import numpy as np
 import open3d as o3d
@@ -30,6 +31,31 @@ import open3d as o3d
 from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
+
+
+class Process(multiprocessing.Process):
+    def __init__(self, *args, **kwargs):
+        """
+        Multiprocessing class constructor.
+        """
+        multiprocessing.Process.__init__(self, *args, **kwargs)
+        self._pconn, self._cconn = multiprocessing.Pipe()
+        self._exception = None
+
+    def run(self):
+        try:
+            multiprocessing.Process.run(self)
+            self._cconn.send(None)
+        except Exception as e:
+            tb = traceback.format_exc()
+            self._cconn.send((e, tb))
+            # raise e  # You can still rise this exception if you need to
+
+    @property
+    def exception(self):
+        if self._pconn.poll():
+            self._exception = self._pconn.recv()
+        return self._exception
 
 
 class TestVisualizer(unittest.TestCase):
@@ -60,15 +86,19 @@ class TestVisualizer(unittest.TestCase):
 
     def test_thread_test(self):
         """
-
+        test instantiation of the app.
         Returns
         -------
 
         """
-        process = multiprocessing.Process(target=self.initialize_app)
+        process = Process(target=self.initialize_app)
         process.start()
         time.sleep(1)
         process.terminate()
+        if process.exception:
+            error, traceback = process.exception
+            print(traceback)
+        self.assertEqual(process.exception, None)
 
     def initialize_app(self):
         """
@@ -80,3 +110,4 @@ class TestVisualizer(unittest.TestCase):
         """
         self.visualizer._initialize_app()
         self.assertEqual(type(self.visualizer.vis), o3d.visualization.O3DVisualizer)
+
