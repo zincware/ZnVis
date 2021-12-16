@@ -13,7 +13,7 @@ using the Open3D engine.
 Installation
 ^^^^^^^^^^^^
 ZnVis is a purely Python package hosted on PyPi.
-It can therefore be installed with pip as:
+It can therefore be installed with pip with:
 
 .. code-block:: bash
 

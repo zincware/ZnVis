@@ -34,8 +34,8 @@ if __name__ == "__main__":
     particle = vis.Particle(name="Blue", mesh=mesh, position=trajectory)
 
     # Define the second particle.
-    trajectory_2 = np.random.uniform(10, 30, (100, 50, 3))
-    mesh_2 = vis.Sphere(radius=2.0, colour=np.array([255, 140, 0]) / 255, resolution=10)
+    trajectory_2 = np.random.uniform(-10, 10, (100, 50, 3))
+    mesh_2 = vis.Sphere(radius=1.0, colour=np.array([255, 140, 0]) / 255, resolution=10)
     particle_2 = vis.Particle(name="Orange", mesh=mesh_2, position=trajectory_2)
 
     # Construct the visualizer and run
