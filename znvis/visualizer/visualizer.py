@@ -23,6 +23,7 @@ Main visualizer class.
 import open3d.visualization.gui as gui
 import open3d as o3d
 import time
+import threading
 
 from typing import List
 
@@ -45,7 +46,12 @@ class Visualizer:
             Internally stored counter to track which configuration is currently
             being viewed.
     """
-    def __init__(self, particles: List[znvis.Particle]):
+    def __init__(
+            self,
+            particles: List[znvis.Particle],
+            frame_rate: int = 24,
+            number_of_steps: int = None
+    ):
         """
         Constructor for the visualizer.
 
@@ -53,8 +59,19 @@ class Visualizer:
         ----------
         particles : list[znvis.Particle]
                 List of particles to add to the visualizer.
+        frame_rate : int
+                Frame rate for the visualizer measured in frames per second (fps)
+        number_of_steps : int
+                Number of steps in the visualization. If None, the zeroth order of one
+                particle is taken. This is left as an option in case the user wishes
+                to overlay two particle trajectories of different length.
         """
         self.particles = particles
+        self.frame_rate = frame_rate
+
+        if number_of_steps is None:
+            number_of_steps = particles[0].position.shape[0]
+        self.number_of_steps = number_of_steps
 
         # Added later during run
         self.app = None
@@ -77,10 +94,8 @@ class Visualizer:
         self.vis.show_settings = True
         self.vis.reset_camera_to_default()
 
-        # Add additional control list
-        vis_controls = gui.CollapsableVert("Visualizer Controls", 0.25 * 12,
-                                         gui.Margins(12, 0, 0, 0))
         self.vis.add_action("Step forward in time", self._update_particles)
+
         self.vis.add_action("Run Simulation", self._continuous_trajectory)
         self.app.add_window(self.vis)
 
@@ -133,14 +148,28 @@ class Visualizer:
 
     def _continuous_trajectory(self, vis):
         """
+        Button command for running the simulation in the visualizer.
+
+        Parameters
+        ----------
+        vis : visualizer
+                Object passed during the callback.
+        """
+        self.counter = 0
+        threading.Thread(target=self._run_trajectory).start()
+
+    def _run_trajectory(self):
+        """
         Callback method for running the trajectory smoothly.
 
         Returns
         -------
         Runs through the trajectory.
         """
-        for step in range(90):
-            self._update_particles(visualizer=vis)
+        for step in range(self.number_of_steps):
+            time.sleep(1 / self.frame_rate)
+            o3d.visualization.gui.Application.instance.post_to_main_thread(
+                self.vis, self._update_particles)
 
     def _update_particles(self, visualizer=None, step: int = None):
         """
@@ -164,7 +193,10 @@ class Visualizer:
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
         visualizer.post_redraw()  # re-draw the window.
-        self.counter += 1
+        if self.counter == self.number_of_steps - 1:
+            self.counter = 0
+        else:
+            self.counter += 1
 
     def run_visualization(self):
         """

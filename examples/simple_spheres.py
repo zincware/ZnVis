@@ -27,7 +27,7 @@ if __name__ == '__main__':
     """
     Run the simple spheres example.
     """
-    trajectory = np.random.uniform(-10, 10, (100, 10, 3))
+    trajectory = np.random.uniform(-10, 10, (1000, 10, 3))
     mesh = vis.Sphere(radius=2.0, colour=np.array([30, 144, 255]) / 255, resolution=10)
     particle = vis.Particle(name="Ball", mesh=mesh, position=trajectory)
 
