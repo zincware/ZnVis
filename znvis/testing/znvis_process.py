@@ -28,6 +28,7 @@ class Process(multiprocessing.Process):
     """
     Process class for use in ZnVis testing.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Multiprocessing class constructor.
