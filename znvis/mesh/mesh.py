@@ -38,14 +38,18 @@ class Mesh:
 
     colour: np.ndarray = np.array([0, 0, 0])
 
-    def create_mesh(self, starting_position: np.ndarray) -> o3d.geometry.TriangleMesh:
+    def create_mesh(
+        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
+    ) -> o3d.geometry.TriangleMesh:
         """
         Create a mesh object defined by the dataclass.
 
         Parameters
         ----------
-        starting_position : np.ndarray
+        starting_position : np.ndarray shape=(3,)
                 Starting position of the mesh.
+        starting_orientation : np.ndarray shape=(3,) (default = None)
+                Starting orientation of the mesh.
 
         Returns
         -------
