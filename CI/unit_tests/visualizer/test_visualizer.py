@@ -21,10 +21,46 @@ Summary
 Test the visualizer module.
 """
 import unittest
+import numpy as np
+from znvis.visualizer.visualizer import Visualizer
 from znvis.particle.particle import Particle
+from znvis.mesh.sphere import Sphere
+import open3d as o3d
 
 
 class TestVisualizer(unittest.TestCase):
     """
     A test class for the Particle class.
     """
+    @classmethod
+    def setUpClass(cls) -> None:
+        """
+        Set up the class for testing.
+        """
+        name = "my_particle"
+        position = np.random.uniform(-5, 5, (10, 2, 3))
+        particle = Particle(name=name, position=position, mesh=Sphere())
+        cls.visualizer = Visualizer([particle])
+
+    def test_instantiation(self):
+        """
+        Test the class instantiation.
+
+        Returns
+        -------
+        Check the class was built correctly.
+        """
+        self.assertEqual(self.visualizer.number_of_steps, 10)
+        self.assertEqual(self.visualizer.counter, 0)
+
+    def test_initialize_app(self):
+        """
+        Test initializing the app.
+
+        Returns
+        -------
+
+        """
+        self.visualizer._initialize_app()
+
+        self.assertEqual(type(self.visualizer.vis), o3d.visualization.O3DVisualizer)
