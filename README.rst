@@ -24,7 +24,7 @@ It can therefore be installed with pip as:
 .. |madewithpython| image:: https://img.shields.io/badge/Made%20With-Python-blue.svg?style=flat
     :alt: Made with Python
 
-.. |build| image:: https://github.com/zincware/ZnVis/actions/workflows/pytest.yml/badge.svg
+.. |build| image:: https://github.com/zincware/ZnVis/actions/workflows/pytest.yaml/badge.svg
     :alt: Build tests passing
     :target: https://github.com/zincware/ZnVis/blob/readme_badges/
 

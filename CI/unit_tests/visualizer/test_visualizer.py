@@ -20,9 +20,7 @@ Summary
 -------
 Test the visualizer module.
 """
-import multiprocessing
 import time
-import traceback
 import unittest
 
 import numpy as np
@@ -31,36 +29,7 @@ import open3d as o3d
 from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
-
-
-class Process(multiprocessing.Process):
-    def __init__(self, *args, **kwargs):
-        """
-        Multiprocessing class constructor.
-        """
-        multiprocessing.Process.__init__(self, *args, **kwargs)
-        self._pconn, self._cconn = multiprocessing.Pipe()
-        self._exception = None
-
-    def run(self):
-        """
-        Run the process and catch exceptions.
-        """
-        try:
-            multiprocessing.Process.run(self)
-            self._cconn.send(None)
-        except Exception as e:
-            tb = traceback.format_exc()
-            self._cconn.send((e, tb))
-
-    @property
-    def exception(self):
-        """
-        Exception property to be stored by the process.
-        """
-        if self._pconn.poll():
-            self._exception = self._pconn.recv()
-        return self._exception
+from znvis.testing.znvis_process import Process
 
 
 class TestVisualizer(unittest.TestCase):
@@ -89,12 +58,13 @@ class TestVisualizer(unittest.TestCase):
         self.assertEqual(self.visualizer.number_of_steps, 10)
         self.assertEqual(self.visualizer.counter, 0)
 
-    def test_thread_test(self):
+    def test_initialize_app(self):
         """
         test instantiation of the app.
+
         Returns
         -------
-
+        Test that the app initializes properly.
         """
         process = Process(target=self.initialize_app)
         process.start()
