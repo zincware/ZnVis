@@ -20,15 +20,18 @@ Summary
 Test the particle dataclass operations.
 """
 import unittest
+
 import numpy as np
-from znvis.particle.particle import Particle
+
 from znvis.mesh.sphere import Sphere
+from znvis.particle.particle import Particle
 
 
 class TestParticle(unittest.TestCase):
     """
     A test class for the Particle class.
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """

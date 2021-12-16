@@ -21,8 +21,10 @@ Summary
 Module for the particle parent class
 """
 from dataclasses import dataclass
-from znvis.mesh import Mesh
+
 import numpy as np
+
+from znvis.mesh import Mesh
 
 
 @dataclass
@@ -48,6 +50,7 @@ class Particle:
             Mesh dict to store names of meshes and the mesh objects. e.g.
             {'name_1': TriangleMesh, 'name_2': TraingleMesh, ...}
     """
+
     name: str
     mesh: Mesh = None
     position: np.ndarray = None

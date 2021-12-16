@@ -20,6 +20,7 @@ Summary
 Module for the mesh parent class.
 """
 from dataclasses import dataclass
+
 import numpy as np
 import open3d as o3d
 
@@ -34,6 +35,7 @@ class Mesh:
     colour : np.ndarray
             The colour of the mesh in reduced RGB/A e.g. [0.6, 0.4, 0.2, 1.0]
     """
+
     colour: np.ndarray = np.array([0, 0, 0])
 
     def create_mesh(self, starting_position: np.ndarray) -> o3d.geometry.TriangleMesh:
@@ -49,4 +51,4 @@ class Mesh:
         -------
         mesh : o3d.geometry.TriangleMesh
         """
-        raise NotImplemented("Implemented in child class.")
+        raise NotImplementedError("Implemented in child class.")

@@ -21,17 +21,20 @@ Summary
 Test the visualizer module.
 """
 import unittest
+
 import numpy as np
-from znvis.visualizer.visualizer import Visualizer
-from znvis.particle.particle import Particle
-from znvis.mesh.sphere import Sphere
 import open3d as o3d
+
+from znvis.mesh.sphere import Sphere
+from znvis.particle.particle import Particle
+from znvis.visualizer.visualizer import Visualizer
 
 
 class TestVisualizer(unittest.TestCase):
     """
     A test class for the Particle class.
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """

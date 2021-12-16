@@ -21,15 +21,18 @@ Summary
 Run unit tests on the sphere module.
 """
 import unittest
+
 import numpy as np
-from znvis.mesh.sphere import Sphere
 import open3d as o3d
+
+from znvis.mesh.sphere import Sphere
 
 
 class TestSphere(unittest.TestCase):
     """
     A test class for the Particle class.
     """
+
     @classmethod
     def setUpClass(cls) -> None:
         """

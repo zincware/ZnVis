@@ -20,12 +20,12 @@ Summary
 -------
 Main visualizer class.
 """
-import open3d.visualization.gui as gui
-import open3d as o3d
-import time
 import threading
-
+import time
 from typing import List
+
+import open3d as o3d
+import open3d.visualization.gui as gui
 
 import znvis
 
@@ -46,11 +46,12 @@ class Visualizer:
             Internally stored counter to track which configuration is currently
             being viewed.
     """
+
     def __init__(
-            self,
-            particles: List[znvis.Particle],
-            frame_rate: int = 24,
-            number_of_steps: int = None
+        self,
+        particles: List[znvis.Particle],
+        frame_rate: int = 24,
+        number_of_steps: int = None,
     ):
         """
         Constructor for the visualizer.
@@ -169,7 +170,8 @@ class Visualizer:
         for step in range(self.number_of_steps):
             time.sleep(1 / self.frame_rate)
             o3d.visualization.gui.Application.instance.post_to_main_thread(
-                self.vis, self._update_particles)
+                self.vis, self._update_particles
+            )
 
     def _update_particles(self, visualizer=None, step: int = None):
         """

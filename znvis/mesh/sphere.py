@@ -21,9 +21,11 @@ Summary
 Create a sphere mesh.
 """
 from dataclasses import dataclass
-from .mesh import Mesh
-import open3d as o3d
+
 import numpy as np
+import open3d as o3d
+
+from .mesh import Mesh
 
 
 @dataclass
@@ -38,6 +40,7 @@ class Sphere(Mesh):
     resolution : int
             Resolution of the sphere.
     """
+
     radius: float = 1.0
     resolution: int = 10
 
@@ -62,4 +65,3 @@ class Sphere(Mesh):
         sphere.paint_uniform_color(self.colour)
 
         return sphere
-

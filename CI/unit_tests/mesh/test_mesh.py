@@ -21,7 +21,9 @@ Summary
 Test the mesh module.
 """
 import unittest
+
 import numpy as np
+
 from znvis.mesh.mesh import Mesh
 
 
@@ -40,4 +42,3 @@ class TestMesh(unittest.TestCase):
         """
         mesh = Mesh(colour=np.array([0, 1, 3]))
         np.testing.assert_array_equal(mesh.colour, np.array([0, 1, 3]))
-

@@ -19,8 +19,9 @@ If you use this module please cite us with:
 Summary
 -------
 """
-import setuptools
 from os import path
+
+import setuptools
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, "requirements.txt")) as requirements_file:
