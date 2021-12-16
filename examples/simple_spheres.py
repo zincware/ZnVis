@@ -28,8 +28,13 @@ if __name__ == '__main__':
     Run the simple spheres example.
     """
     trajectory = np.random.uniform(-10, 10, (1000, 10, 3))
+    trajectory_2 = np.random.uniform(10, 20, (1000, 10, 3))
     mesh = vis.Sphere(radius=2.0, colour=np.array([30, 144, 255]) / 255, resolution=10)
+    mesh_2 = vis.Sphere(
+        radius=2.0, colour=np.array([255, 140, 0]) / 255, resolution=10
+    )
     particle = vis.Particle(name="Ball", mesh=mesh, position=trajectory)
+    particle_2 = vis.Particle(name="Ball_O", mesh=mesh_2, position=trajectory_2)
 
-    visualizer = vis.Visualizer(particles=[particle])
+    visualizer = vis.Visualizer(particles=[particle, particle_2])
     visualizer.run_visualization()
