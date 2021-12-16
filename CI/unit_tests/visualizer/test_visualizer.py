@@ -18,4 +18,13 @@ If you use this module please cite us with:
 
 Summary
 -------
+Test the visualizer module.
 """
+import unittest
+from znvis.particle.particle import Particle
+
+
+class TestVisualizer(unittest.TestCase):
+    """
+    A test class for the Particle class.
+    """

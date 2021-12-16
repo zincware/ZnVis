@@ -34,7 +34,7 @@ class Mesh:
     colour : np.ndarray
             The colour of the mesh in reduced RGB/A e.g. [0.6, 0.4, 0.2, 1.0]
     """
-    colour: np.ndarray
+    colour: np.ndarray = np.array([0, 0, 0])
 
     def create_mesh(self, starting_position: np.ndarray) -> o3d.geometry.TriangleMesh:
         """
