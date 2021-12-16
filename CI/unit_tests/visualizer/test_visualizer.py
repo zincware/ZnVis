@@ -29,6 +29,9 @@ from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
 
+import multiprocessing
+import time
+
 
 class TestVisualizer(unittest.TestCase):
     """
@@ -56,7 +59,19 @@ class TestVisualizer(unittest.TestCase):
         self.assertEqual(self.visualizer.number_of_steps, 10)
         self.assertEqual(self.visualizer.counter, 0)
 
-    def _test_initialize_app(self):
+    def test_thread_test(self):
+        """
+
+        Returns
+        -------
+
+        """
+        process = multiprocessing.Process(target=self.initialize_app)
+        process.start()
+        time.sleep(1)
+        process.terminate()
+
+    def initialize_app(self):
         """
         Test initializing the app.
 
@@ -65,5 +80,6 @@ class TestVisualizer(unittest.TestCase):
 
         """
         self.visualizer._initialize_app()
-
-        self.assertEqual(type(self.visualizer.vis), o3d.visualization.O3DVisualizer)
+        self.assertEqual(
+            type(self.visualizer.vis), o3d.visualization.O3DVisualizer
+        )
