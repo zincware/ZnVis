@@ -20,6 +20,8 @@ Summary
 -------
 Test the visualizer module.
 """
+import multiprocessing
+import time
 import unittest
 
 import numpy as np
@@ -28,9 +30,6 @@ import open3d as o3d
 from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
-
-import multiprocessing
-import time
 
 
 class TestVisualizer(unittest.TestCase):
@@ -80,6 +79,4 @@ class TestVisualizer(unittest.TestCase):
 
         """
         self.visualizer._initialize_app()
-        self.assertEqual(
-            type(self.visualizer.vis), o3d.visualization.O3DVisualizer
-        )
+        self.assertEqual(type(self.visualizer.vis), o3d.visualization.O3DVisualizer)
