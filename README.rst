@@ -15,9 +15,9 @@ Installation
 ZnVis is a purely Python package hosted on PyPi.
 It can therefore be installed with pip as:
 
-```sh
-pip install znvis
-```
+.. code-block:: bash
+
+   pip install znvis
 
 .. badges
 
