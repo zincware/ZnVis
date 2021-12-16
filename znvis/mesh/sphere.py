@@ -30,8 +30,15 @@ import numpy as np
 class Sphere(Mesh):
     """
     A class to produce sphere meshes.
+
+    Attributes
+    ----------
+    radius : float
+            Radius of the sphere
+    resolution : int
+            Resolution of the sphere.
     """
-    radius: int
+    radius: float = 1.0
     resolution: int = 10
 
     def create_mesh(self, starting_position: np.ndarray) -> o3d.geometry.TriangleMesh:

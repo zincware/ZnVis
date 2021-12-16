@@ -30,7 +30,7 @@ class Particle:
     """
     Parent class for a ZnVis particle.
 
-    Parameters
+    Attributes
     ----------
     name : str
             Name of the particle
@@ -44,6 +44,9 @@ class Particle:
             Force tensor of the shape (n_confs, n_particles, n_dims)
     director: np.ndarray
             Director tensor of the shape (n_confs, n_particles, n_dims)
+    mesh_dict : dict
+            Mesh dict to store names of meshes and the mesh objects. e.g.
+            {'name_1': TriangleMesh, 'name_2': TraingleMesh, ...}
     """
     name: str
     mesh: Mesh = None
@@ -51,3 +54,47 @@ class Particle:
     velocity: np.ndarray = None
     force: np.ndarray = None
     director: np.ndarray = None
+    mesh_dict: dict = None
+
+    def construct_mesh_dict(self):
+        """
+        Constructor the mesh dict for the class.
+
+        Returns
+        -------
+        Updates the class attributes mesh_dict
+
+        Notes
+        -----
+        #TODO allow for no position data.
+        """
+        self.mesh_dict = {}
+        try:
+            n_particles = int(self.position.shape[1])
+        except ValueError:
+            raise ValueError("There is no data for these particles.")
+
+        for i in range(n_particles):
+            self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
+                self.position[0][i]
+            )
+
+    def update_position_data(self, step: int):
+        """
+        Update the positions of each particle.
+
+        Parameters
+        ----------
+        step : int
+                Step to update to.
+
+        Returns
+        -------
+        Updates the position of the mesh in the mesh_dict
+
+        Notes
+        -----
+        TODO: Allow for no position data.
+        """
+        for i, item in enumerate(self.mesh_dict):
+            self.mesh_dict[item].translate(self.position[step][i], relative=False)

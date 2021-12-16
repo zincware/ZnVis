@@ -21,11 +21,32 @@ Module for the mesh parent class.
 """
 from dataclasses import dataclass
 import numpy as np
+import open3d as o3d
 
 
 @dataclass
 class Mesh:
     """
     Parent class for the ZnVis meshes.
+
+    Attributes
+    ----------
+    colour : np.ndarray
+            The colour of the mesh in reduced RGB/A e.g. [0.6, 0.4, 0.2, 1.0]
     """
     colour: np.ndarray
+
+    def create_mesh(self, starting_position: np.ndarray) -> o3d.geometry.TriangleMesh:
+        """
+        Create a mesh object defined by the dataclass.
+
+        Parameters
+        ----------
+        starting_position : np.ndarray
+                Starting position of the mesh.
+
+        Returns
+        -------
+        mesh : o3d.geometry.TriangleMesh
+        """
+        raise NotImplemented("Implemented in child class.")
