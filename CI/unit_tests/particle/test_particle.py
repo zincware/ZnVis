@@ -17,4 +17,27 @@ Citation
 If you use this module please cite us with:
 Summary
 -------
+Test the particle dataclass operations.
 """
+import unittest
+from znvis.particle.particle import Particle
+
+
+class TestParticle(unittest.TestCase):
+    """
+    A test class for the Particle class.
+    """
+    def test_initialization(self):
+        """
+        Test the initialization of the class.
+
+        Returns
+        -------
+
+        """
+        # Most simple instantiation
+        name = "my_particle"
+        particle = Particle(name=name)
+        self.assertEqual(particle.name, name)
+
+

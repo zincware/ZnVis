@@ -19,10 +19,13 @@ Summary
 -------
 Module for the mesh parent class.
 """
+from dataclasses import dataclass
+import numpy as np
 
 
+@dataclass
 class Mesh:
     """
     Parent class for the ZnVis meshes.
     """
-    pass
+    colour: np.ndarray
