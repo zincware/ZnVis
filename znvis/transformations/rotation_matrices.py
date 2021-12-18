@@ -38,14 +38,16 @@ def rotation_matrix(current: np.ndarray, target: np.ndarray):
     rotation : np.ndarray shape=(3, 3)
             A 3x3 rotation matrix to move a into b
     """
+    if (abs(current - target)).sum() == 0.0:
+        return np.eye(3)
+    else:
+        a, b = (current / np.linalg.norm(current)).reshape(3), (
+            target / np.linalg.norm(target)
+        ).reshape(3)
+        v = np.cross(a, b)
+        c = np.dot(a, b)
+        s = np.linalg.norm(v)
+        kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+        rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
 
-    a, b = (current / np.linalg.norm(current)).reshape(3), (
-        target / np.linalg.norm(target)
-    ).reshape(3)
-    v = np.cross(a, b)
-    c = np.dot(a, b)
-    s = np.linalg.norm(v)
-    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
-    rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
-
-    return rotation_matrix
+        return rotation_matrix

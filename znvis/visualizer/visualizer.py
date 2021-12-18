@@ -78,7 +78,7 @@ class Visualizer:
         self.app = None
         self.vis = None
 
-        self.counter = 0
+        self.counter = 1
 
     def _initialize_app(self):
         """

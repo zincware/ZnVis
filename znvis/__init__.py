@@ -22,7 +22,8 @@ Summary
 init file for the main ZnVis package.
 """
 from znvis.mesh.sphere import Sphere
+from znvis.mesh.cylinder import Cylinder
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
 
-__all__ = ["Particle", "Sphere", "Visualizer"]
+__all__ = ["Particle", "Sphere", "Visualizer", "Cylinder"]

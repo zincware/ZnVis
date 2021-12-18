@@ -30,6 +30,8 @@ import open3d as o3d
 
 from .mesh import Mesh
 
+from znvis.transformations.rotation_matrices import rotation_matrix
+
 
 @dataclass
 class Cylinder(Mesh):
@@ -50,7 +52,7 @@ class Cylinder(Mesh):
 
     radius: float = 1.0
     height: float = 3.0
-    split: int = 1.0
+    split: int = 1
     resolution: int = 10
 
     def create_mesh(
@@ -78,6 +80,10 @@ class Cylinder(Mesh):
         )
         cylinder.compute_vertex_normals()
         cylinder.translate(starting_position.astype(float))
+        if starting_orientation is not None:
+            matrix = rotation_matrix(np.array([0, 0, 1]),
+                                     starting_orientation)
+            cylinder.rotate(matrix)
         cylinder.paint_uniform_color(self.colour)
 
         return cylinder

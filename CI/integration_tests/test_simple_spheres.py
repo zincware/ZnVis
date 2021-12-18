@@ -61,6 +61,7 @@ class TestSimpleSpheres(unittest.TestCase):
         """
         # Define the first particle.
         trajectory = np.random.uniform(-10, 10, (100, 50, 3))
+
         mesh = vis.Sphere(
             radius=2.0, colour=np.array([30, 144, 255]) / 255, resolution=10
         )

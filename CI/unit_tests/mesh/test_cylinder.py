@@ -64,7 +64,7 @@ class TestCylinder(unittest.TestCase):
         self.assertEqual(self.cylinder.split, 6)
         self.assertEqual(self.cylinder.resolution, 10)
 
-    def test_build_sphere(self):
+    def test_build_cylinder(self):
         """
         Test the construction of a sphere mesh.
 
@@ -72,7 +72,10 @@ class TestCylinder(unittest.TestCase):
         -------
         Test if a sphere mesh is constructed correctly.
         """
-        cylinder = self.cylinder.create_mesh(starting_position=np.array([1, 1, 1]))
+        cylinder = self.cylinder.create_mesh(
+            starting_position=np.array([1, 1, 1]),
+            starting_orientation=np.array([1, 1, 1]))
         self.assertEqual(cylinder.has_vertex_normals(), True)
         self.assertEqual(cylinder.has_vertex_colors(), True)
         self.assertEqual(type(cylinder), o3d.geometry.TriangleMesh)
+        np.testing.assert_almost_equal(cylinder.get_center(), [1., 1., 1.])

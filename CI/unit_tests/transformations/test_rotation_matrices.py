@@ -41,4 +41,4 @@ class TestRotationMatrix(unittest.TestCase):
         rotation = rotation_matrix(reference, new_direction)
 
         rotated_vector = np.dot(rotation, reference)
-        print(rotated_vector)
+        np.testing.assert_array_equal(new_direction, rotated_vector)
