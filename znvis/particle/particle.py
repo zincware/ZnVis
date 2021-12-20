@@ -114,6 +114,6 @@ class Particle:
                     matrix = rotation_matrix(current, self.director[step][i])
                     self.mesh_dict[item].rotate(matrix)
                 else:
-                    current = self.director[step][i-1]
+                    current = self.director[step-1][i]
                     matrix = rotation_matrix(current, self.director[step][i])
                     self.mesh_dict[item].rotate(matrix)

@@ -33,9 +33,10 @@ if __name__ == "__main__":
     """
     Run the simple spheres example.
     """
-    # Define the first particle.
-    trajectory = np.random.uniform(-5, 5, size=(10, 10, 3))
-    orientation = np.random.uniform(0, 1, size=(10, 10, 3))
+    # Define the particle type.
+    trajectory = np.random.uniform(-5, 5, (100, 10, 3))
+    orientation = np.random.uniform(0, 1, (100, 10, 3))
+
     mesh = vis.Cylinder(
         radius=0.2, height=3.0, colour=np.array([30, 144, 255]) / 255, resolution=10
     )
