@@ -3,7 +3,7 @@ ZnVis Documentation
 
 Welcome to the documentation of ZnVis.
 ZnVis is a Python packaged built on the
-:ref:`Open3D <http://www.open3d.org/docs/release/index.html>`_ framework for the
+`Open3D <http://www.open3d.org/docs/release/index.html>`_ framework for the
 visualization of particle data.
 Currently ZnVis is capable of rendering spheres, cylinders, and custom .stl files but
 more shapes are expected soon.
