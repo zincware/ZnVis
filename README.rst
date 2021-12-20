@@ -19,6 +19,27 @@ It can therefore be installed using pip with:
 
    pip install znvis
 
+If you prefer to access the source code, run the following from a terminal:
+
+.. code-block:: bash
+
+   git clone https://github.com/zincware/ZnVis.git
+   cd ZnVis
+   pip install .
+
+Once complete, you will be able to start using the visualizer by importing it as:
+
+.. code-block:: python
+
+   import znvis
+
+Known limitations
+^^^^^^^^^^^^^^^^^
+Currently it seems that for medium sized systems (400 particles) running the visualizer
+can result in a memory failure after a while.
+We are working on how to extend ZnVis to arbitrary sized systems.
+
+
 .. badges
 
 .. |madewithpython| image:: https://img.shields.io/badge/Made%20With-Python-blue.svg?style=flat

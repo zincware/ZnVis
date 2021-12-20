@@ -8,7 +8,7 @@ in an attempt to guide new users through the ZnVis code.
 It is recommended that you start with the simple spheres page and work your way down.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Example guides:
 
    simple_spheres
