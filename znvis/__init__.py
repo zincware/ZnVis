@@ -21,9 +21,10 @@ Summary
 -------
 init file for the main ZnVis package.
 """
+from znvis.mesh.custom import CustomMesh
 from znvis.mesh.cylinder import Cylinder
 from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
 
-__all__ = ["Particle", "Sphere", "Visualizer", "Cylinder"]
+__all__ = ["Particle", "Sphere", "Visualizer", "Cylinder", "CustomMesh"]
