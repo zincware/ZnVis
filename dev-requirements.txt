@@ -9,7 +9,7 @@ sphinx-copybutton
 IPython
 pandoc
 nbsphinx-link
-sort
+isort
 coverage
 coveralls
 mdanalysis
