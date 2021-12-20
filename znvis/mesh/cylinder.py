@@ -28,9 +28,9 @@ from dataclasses import dataclass
 import numpy as np
 import open3d as o3d
 
-from .mesh import Mesh
-
 from znvis.transformations.rotation_matrices import rotation_matrix
+
+from .mesh import Mesh
 
 
 @dataclass
@@ -81,8 +81,7 @@ class Cylinder(Mesh):
         cylinder.compute_vertex_normals()
         cylinder.translate(starting_position.astype(float))
         if starting_orientation is not None:
-            matrix = rotation_matrix(np.array([0, 0, 1]),
-                                     starting_orientation)
+            matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
             cylinder.rotate(matrix)
         cylinder.paint_uniform_color(self.colour)
 

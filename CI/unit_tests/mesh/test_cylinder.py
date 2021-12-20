@@ -74,8 +74,9 @@ class TestCylinder(unittest.TestCase):
         """
         cylinder = self.cylinder.create_mesh(
             starting_position=np.array([1, 1, 1]),
-            starting_orientation=np.array([1, 1, 1]))
+            starting_orientation=np.array([1, 1, 1]),
+        )
         self.assertEqual(cylinder.has_vertex_normals(), True)
         self.assertEqual(cylinder.has_vertex_colors(), True)
         self.assertEqual(type(cylinder), o3d.geometry.TriangleMesh)
-        np.testing.assert_almost_equal(cylinder.get_center(), [1., 1., 1.])
+        np.testing.assert_almost_equal(cylinder.get_center(), [1.0, 1.0, 1.0])

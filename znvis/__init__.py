@@ -21,8 +21,8 @@ Summary
 -------
 init file for the main ZnVis package.
 """
-from znvis.mesh.sphere import Sphere
 from znvis.mesh.cylinder import Cylinder
+from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
 

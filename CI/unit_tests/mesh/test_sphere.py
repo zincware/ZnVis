@@ -68,4 +68,4 @@ class TestSphere(unittest.TestCase):
         self.assertEqual(sphere.has_vertex_normals(), True)
         self.assertEqual(sphere.has_vertex_colors(), True)
         self.assertEqual(type(sphere), o3d.geometry.TriangleMesh)
-        np.testing.assert_almost_equal(sphere.get_center(), [1., 1., 1.])
+        np.testing.assert_almost_equal(sphere.get_center(), [1.0, 1.0, 1.0])

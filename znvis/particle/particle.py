@@ -81,8 +81,7 @@ class Particle:
         for i in range(n_particles):
             if self.director is not None:
                 self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
-                    self.position[0][i],
-                    starting_orientation=self.director[0][i]
+                    self.position[0][i], starting_orientation=self.director[0][i]
                 )
             else:
                 self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
@@ -114,6 +113,6 @@ class Particle:
                     matrix = rotation_matrix(current, self.director[step][i])
                     self.mesh_dict[item].rotate(matrix)
                 else:
-                    current = self.director[step-1][i]
+                    current = self.director[step - 1][i]
                     matrix = rotation_matrix(current, self.director[step][i])
                     self.mesh_dict[item].rotate(matrix)
