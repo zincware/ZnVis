@@ -45,7 +45,7 @@ Now that the particles are prepared, we can set up the visualizer and run it.
    visualizer = vis.Visualizer(particles=[particle, particle_2], frame_rate=20)
    visualizer.run_visualization()
 
-Here we have passed to two particle instances to the visualizer along with a frame rate
+Here we have passed two particle instances to the visualizer along with a frame rate
 measured in frames per second.
 
 Results
@@ -53,8 +53,8 @@ Results
 
 You should now see a screen that looks something like this:
 
-.. image:: example_image.png
+.. image:: spheres.png
   :width: 400
   :alt: Snapshot of simulation screen
 
-If you now press the :code:`Run Simulation` button the particle should start moving.
+If you now press the :code:`Play` button the particle should start moving.

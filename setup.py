@@ -47,7 +47,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: EPL",
+        "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
         "Operating System :: OS Independent",
     ],
     include_package_data=True,

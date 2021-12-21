@@ -4,7 +4,7 @@ Developer documentation
 Welcome to the developer documentation.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Overview:
 
    _modules/modules.rst

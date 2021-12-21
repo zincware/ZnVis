@@ -95,10 +95,23 @@ class Visualizer:
         self.vis.show_settings = True
         self.vis.reset_camera_to_default()
 
-        self.vis.add_action("Step forward in time", self._update_particles)
+        self.vis.add_action("Step", self._update_particles)
 
-        self.vis.add_action("Run Simulation", self._continuous_trajectory)
+        self.vis.add_action("Play", self._continuous_trajectory)
+        self.vis.add_action("Pause", self._pause_run)
         self.app.add_window(self.vis)
+
+        self.interrupt: int = 0
+
+    def _pause_run(self, vis):
+        """
+        Pause a live visualization run.
+
+        Returns
+        -------
+        Set self.interrupt = 1
+        """
+        self.interrupt = 1
 
     def _initialize_particles(self):
         """
@@ -156,7 +169,6 @@ class Visualizer:
         vis : visualizer
                 Object passed during the callback.
         """
-        self.counter = 0
         threading.Thread(target=self._run_trajectory).start()
 
     def _run_trajectory(self):
@@ -167,11 +179,15 @@ class Visualizer:
         -------
         Runs through the trajectory.
         """
-        for step in range(self.number_of_steps):
+        while self.counter < self.number_of_steps:
             time.sleep(1 / self.frame_rate)
             o3d.visualization.gui.Application.instance.post_to_main_thread(
                 self.vis, self._update_particles
             )
+            if self.interrupt == 1:
+                break
+
+        self.interrupt = 0
 
     def _update_particles(self, visualizer=None, step: int = None):
         """
@@ -189,16 +205,16 @@ class Visualizer:
         if visualizer is None:
             visualizer = self.vis
         if step is None:
+            if self.counter == self.number_of_steps - 1:
+                self.counter = 0
+            else:
+                self.counter += 1
             step = self.counter
         for particle in self.particles:
             particle.update_position_data(step)
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
         visualizer.post_redraw()  # re-draw the window.
-        if self.counter == self.number_of_steps - 1:
-            self.counter = 0
-        else:
-            self.counter += 1
 
     def run_visualization(self):
         """

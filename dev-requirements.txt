@@ -1,0 +1,16 @@
+numpydoc
+sphinxcontrib.bibtex
+pybtex
+pytest
+nbsphinx
+Sphinx==4.3.0
+sphinx_rtd_theme
+sphinx-copybutton
+IPython
+pandoc
+nbsphinx-link
+isort
+coverage
+coveralls
+mdanalysis
+black

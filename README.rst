@@ -13,11 +13,32 @@ using the Open3D engine.
 Installation
 ^^^^^^^^^^^^
 ZnVis is a purely Python package hosted on PyPi.
-It can therefore be installed with pip with:
+It can therefore be installed using pip with:
 
 .. code-block:: bash
 
    pip install znvis
+
+If you prefer to access the source code, run the following from a terminal:
+
+.. code-block:: bash
+
+   git clone https://github.com/zincware/ZnVis.git
+   cd ZnVis
+   pip install .
+
+Once complete, you will be able to start using the visualizer by importing it as:
+
+.. code-block:: python
+
+   import znvis
+
+Known limitations
+^^^^^^^^^^^^^^^^^
+Currently it seems that for medium sized systems (400 particles) running the visualizer
+can result in a memory failure after a while.
+We are working on how to extend ZnVis to arbitrary sized systems.
+
 
 .. badges
 

@@ -21,7 +21,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Create a cylinder mesh
+Create a custom mesh
 """
 from dataclasses import dataclass
 
@@ -34,26 +34,17 @@ from .mesh import Mesh
 
 
 @dataclass
-class Cylinder(Mesh):
+class CustomMesh(Mesh):
     """
     A class to produce cylinder meshes.
 
     Attributes
     ----------
-    radius : float
-            Radius of the sphere.
-    height : float
-            Height of the cylinder.
-    split : int
-            Number of segment the mesh will be split into.
-    resolution : int
-            Resolution of the sphere.
+    file : str
+            Path to mesh file.
     """
 
-    radius: float = 1.0
-    height: float = 3.0
-    split: int = 1
-    resolution: int = 10
+    file: str = None
 
     def create_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
@@ -72,17 +63,12 @@ class Cylinder(Mesh):
         -------
         mesh : o3d.geometry.TriangleMesh
         """
-        cylinder = o3d.geometry.TriangleMesh.create_cylinder(
-            radius=self.radius,
-            height=self.height,
-            split=self.split,
-            resolution=self.resolution,
-        )
-        cylinder.compute_vertex_normals()
-        cylinder.translate(starting_position.astype(float))
+        mesh = o3d.io.read_triangle_mesh(self.file)
+        mesh.compute_vertex_normals()
+        mesh.translate(starting_position.astype(float))
         if starting_orientation is not None:
             matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
-            cylinder.rotate(matrix)
-        cylinder.paint_uniform_color(self.colour)
+            mesh.rotate(matrix)
+        mesh.paint_uniform_color(self.colour)
 
-        return cylinder
+        return mesh

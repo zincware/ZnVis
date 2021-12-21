@@ -25,6 +25,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from znvis.mesh import Mesh
+from znvis.transformations.rotation_matrices import rotation_matrix
 
 
 @dataclass
@@ -78,9 +79,14 @@ class Particle:
             raise ValueError("There is no data for these particles.")
 
         for i in range(n_particles):
-            self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
-                self.position[0][i]
-            )
+            if self.director is not None:
+                self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
+                    self.position[0][i], starting_orientation=self.director[0][i]
+                )
+            else:
+                self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
+                    self.position[0][i],
+                )
 
     def update_position_data(self, step: int):
         """
@@ -101,3 +107,12 @@ class Particle:
         """
         for i, item in enumerate(self.mesh_dict):
             self.mesh_dict[item].translate(self.position[step][i], relative=False)
+            if self.director is not None:
+                if step == 0:
+                    current = self.director[-1][i]
+                    matrix = rotation_matrix(current, self.director[step][i])
+                    self.mesh_dict[item].rotate(matrix)
+                else:
+                    current = self.director[step - 1][i]
+                    matrix = rotation_matrix(current, self.director[step][i])
+                    self.mesh_dict[item].rotate(matrix)
