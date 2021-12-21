@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: >-
+  ZnVis: A Visualisation Package for Particle
+  Simulations
+message: >-
+  If you use this package, please include the
+  following citation:
+type: software
+authors:
+  - given-names: Samuel
+    family-names: Tovey
+    email: tovey.samuel@gmail.com
+    affiliation: University of Stuttgart
+    orcid: 'https://orcid.org/0000-0001-9537-8361'
+  - given-names: Fabian
+    family-names: Zills
+    email: fzills@icp.uni-stuttgart.de
+    affiliation: University of Stuttgart
+version: 2.0.4
