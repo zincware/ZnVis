@@ -98,10 +98,9 @@ class Visualizer:
         self.vis.add_action("Step", self._update_particles)
 
         self.vis.add_action("Play", self._continuous_trajectory)
-        self.vis.add_action("Pause", self._pause_run)
         self.app.add_window(self.vis)
 
-        self.interrupt: int = 0
+        self.interrupt: int = 0  # 0 = Not running, 1 = running
 
     def _pause_run(self, vis):
         """
@@ -111,7 +110,7 @@ class Visualizer:
         -------
         Set self.interrupt = 1
         """
-        self.interrupt = 1
+        self.interrupt = 0
 
     def _initialize_particles(self):
         """
@@ -169,7 +168,10 @@ class Visualizer:
         vis : visualizer
                 Object passed during the callback.
         """
-        threading.Thread(target=self._run_trajectory).start()
+        if self.interrupt == 1:
+            self._pause_run(vis)
+        else:
+            threading.Thread(target=self._run_trajectory).start()
 
     def _run_trajectory(self):
         """
@@ -179,15 +181,17 @@ class Visualizer:
         -------
         Runs through the trajectory.
         """
+        self.interrupt = 1  # set global run state.
         while self.counter < self.number_of_steps:
             time.sleep(1 / self.frame_rate)
             o3d.visualization.gui.Application.instance.post_to_main_thread(
                 self.vis, self._update_particles
             )
-            if self.interrupt == 1:
+            # Break if interrupted.
+            if self.interrupt == 0:
                 break
 
-        self.interrupt = 0
+        self.interrupt = 0  # reset global state.
 
     def _update_particles(self, visualizer=None, step: int = None):
         """
