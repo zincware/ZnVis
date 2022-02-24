@@ -94,10 +94,12 @@ class Visualizer:
         self.vis = o3d.visualization.O3DVisualizer("ZnVis Visualizer", 1024, 768)
         self.vis.show_settings = True
         self.vis.reset_camera_to_default()
-
+        # Add actions to the visualizer.
         self.vis.add_action("Step", self._update_particles)
-
         self.vis.add_action("Play", self._continuous_trajectory)
+        self.vis.add_action("Export Scene", self._export_scene)
+
+        # Add the visualizer to the app.
         self.app.add_window(self.vis)
 
         self.interrupt: int = 0  # 0 = Not running, 1 = running
@@ -111,6 +113,33 @@ class Visualizer:
         Set self.interrupt = 1
         """
         self.interrupt = 0
+
+    def _export_scene(self, vis):
+        """
+        Export the current visualization scene.
+
+        Parameters
+        ----------
+        vis
+
+        Returns
+        -------
+        Stores a .gltf model locally.
+        """
+        old_state = self.interrupt  # get old state
+        self.interrupt = 0  # stop live feed if running.
+        for i, item in enumerate(self.particles):
+            for j, particle in enumerate(item.mesh_dict):
+                if i + j == 0:
+                    mesh = item.mesh_dict[particle]
+                else:
+                    mesh += item.mesh_dict[particle]
+
+        o3d.io.write_triangle_mesh(f"My_mesh_{self.counter}.gltf", mesh)
+
+        # Restart live feed if it was running before the export.
+        if old_state == 1:
+            self._continuous_trajectory(vis)
 
     def _initialize_particles(self):
         """
