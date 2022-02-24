@@ -98,6 +98,7 @@ class Visualizer:
         self.vis.add_action("Step", self._update_particles)
         self.vis.add_action("Play", self._continuous_trajectory)
         self.vis.add_action("Export Scene", self._export_scene)
+        self.vis.add_action("Screenshot", self._take_screenshot)
 
         # Add the visualizer to the app.
         self.app.add_window(self.vis)
@@ -120,7 +121,8 @@ class Visualizer:
 
         Parameters
         ----------
-        vis
+        vis : Visualizer
+                The activte visualizer.
 
         Returns
         -------
@@ -140,6 +142,21 @@ class Visualizer:
         # Restart live feed if it was running before the export.
         if old_state == 1:
             self._continuous_trajectory(vis)
+
+    def _take_screenshot(self, vis):
+        """
+        Take a screenshot
+
+        Parameters
+        ----------
+        vis : Visualizer
+                The activate visualizer.
+
+        Returns
+        -------
+        Takes a screenshot and dumps it
+        """
+        vis.export_current_image("test.png")
 
     def _initialize_particles(self):
         """
