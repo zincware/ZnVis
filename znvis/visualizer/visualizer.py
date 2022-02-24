@@ -135,7 +135,7 @@ class Visualizer:
                 else:
                     mesh += item.mesh_dict[particle]
 
-        o3d.io.write_triangle_mesh(f"My_mesh_{self.counter}.gltf", mesh)
+        o3d.io.write_triangle_mesh(f"My_mesh_{self.counter}.ply", mesh)
 
         # Restart live feed if it was running before the export.
         if old_state == 1:
