@@ -94,14 +94,16 @@ class Visualizer:
         self.vis = o3d.visualization.O3DVisualizer("ZnVis Visualizer", 1024, 768)
         self.vis.show_settings = True
         self.vis.reset_camera_to_default()
-
+        # Add actions to the visualizer.
         self.vis.add_action("Step", self._update_particles)
-
         self.vis.add_action("Play", self._continuous_trajectory)
-        self.vis.add_action("Pause", self._pause_run)
+        self.vis.add_action("Export Scene", self._export_scene)
+        self.vis.add_action("Screenshot", self._take_screenshot)
+
+        # Add the visualizer to the app.
         self.app.add_window(self.vis)
 
-        self.interrupt: int = 0
+        self.interrupt: int = 0  # 0 = Not running, 1 = running
 
     def _pause_run(self, vis):
         """
@@ -111,7 +113,50 @@ class Visualizer:
         -------
         Set self.interrupt = 1
         """
-        self.interrupt = 1
+        self.interrupt = 0
+
+    def _export_scene(self, vis):
+        """
+        Export the current visualization scene.
+
+        Parameters
+        ----------
+        vis : Visualizer
+                The activte visualizer.
+
+        Returns
+        -------
+        Stores a .gltf model locally.
+        """
+        old_state = self.interrupt  # get old state
+        self.interrupt = 0  # stop live feed if running.
+        for i, item in enumerate(self.particles):
+            for j, particle in enumerate(item.mesh_dict):
+                if i + j == 0:
+                    mesh = item.mesh_dict[particle]
+                else:
+                    mesh += item.mesh_dict[particle]
+
+        o3d.io.write_triangle_mesh(f"My_mesh_{self.counter}.ply", mesh)
+
+        # Restart live feed if it was running before the export.
+        if old_state == 1:
+            self._continuous_trajectory(vis)
+
+    def _take_screenshot(self, vis):
+        """
+        Take a screenshot
+
+        Parameters
+        ----------
+        vis : Visualizer
+                The activate visualizer.
+
+        Returns
+        -------
+        Takes a screenshot and dumps it
+        """
+        vis.export_current_image("test.png")
 
     def _initialize_particles(self):
         """
@@ -169,7 +214,10 @@ class Visualizer:
         vis : visualizer
                 Object passed during the callback.
         """
-        threading.Thread(target=self._run_trajectory).start()
+        if self.interrupt == 1:
+            self._pause_run(vis)
+        else:
+            threading.Thread(target=self._run_trajectory).start()
 
     def _run_trajectory(self):
         """
@@ -179,15 +227,17 @@ class Visualizer:
         -------
         Runs through the trajectory.
         """
+        self.interrupt = 1  # set global run state.
         while self.counter < self.number_of_steps:
             time.sleep(1 / self.frame_rate)
             o3d.visualization.gui.Application.instance.post_to_main_thread(
                 self.vis, self._update_particles
             )
-            if self.interrupt == 1:
+            # Break if interrupted.
+            if self.interrupt == 0:
                 break
 
-        self.interrupt = 0
+        self.interrupt = 0  # reset global state.
 
     def _update_particles(self, visualizer=None, step: int = None):
         """

@@ -36,7 +36,8 @@ Once complete, you will be able to start using the visualizer by importing it as
 Known limitations
 ^^^^^^^^^^^^^^^^^
 Currently it seems that for medium sized systems (400 particles) running the visualizer
-can result in a memory failure after a while.
+can result in a memory access failure after a while.
+This appears to be a fault in the back-end libraries used and has been brought up.
 We are working on how to extend ZnVis to arbitrary sized systems.
 
 
