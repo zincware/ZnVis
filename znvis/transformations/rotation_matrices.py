@@ -42,12 +42,12 @@ def rotation_matrix(current: np.ndarray, target: np.ndarray) -> np.ndarray:
         return np.eye(3)
     else:
         a, b = (current / np.linalg.norm(current)).reshape(3), (
-                target / np.linalg.norm(target)
+            target / np.linalg.norm(target)
         ).reshape(3)
         v = np.cross(a, b)
         c = np.dot(a, b)
         s = np.linalg.norm(v)
         kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
-        rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
+        rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s**2))
 
         return rotation_matrix

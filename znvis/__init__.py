@@ -32,5 +32,5 @@ __all__ = [
     Sphere.__name__,
     Visualizer.__name__,
     Cylinder.__name__,
-    CustomMesh.__name__
+    CustomMesh.__name__,
 ]
