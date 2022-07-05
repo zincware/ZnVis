@@ -27,4 +27,10 @@ from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.visualizer.visualizer import Visualizer
 
-__all__ = ["Particle", "Sphere", "Visualizer", "Cylinder", "CustomMesh"]
+__all__ = [
+    Particle.__name__,
+    Sphere.__name__,
+    Visualizer.__name__,
+    Cylinder.__name__,
+    CustomMesh.__name__
+]

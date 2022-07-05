@@ -22,7 +22,7 @@ Module for the computation of rotation matrices.
 import numpy as np
 
 
-def rotation_matrix(current: np.ndarray, target: np.ndarray):
+def rotation_matrix(current: np.ndarray, target: np.ndarray) -> np.ndarray:
     """
     Compute the rotation matrix between two unit vectors.
 
@@ -42,7 +42,7 @@ def rotation_matrix(current: np.ndarray, target: np.ndarray):
         return np.eye(3)
     else:
         a, b = (current / np.linalg.norm(current)).reshape(3), (
-            target / np.linalg.norm(target)
+                target / np.linalg.norm(target)
         ).reshape(3)
         v = np.cross(a, b)
         c = np.dot(a, b)
