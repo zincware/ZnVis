@@ -36,7 +36,7 @@ class Visualizer:
 
     Attributes
     ----------
-    particles : list[znvis.Particle]
+    particles : List[znvis.Particle]
             A list of particle objects to add to the visualizer.
     app : o3d.gui.Application.instance
             An open3d application.
@@ -109,6 +109,11 @@ class Visualizer:
         """
         Pause a live visualization run.
 
+        Parameters
+        ----------
+        vis : Visualizer
+                Another callback argument that is required.
+
         Returns
         -------
         Set self.interrupt = 1
@@ -126,7 +131,7 @@ class Visualizer:
 
         Returns
         -------
-        Stores a .gltf model locally.
+        Stores a .ply model locally.
         """
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
@@ -167,7 +172,7 @@ class Visualizer:
 
         Returns
         -------
-
+        Draws all of the particles on the screen.
         """
         # Build the mesh dict for each particle and add them to the window.
         for item in self.particles:
@@ -183,6 +188,9 @@ class Visualizer:
         ----------
         initial : bool (default = True)
                 If true, no particles are removed.
+        visualizer : Visualizer
+                If None, the current class visualizer is used, else, this visualizer is
+                used.
 
         Returns
         -------
@@ -211,8 +219,13 @@ class Visualizer:
 
         Parameters
         ----------
-        vis : visualizer
-                Object passed during the callback.
+        vis : Visualizer
+                Object passed during the callback.  Not used here but apparently
+                required.
+
+        Returns
+        -------
+        Pauses or begins the visualization on a new thread.
         """
         if self.interrupt == 1:
             self._pause_run(vis)
@@ -245,6 +258,8 @@ class Visualizer:
 
         Parameters
         ----------
+        visualizer : Visualizer
+                A visualizer object to be used for updating the current screen.
         step : int
                 Step to update to.
 
@@ -268,7 +283,12 @@ class Visualizer:
 
     def run_visualization(self):
         """
-        Run the visualization.
+        Run the visualizer.
+
+        Performs the following steps:
+            1. Initializes the app: Builds all app windows and buttons.
+            2. Initializes particles: Constructs the particle meshes.
+            3. Launches the app window.
 
         Returns
         -------
