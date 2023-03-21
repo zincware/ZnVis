@@ -27,6 +27,7 @@ import numpy as np
 from znvis.mesh import Mesh
 from znvis.transformations.rotation_matrices import rotation_matrix
 
+from rich.progress import track
 
 @dataclass
 class Particle:
@@ -60,9 +61,34 @@ class Particle:
     director: np.ndarray = None
     mesh_dict: dict = None
 
+    def _create_mesh(self, position, director):
+        """
+        Create a mesh object for the particle.
+
+        Parameters
+        ----------
+        position : np.ndarray
+                Position of the particle
+        director : np.ndarray
+                Director of the particle
+
+        Returns
+        -------
+        mesh : o3d.geometry.TriangleMesh
+                A mesh object
+        """
+        if director is not None:
+            mesh = self.mesh.create_mesh(position, starting_orientation=director)
+        else:
+            mesh = self.mesh.create_mesh(position)
+        return mesh
+
     def construct_mesh_dict(self):
         """
         Constructor the mesh dict for the class.
+
+        The mesh dict is a list of mesh objects for each
+        time step in the parsed trajectory.
 
         Returns
         -------
@@ -72,47 +98,29 @@ class Particle:
         -----
         #TODO allow for no position data.
         """
-        self.mesh_dict = {}
+        self.mesh_dict = []
         try:
             n_particles = int(self.position.shape[1])
+            n_time_steps = int(self.position.shape[0])
         except ValueError:
             raise ValueError("There is no data for these particles.")
+        
 
-        for i in range(n_particles):
-            if self.director is not None:
-                self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
-                    self.position[0][i], starting_orientation=self.director[0][i]
-                )
-            else:
-                self.mesh_dict[f"{self.name}_{i}"] = self.mesh.create_mesh(
-                    self.position[0][i],
-                )
-
-    def update_position_data(self, step: int):
-        """
-        Update the positions of each particle.
-
-        Parameters
-        ----------
-        step : int
-                Step to update to.
-
-        Returns
-        -------
-        Updates the position of the mesh in the mesh_dict
-
-        Notes
-        -----
-        TODO: Allow for no position data.
-        """
-        for i, item in enumerate(self.mesh_dict):
-            self.mesh_dict[item].translate(self.position[step][i], relative=False)
-            if self.director is not None:
-                if step == 0:
-                    current = self.director[-1][i]
-                    matrix = rotation_matrix(current, self.director[step][i])
-                    self.mesh_dict[item].rotate(matrix)
+        for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
+            for j in range(n_particles):
+                if j == 0:
+                    if self.director is not None:
+                        mesh = self._create_mesh(
+                            self.position[i][j], self.director[i][j]
+                        )
+                    else:
+                        mesh = self._create_mesh(self.position[i][j], None)
                 else:
-                    current = self.director[step - 1][i]
-                    matrix = rotation_matrix(current, self.director[step][i])
-                    self.mesh_dict[item].rotate(matrix)
+                    if self.director is not None:
+                        mesh += self._create_mesh(
+                            self.position[i][j], self.director[i][j]
+                        )
+                    else:
+                        mesh += self._create_mesh(self.position[i][j], None)
+                
+            self.mesh_dict.append(mesh)
