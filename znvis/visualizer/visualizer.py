@@ -199,7 +199,7 @@ class Visualizer:
                 visualizer.add_geometry(item.name, item.mesh_dict[self.counter])
         else:
             for i, item in enumerate(self.particles):
-                visualizer.remove_geometry(str(i))
+                visualizer.remove_geometry(item.name)
                 visualizer.add_geometry(item.name, item.mesh_dict[self.counter])
 
     def _continuous_trajectory(self, vis):
