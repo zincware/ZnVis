@@ -131,11 +131,10 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         for i, item in enumerate(self.particles):
-            for j, particle in enumerate(item.mesh_dict):
-                if i + j == 0:
-                    mesh = item.mesh_dict[particle]
-                else:
-                    mesh += item.mesh_dict[particle]
+            if i == 0:
+                mesh = item
+            else:
+                mesh += item
 
         o3d.io.write_triangle_mesh(f"My_mesh_{self.counter}.ply", mesh)
 
@@ -156,7 +155,7 @@ class Visualizer:
         -------
         Takes a screenshot and dumps it
         """
-        vis.export_current_image("test.png")
+        vis.export_current_image(f"screenshot_{self.counter}.png")
 
     def _initialize_particles(self):
         """

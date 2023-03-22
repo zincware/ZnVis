@@ -49,8 +49,7 @@ class Particle:
     director: np.ndarray
             Director tensor of the shape (n_confs, n_particles, n_dims)
     mesh_dict : dict
-            Mesh dict to store names of meshes and the mesh objects. e.g.
-            {'name_1': TriangleMesh, 'name_2': TraingleMesh, ...}
+            A list of mesh objects, one for each time step.
     """
 
     name: str
@@ -93,10 +92,6 @@ class Particle:
         Returns
         -------
         Updates the class attributes mesh_dict
-
-        Notes
-        -----
-        #TODO allow for no position data.
         """
         self.mesh_dict = []
         try:

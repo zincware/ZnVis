@@ -12,5 +12,4 @@ nbsphinx-link
 isort
 coverage
 coveralls
-mdanalysis
 black

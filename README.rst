@@ -9,6 +9,7 @@ simulation.
 Simply define the particles in the simulation with details including their positions,
 colour, direction, and shape, and the visualization engine will display the system
 using the Open3D engine.
+ZnVis works both from a Python script and in Jupyter!
 
 Installation
 ^^^^^^^^^^^^
@@ -32,13 +33,6 @@ Once complete, you will be able to start using the visualizer by importing it as
 .. code-block:: python
 
    import znvis
-
-Known limitations
-^^^^^^^^^^^^^^^^^
-Currently it seems that for medium sized systems (400 particles) running the visualizer
-can result in a memory access failure after a while.
-This appears to be a fault in the back-end libraries used and has been brought up.
-We are working on how to extend ZnVis to arbitrary sized systems.
 
 
 .. badges

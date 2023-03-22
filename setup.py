@@ -37,7 +37,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="ZnVis",
-    version="0.0.1",
+    version="0.0.2",
     author="zincwarecode",
     author_email="tovey.samuel@gmail.com",
     description="Visualization of particle trajectories.",
@@ -51,6 +51,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=requirements,
 )
