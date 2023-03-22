@@ -23,11 +23,10 @@ Module for the particle parent class
 from dataclasses import dataclass
 
 import numpy as np
+from rich.progress import track
 
 from znvis.mesh import Mesh
-from znvis.transformations.rotation_matrices import rotation_matrix
 
-from rich.progress import track
 
 @dataclass
 class Particle:
@@ -99,7 +98,6 @@ class Particle:
             n_time_steps = int(self.position.shape[0])
         except ValueError:
             raise ValueError("There is no data for these particles.")
-        
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             for j in range(n_particles):
@@ -117,5 +115,5 @@ class Particle:
                         )
                     else:
                         mesh += self._create_mesh(self.position[i][j], None)
-                
+
             self.mesh_dict.append(mesh)
