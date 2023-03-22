@@ -1,7 +1,6 @@
 ![PyTest](https://github.com/zincware/ZnVis/actions/workflows/pytest.yaml/badge.svg)
 [![code-style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black/)
 [![zincware](https://img.shields.io/badge/Powered%20by-zincware-darkcyan)](https://github.com/zincware)
-[![coveralls](https://coveralls.io/repos/github/zincware/ZnVis/badge.svg?branch=main)](https://coveralls.io/repos/github/zincware/ZnVis/badge.svg?branch=main)
 
 
 # ZnVis
@@ -83,4 +82,4 @@ visualizer.run_visualization()
 Just like that, a visualization window (shown below) will pop up from which you can play 
 the trajectory and watch your RL agents rotate a rod.
 
-![Visualizer Example](readme_image.png)
+![Visualizer Example](./readme_image.png)
