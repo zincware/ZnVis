@@ -131,11 +131,10 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         for i, item in enumerate(self.particles):
-            for j, particle in enumerate(item.mesh_dict):
-                if i + j == 0:
-                    mesh = item.mesh_dict[particle]
-                else:
-                    mesh += item.mesh_dict[particle]
+            if i == 0:
+                mesh = item
+            else:
+                mesh += item
 
         o3d.io.write_triangle_mesh(f"My_mesh_{self.counter}.ply", mesh)
 
@@ -156,7 +155,7 @@ class Visualizer:
         -------
         Takes a screenshot and dumps it
         """
-        vis.export_current_image("test.png")
+        vis.export_current_image(f"screenshot_{self.counter}.png")
 
     def _initialize_particles(self):
         """
@@ -196,14 +195,12 @@ class Visualizer:
         if visualizer is None:
             visualizer = self.vis
         if initial:
-            for item in self.particles:
-                for particle in item.mesh_dict:
-                    visualizer.add_geometry(particle, item.mesh_dict[particle])
+            for i, item in enumerate(self.particles):
+                visualizer.add_geometry(item.name, item.mesh_dict[self.counter])
         else:
-            for item in self.particles:
-                for particle in item.mesh_dict:
-                    visualizer.remove_geometry(particle)
-                    visualizer.add_geometry(particle, item.mesh_dict[particle])
+            for i, item in enumerate(self.particles):
+                visualizer.remove_geometry(str(i))
+                visualizer.add_geometry(item.name, item.mesh_dict[self.counter])
 
     def _continuous_trajectory(self, vis):
         """
@@ -260,8 +257,6 @@ class Visualizer:
             else:
                 self.counter += 1
             step = self.counter
-        for particle in self.particles:
-            particle.update_position_data(step)
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
         visualizer.post_redraw()  # re-draw the window.

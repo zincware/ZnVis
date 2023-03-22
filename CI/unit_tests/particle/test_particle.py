@@ -69,28 +69,4 @@ class TestParticle(unittest.TestCase):
         self.particle.construct_mesh_dict()
 
         # Check that all particle are in the dict.
-        self.assertEqual(len(self.particle.mesh_dict), self.particle.position.shape[1])
-
-        # Check that they are named correctly.
-        # Check that they are centered correctly.
-        for i, item in enumerate(self.particle.mesh_dict):
-            self.assertEqual(item, f"my_particle_{i}")
-            np.testing.assert_array_almost_equal(
-                self.particle.mesh_dict[item].get_center(), self.particle.position[0][i]
-            )
-
-    def test_update_positions(self):
-        """
-        Test the update position method in the Particle module.
-
-        Returns
-        -------
-        Test whether the positions are updated.
-        """
-        self.particle.construct_mesh_dict()
-        self.particle.update_position_data(1)
-
-        for i, item in enumerate(self.particle.mesh_dict):
-            np.testing.assert_array_almost_equal(
-                self.particle.mesh_dict[item].get_center(), self.particle.position[1][i]
-            )
+        self.assertEqual(len(self.particle.mesh_dict), self.particle.position.shape[0])
