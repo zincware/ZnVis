@@ -37,7 +37,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ZnVis",
-    version="0.0.2",
+    version="0.1.0",
     author="zincwarecode",
     author_email="tovey.samuel@gmail.com",
     description="Visualization of particle trajectories.",
