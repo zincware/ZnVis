@@ -8,6 +8,7 @@ __pycache__/
 
 # PyCharm
 .idea
+.vscode
 
 # Distribution / packaging
 .Python
