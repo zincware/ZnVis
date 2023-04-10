@@ -26,8 +26,14 @@ from typing import List
 
 import open3d as o3d
 import open3d.visualization.gui as gui
+from rich.progress import track
+
+import os
+import cv2
+import glob
 
 import znvis
+import shutil
 
 
 class Visualizer:
@@ -52,6 +58,7 @@ class Visualizer:
         particles: List[znvis.Particle],
         frame_rate: int = 24,
         number_of_steps: int = None,
+        store_run_files: bool = False
     ):
         """
         Constructor for the visualizer.
@@ -66,6 +73,8 @@ class Visualizer:
                 Number of steps in the visualization. If None, the zeroth order of one
                 particle is taken. This is left as an option in case the user wishes
                 to overlay two particle trajectories of different length.
+        store_run_files : bool
+                If True, the visualizer will store all files generated during a run.
         """
         self.particles = particles
         self.frame_rate = frame_rate
@@ -73,6 +82,7 @@ class Visualizer:
         if number_of_steps is None:
             number_of_steps = particles[0].position.shape[0]
         self.number_of_steps = number_of_steps
+        self.store_run_files = store_run_files
 
         # Added later during run
         self.app = None
@@ -99,6 +109,7 @@ class Visualizer:
         self.vis.add_action("Play", self._continuous_trajectory)
         self.vis.add_action("Export Scene", self._export_scene)
         self.vis.add_action("Screenshot", self._take_screenshot)
+        self.vis.add_action("Export MP4", self._export_mp4)
 
         # Add the visualizer to the app.
         self.app.add_window(self.vis)
@@ -114,6 +125,49 @@ class Visualizer:
         Set self.interrupt = 1
         """
         self.interrupt = 0
+
+    def _export_mp4(self, vis):
+        """
+        Export a video of the simulation.
+
+        Parameters
+        ----------
+        vis : Visualizer
+                The active visualizer.
+
+        Returns
+        -------
+        Saves a .mp4 video locally.
+        """
+        old_state = self.interrupt  # get old state
+        self.interrupt = 0  # stop live feed if running.
+
+        # Create temporary directory
+        os.mkdir("temp_mp4")
+
+        # Write all PNG files to directory
+        i = self.counter
+        while i <= self.number_of_steps - 1:
+            self._update_particles(vis)
+            vis.export_current_image(f"temp_mp4/frame_{self.counter}.png")
+            time.sleep(5)
+            i += 1
+
+        # Compile pngs to video
+        images = glob.glob("temp_mp4/*.png")
+        single_frame = cv2.imread(images[0])
+        height, width, layers = single_frame.shape
+
+        video = cv2.VideoWriter("ZnVis-Video.mp4", 0, 1, (width,height))
+        for image in track(images, description="Exporting MP4"):
+            video.write(cv2.imread(image))
+
+        cv2.destroyAllWindows()
+        video.release()
+
+        # Delete temporary directory if not storing run files
+        if not self.store_run_files:
+            shutil.rmtree("temp_mp4")
 
     def _export_scene(self, vis):
         """
