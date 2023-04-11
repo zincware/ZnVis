@@ -22,6 +22,7 @@ Main visualizer class.
 """
 import glob
 import os
+import re
 import shutil
 import threading
 import time
@@ -162,7 +163,9 @@ class Visualizer:
         this one is called. (GIL stuff)
         """
         images = glob.glob("temp_video/*.png")
-        images.sort()  # ensure images are in correct order
+
+        # Sort images by number
+        images = sorted(images, key=lambda s: int(re.search(r"\d+", s).group()))
 
         single_frame = cv2.imread(images[0])
         height, width, layers = single_frame.shape
