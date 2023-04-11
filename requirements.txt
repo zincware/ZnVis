@@ -2,3 +2,4 @@ open3d
 numpy
 pytest
 rich
+opencv-python
