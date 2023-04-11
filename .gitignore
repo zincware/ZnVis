@@ -131,3 +131,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Package data
+*.ply
+*.obj
+*.stl
+*.avi
+*.mp4
