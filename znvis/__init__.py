@@ -21,21 +21,24 @@ Summary
 -------
 init file for the main ZnVis package.
 """
+from znvis.mesh.bounding_box import BoundingBox
+
 # Mesh objects
 from znvis.mesh.custom import CustomMesh
 from znvis.mesh.cylinder import Cylinder
 from znvis.mesh.sphere import Sphere
-from znvis.mesh.bounding_box import BoundingBox
+
 # Particles
 from znvis.particle.particle import Particle
+
 # Visualizer
 from znvis.visualizer.visualizer import Visualizer
 
 __all__ = [
-    Particle.__name__, 
-    Sphere.__name__, 
-    Visualizer.__name__, 
-    Cylinder.__name__, 
+    Particle.__name__,
+    Sphere.__name__,
+    Visualizer.__name__,
+    Cylinder.__name__,
     CustomMesh.__name__,
     BoundingBox.__name__,
-    ]
+]

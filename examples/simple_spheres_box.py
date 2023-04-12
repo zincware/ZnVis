@@ -39,8 +39,12 @@ if __name__ == "__main__":
     particle_2 = vis.Particle(name="Orange", mesh=mesh_2, position=trajectory_2)
 
     # Create a bounding box
-    bounding_box = vis.BoundingBox(center=np.array([0, 0, 0]), box_size=np.array([20, 20, 20]))
+    bounding_box = vis.BoundingBox(
+        center=np.array([0, 0, 0]), box_size=np.array([20, 20, 20])
+    )
 
     # Construct the visualizer and run
-    visualizer = vis.Visualizer(particles=[particle, particle_2], frame_rate=20, static_object=bounding_box)
+    visualizer = vis.Visualizer(
+        particles=[particle, particle_2], frame_rate=20, static_object=bounding_box
+    )
     visualizer.run_visualization()

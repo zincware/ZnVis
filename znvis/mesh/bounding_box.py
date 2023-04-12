@@ -25,8 +25,6 @@ from dataclasses import dataclass
 import numpy as np
 import open3d as o3d
 
-from znvis.transformations.rotation_matrices import rotation_matrix
-
 from .mesh import Mesh
 
 
@@ -48,11 +46,9 @@ class BoundingBox(Mesh):
     """
 
     center: np.ndarray = np.array([0, 0, 0])
-    box_size: np.ndarray = np.array([1., 1., 1.])
-    rotation_matrix: np.ndarray = np.array(
-        [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        )
-    scale: np.ndarray = np.array([1., 1., 1.])
+    box_size: np.ndarray = np.array([1.0, 1.0, 1.0])
+    rotation_matrix: np.ndarray = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    scale: np.ndarray = np.array([1.0, 1.0, 1.0])
 
     def create_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
