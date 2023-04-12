@@ -20,6 +20,7 @@ Summary
 -------
 Module for the particle parent class
 """
+import typing
 from dataclasses import dataclass
 
 import numpy as np
@@ -47,7 +48,7 @@ class Particle:
             Force tensor of the shape (n_confs, n_particles, n_dims)
     director: np.ndarray
             Director tensor of the shape (n_confs, n_particles, n_dims)
-    mesh_dict : dict
+    mesh_list : list
             A list of mesh objects, one for each time step.
     """
 
@@ -57,7 +58,7 @@ class Particle:
     velocity: np.ndarray = None
     force: np.ndarray = None
     director: np.ndarray = None
-    mesh_dict: dict = None
+    mesh_list: typing.List[Mesh] = None
 
     def _create_mesh(self, position, director):
         """
@@ -81,18 +82,18 @@ class Particle:
             mesh = self.mesh.create_mesh(position)
         return mesh
 
-    def construct_mesh_dict(self):
+    def construct_mesh_list(self):
         """
-        Constructor the mesh dict for the class.
+        Constructor the mesh list for the class.
 
-        The mesh dict is a list of mesh objects for each
+        The mesh list is a list of mesh objects for each
         time step in the parsed trajectory.
 
         Returns
         -------
-        Updates the class attributes mesh_dict
+        Updates the class attributes mesh_list
         """
-        self.mesh_dict = []
+        self.mesh_list = []
         try:
             n_particles = int(self.position.shape[1])
             n_time_steps = int(self.position.shape[0])
@@ -116,4 +117,4 @@ class Particle:
                     else:
                         mesh += self._create_mesh(self.position[i][j], None)
 
-            self.mesh_dict.append(mesh)
+            self.mesh_list.append(mesh)
