@@ -20,13 +20,12 @@ Summary
 -------
 Main visualizer class.
 """
-import glob
-import os
+import pathlib
 import re
 import shutil
 import threading
 import time
-from typing import List
+import typing
 
 import cv2
 import open3d as o3d
@@ -55,10 +54,11 @@ class Visualizer:
 
     def __init__(
         self,
-        particles: List[znvis.Particle],
+        particles: typing.List[znvis.Particle],
+        output_folder: typing.Union[str, pathlib.Path] = "./",
         frame_rate: int = 24,
         number_of_steps: int = None,
-        store_run_files: bool = False,
+        keep_frames: bool = False,
         video_format: str = "avi",
     ):
         """
@@ -74,8 +74,9 @@ class Visualizer:
                 Number of steps in the visualization. If None, the zeroth order of one
                 particle is taken. This is left as an option in case the user wishes
                 to overlay two particle trajectories of different length.
-        store_run_files : bool
-                If True, the visualizer will store all files generated during a run.
+        keep_frames : bool
+                If True, the visualizer will keep all frames
+                after combining them into a video.
         video_format : str
                 The format of the video to be generated.
         """
@@ -86,8 +87,10 @@ class Visualizer:
             number_of_steps = particles[0].position.shape[0]
         self.number_of_steps = number_of_steps
 
-        self.store_run_files = store_run_files
+        self.output_folder = pathlib.Path(output_folder).resolve()
+        self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
+        self.keep_frames = keep_frames
 
         # Added later during run
         self.app = None
@@ -148,7 +151,7 @@ class Visualizer:
         self.interrupt = 0  # stop live feed if running.
 
         # Create temporary directory
-        os.mkdir("temp_video")
+        self.frame_folder.mkdir(parents=True, exist_ok=True)
 
         # Write all PNG files to directory
         t = threading.Thread(target=self._record_trajectory)
@@ -162,7 +165,7 @@ class Visualizer:
         image storing thread can run to completion before
         this one is called. (GIL stuff)
         """
-        images = glob.glob("temp_video/*.png")
+        images = [f.as_posix() for f in self.frame_folder.glob("*.png")]
 
         # Sort images by number
         images = sorted(images, key=lambda s: int(re.search(r"\d+", s).group()))
@@ -171,7 +174,10 @@ class Visualizer:
         height, width, layers = single_frame.shape
 
         video = cv2.VideoWriter(
-            f"ZnVis-Video.{self.video_format}", 0, self.frame_rate, (width, height)
+            (self.output_folder / f"ZnVis-Video.{self.video_format}").as_posix(),
+            0,
+            self.frame_rate,
+            (width, height),
         )
         for image in track(images, description="Exporting Video..."):
             video.write(cv2.imread(image))
@@ -180,8 +186,8 @@ class Visualizer:
         video.release()
 
         # Delete temporary directory if not storing run files
-        if not self.store_run_files:
-            shutil.rmtree("temp_video", ignore_errors=False)
+        if not self.keep_frames:
+            shutil.rmtree(self.frame_folder, ignore_errors=False)
 
     def _export_scene(self, vis):
         """
@@ -200,11 +206,13 @@ class Visualizer:
         self.interrupt = 0  # stop live feed if running.
         for i, item in enumerate(self.particles):
             if i == 0:
-                mesh = item.mesh_dict[self.counter]
+                mesh = item.mesh_list[self.counter]
             else:
-                mesh += item.mesh_dict[self.counter]
+                mesh += item.mesh_list[self.counter]
 
-        o3d.io.write_triangle_mesh(f"My_mesh_{self.counter}.ply", mesh)
+        o3d.io.write_triangle_mesh(
+            (self.output_folder / f"My_mesh_{self.counter}.ply").as_posix(), mesh
+        )
 
         # Restart live feed if it was running before the export.
         if old_state == 1:
@@ -223,7 +231,9 @@ class Visualizer:
         -------
         Takes a screenshot and dumps it
         """
-        vis.export_current_image(f"screenshot_{self.counter}.png")
+        vis.export_current_image(
+            (self.output_folder / f"screenshot_{self.counter}.png").as_posix()
+        )
 
     def _initialize_particles(self):
         """
@@ -234,7 +244,7 @@ class Visualizer:
         """
         # Build the mesh dict for each particle and add them to the window.
         for item in self.particles:
-            item.construct_mesh_dict()
+            item.construct_mesh_list()
 
         self._draw_particles(initial=True)
 
@@ -260,11 +270,11 @@ class Visualizer:
             visualizer = self.vis
         if initial:
             for i, item in enumerate(self.particles):
-                visualizer.add_geometry(item.name, item.mesh_dict[self.counter])
+                visualizer.add_geometry(item.name, item.mesh_list[self.counter])
         else:
             for i, item in enumerate(self.particles):
                 visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(item.name, item.mesh_dict[self.counter])
+                visualizer.add_geometry(item.name, item.mesh_list[self.counter])
 
     def _continuous_trajectory(self, vis):
         """
@@ -298,7 +308,9 @@ class Visualizer:
             """
             Function to be called on thread to save image.
             """
-            self.vis.export_current_image(f"temp_video/frame_{self.counter}.png")
+            self.vis.export_current_image(
+                (self.frame_folder / f"frame_{self.counter:0>6}.png").as_posix()
+            )
             self.save_thread_finished = True
 
         with Progress() as progress:
