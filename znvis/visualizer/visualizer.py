@@ -60,6 +60,7 @@ class Visualizer:
         number_of_steps: int = None,
         keep_frames: bool = False,
         video_format: str = "avi",
+        static_object: znvis.mesh.Mesh = None,
     ):
         """
         Constructor for the visualizer.
@@ -82,6 +83,7 @@ class Visualizer:
         """
         self.particles = particles
         self.frame_rate = frame_rate
+        self.static_object = static_object.create_mesh(None) if static_object else None
 
         if number_of_steps is None:
             number_of_steps = particles[0].position.shape[0]
@@ -271,6 +273,9 @@ class Visualizer:
         if initial:
             for i, item in enumerate(self.particles):
                 visualizer.add_geometry(item.name, item.mesh_list[self.counter])
+            # check for static particles
+            if self.static_object is not None:
+                visualizer.add_geometry("Box", self.static_object)
         else:
             for i, item in enumerate(self.particles):
                 visualizer.remove_geometry(item.name)
