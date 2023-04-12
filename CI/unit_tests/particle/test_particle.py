@@ -66,7 +66,7 @@ class TestParticle(unittest.TestCase):
         Tests whether the dict was created properly.
         """
         # Build the mesh dict
-        self.particle.construct_mesh_dict()
+        self.particle.construct_mesh_list()
 
-        # Check that all particle are in the dict.
-        self.assertEqual(len(self.particle.mesh_dict), self.particle.position.shape[0])
+        # Check that all time steps are in the dict.
+        self.assertEqual(len(self.particle.mesh_list), self.particle.position.shape[0])
