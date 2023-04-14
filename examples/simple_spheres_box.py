@@ -45,6 +45,6 @@ if __name__ == "__main__":
 
     # Construct the visualizer and run
     visualizer = vis.Visualizer(
-        particles=[particle, particle_2], frame_rate=20, static_object=bounding_box
+        particles=[particle, particle_2], frame_rate=20, bounding_box=bounding_box
     )
     visualizer.run_visualization()

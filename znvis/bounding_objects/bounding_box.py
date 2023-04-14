@@ -18,18 +18,16 @@ If you use this module please cite us with:
 
 Summary
 -------
-Create  bounding box mesh.
+Create  bounding box.
 """
 from dataclasses import dataclass
 
 import numpy as np
 import open3d as o3d
 
-from .mesh import Mesh
-
 
 @dataclass
-class BoundingBox(Mesh):
+class BoundingBox:
     """
     A class to produce sphere meshes.
 
@@ -41,45 +39,26 @@ class BoundingBox(Mesh):
             Rotation matrix of the bounding box.
     box_size : np.ndarray shape=(3,)
             Size of the bounding box.
-    scale : np.ndarray shape=(3,)
-            Scale of the bounding box vectors.
+    colour : np.ndarray shape=(3,)
     """
 
     center: np.ndarray = np.array([0, 0, 0])
     box_size: np.ndarray = np.array([1.0, 1.0, 1.0])
     rotation_matrix: np.ndarray = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    scale: np.ndarray = np.array([1.0, 1.0, 1.0])
+    colour: np.ndarray = np.array([0.0, 0.0, 0.0])
 
-    def create_mesh(
-        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
-    ) -> o3d.geometry.TriangleMesh:
+    def __call__(self) -> o3d.geometry.TriangleMesh:
         """
-        Create a mesh object defined by the dataclass.
-
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        starting_orientation : np.ndarray shape=(3,) (default = None)
-                Starting orientation of the mesh.
+        Create the bounding box.
 
         Returns
         -------
-        mesh : o3d.geometry.TriangleMesh
+        bounding_box : o3d.geometry.OrientationBoundingBox
+                The bounding box object.
         """
         bounding_box = o3d.geometry.OrientedBoundingBox(
             self.center, self.rotation_matrix, self.box_size
         )
-        # bounding_box = bounding_box.get_axis_aligned_bounding_box()
-        # box = o3d.geometry.TriangleMesh.create_from_oriented_bounding_box(
-        #     bounding_box, scale=self.scale, create_uv_map=False
-        # )
-        # box = o3d.geometry.TriangleMesh.create_from
-        # box.compute_vertex_normals()
-        # # sphere.translate(starting_position.astype(float))
-        # # if starting_orientation is not None:
-        # #     matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
-        # #     sphere.rotate(matrix)
-        # box.paint_uniform_color((1, 0, 0))
+        bounding_box.color = self.colour
 
         return bounding_box

@@ -21,7 +21,8 @@ Summary
 -------
 init file for the main ZnVis package.
 """
-from znvis.mesh.bounding_box import BoundingBox
+# Box objects
+from znvis.bounding_objects.bounding_box import BoundingBox
 
 # Mesh objects
 from znvis.mesh.custom import CustomMesh

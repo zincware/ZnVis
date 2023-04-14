@@ -60,7 +60,7 @@ class Visualizer:
         number_of_steps: int = None,
         keep_frames: bool = False,
         video_format: str = "avi",
-        static_object: znvis.mesh.Mesh = None,
+        bounding_box: znvis.BoundingBox = None,
     ):
         """
         Constructor for the visualizer.
@@ -83,7 +83,7 @@ class Visualizer:
         """
         self.particles = particles
         self.frame_rate = frame_rate
-        self.static_object = static_object.create_mesh(None) if static_object else None
+        self.bounding_box = bounding_box() if bounding_box else None
 
         if number_of_steps is None:
             number_of_steps = particles[0].position.shape[0]
@@ -268,14 +268,18 @@ class Visualizer:
         TODO: Use of initial is a dirty fix. It can be removed when support for
               transforming multiple geometry objects is added to open3d.
         """
+        # Check if a visualizer was passed.
         if visualizer is None:
             visualizer = self.vis
+
+        # Add the particles to the visualizer.
         if initial:
             for i, item in enumerate(self.particles):
                 visualizer.add_geometry(item.name, item.mesh_list[self.counter])
-            # check for static particles
-            if self.static_object is not None:
-                visualizer.add_geometry("Box", self.static_object)
+
+            # check for bounding box
+            if self.bounding_box is not None:
+                visualizer.add_geometry("Box", self.bounding_box)
         else:
             for i, item in enumerate(self.particles):
                 visualizer.remove_geometry(item.name)
