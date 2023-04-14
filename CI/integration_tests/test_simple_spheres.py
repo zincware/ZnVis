@@ -75,11 +75,15 @@ class TestSimpleSpheres:
 
         # Create a bounding box
         bounding_box = vis.BoundingBox(
-            center=np.array([0, 0, 0]), box_size=np.array([20, 20, 20])
+            center=np.array([0, 0, 0]),
+            box_size=np.array([20, 20, 20]),
+            colour=np.array([0.7, 0.3, 0.1]),
         )
 
         # Construct the visualizer and run
         visualizer = vis.Visualizer(
-            particles=[particle, particle_2], frame_rate=20, bounding_box=bounding_box
+            particles=[particle, particle_2],
+            frame_rate=20,
+            bounding_box=bounding_box,
         )
         visualizer.run_visualization()
