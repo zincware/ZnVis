@@ -59,8 +59,8 @@ class Visualizer:
         frame_rate: int = 24,
         number_of_steps: int = None,
         keep_frames: bool = False,
-        video_format: str = "avi",
         bounding_box: znvis.BoundingBox = None,
+        video_format: str = "mp4",
     ):
         """
         Constructor for the visualizer.
@@ -94,6 +94,8 @@ class Visualizer:
         self.video_format = video_format
         self.keep_frames = keep_frames
 
+        self.obj_folder = self.output_folder / "obj_files"
+
         # Added later during run
         self.app = None
         self.vis = None
@@ -121,6 +123,7 @@ class Visualizer:
         self.vis.add_action("Export Scene", self._export_scene)
         self.vis.add_action("Screenshot", self._take_screenshot)
         self.vis.add_action("Export Video", self._export_video)
+        self.vis.add_action("Export Mesh Trajectory", self._export_mesh_trajectory)
 
         # Add the visualizer to the app.
         self.app.add_window(self.vis)
@@ -157,6 +160,28 @@ class Visualizer:
 
         # Write all PNG files to directory
         t = threading.Thread(target=self._record_trajectory)
+        t.start()
+
+    def _export_mesh_trajectory(self, vis):
+        """
+        Export a video of the simulation.
+
+        Parameters
+        ----------
+        vis : Visualizer
+                The active visualizer.
+
+        Returns
+        -------
+        Saves a video locally.
+        """
+        self.interrupt = 0  # stop live feed if running.
+
+        # Create temporary directory
+        self.obj_folder.mkdir(parents=True, exist_ok=True)
+
+        # Write all PNG files to directory
+        t = threading.Thread(target=self._record_mesh_trajectory)
         t.start()
 
     def _create_movie(self):
@@ -343,6 +368,56 @@ class Visualizer:
 
         time.sleep(1)  # Ensure the last image is saved
         self._create_movie()
+
+    def _record_mesh_trajectory(self):
+        """
+        Export the trajectory as mesh files.
+        """
+        self.update_thread_finished = True
+        self.save_thread_finished = True
+
+        def update_callable():
+            """
+            Function to be called on thread to update positions.
+            """
+            self._update_particles()
+            self.update_thread_finished = True
+
+        def save_callable():
+            """
+            Function to be called on thread to save image.
+            """
+            for i, item in enumerate(self.particles):
+                if i == 0:
+                    mesh = item.mesh_list[self.counter]
+                else:
+                    mesh += item.mesh_list[self.counter]
+
+            o3d.io.write_triangle_mesh(
+                (self.obj_folder / f"export_mesh_{self.counter}.obj").as_posix(), mesh
+            )
+            self.save_thread_finished = True
+
+        with Progress() as progress:
+            task = progress.add_task("Saving scenes...", total=self.number_of_steps)
+            # while self.counter < (self.number_of_steps - 1):
+            while not progress.finished:
+                time.sleep(1 / self.frame_rate)
+
+                if self.save_thread_finished and self.update_thread_finished:
+                    self.save_thread_finished = False
+                    o3d.visualization.gui.Application.instance.post_to_main_thread(
+                        self.vis, save_callable
+                    )
+                    progress.update(task, advance=1)
+
+                if self.update_thread_finished:
+                    self.update_thread_finished = False
+                    o3d.visualization.gui.Application.instance.post_to_main_thread(
+                        self.vis, update_callable
+                    )
+
+        time.sleep(1)  # Ensure the last image is saved
 
     def _run_trajectory(self):
         """
