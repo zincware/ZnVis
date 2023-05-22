@@ -23,12 +23,15 @@ init file for the main ZnVis package.
 """
 # Box objects
 from znvis.bounding_objects.bounding_box import BoundingBox
+
 # Mesh objects
 from znvis.mesh.custom import CustomMesh
 from znvis.mesh.cylinder import Cylinder
 from znvis.mesh.sphere import Sphere
+
 # Particles
 from znvis.particle.particle import Particle
+
 # Visualizer
 from znvis.visualizer.visualizer import Visualizer
 
