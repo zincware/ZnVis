@@ -23,7 +23,6 @@ Summary
 Test the visualization of simple spheres.
 """
 import time
-import unittest
 
 import numpy as np
 
@@ -31,7 +30,7 @@ import znvis as vis
 from znvis.testing.znvis_process import Process
 
 
-class TestSimpleSpheres(unittest.TestCase):
+class TestSimpleSpheres:
     """
     A test class for the Particle class.
     """
@@ -52,7 +51,7 @@ class TestSimpleSpheres(unittest.TestCase):
         if process.exception:
             error, traceback = process.exception
             print(traceback)
-        self.assertEqual(process.exception, None)
+        assert process.exception is None
 
     @staticmethod
     def run_process():
@@ -74,6 +73,17 @@ class TestSimpleSpheres(unittest.TestCase):
         )
         particle_2 = vis.Particle(name="Orange", mesh=mesh_2, position=trajectory_2)
 
+        # Create a bounding box
+        bounding_box = vis.BoundingBox(
+            center=np.array([0, 0, 0]),
+            box_size=np.array([20, 20, 20]),
+            colour=np.array([0.7, 0.3, 0.1]),
+        )
+
         # Construct the visualizer and run
-        visualizer = vis.Visualizer(particles=[particle, particle_2], frame_rate=20)
+        visualizer = vis.Visualizer(
+            particles=[particle, particle_2],
+            frame_rate=20,
+            bounding_box=bounding_box,
+        )
         visualizer.run_visualization()

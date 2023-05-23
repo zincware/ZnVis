@@ -1,0 +1,3 @@
+"""
+Bounding objects init file.
+"""
