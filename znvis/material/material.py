@@ -30,7 +30,26 @@ import numpy as np
 class Material:
     """
     Parent class for the ZnVis materials.
+
+    Attributes
+    ----------
+    colour : np.ndarray
+            Colour of the mesh. RGB array in the range 0, 1.
+    alpha : float
+            Transparancy of the mesh.
+    roughness : float
+            Roughness of the material.
+    metallica : float
+            How metallic the material looks. 0. not and 1.0 is metallic.
+    reflectance: float
+            How reflective the material is.
+    anisotropy: float
+            How anisotopic the material is.
     """
 
     colour: np.ndarray
     alpha: float = 1.0
+    roughness: float = 0.5
+    metallic: float = 0.0
+    reflectance: float = 0.4
+    anisotropy: float = 0.4

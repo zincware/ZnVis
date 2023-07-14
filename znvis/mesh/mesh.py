@@ -48,6 +48,10 @@ class Mesh:
         material = rendering.MaterialRecord()
         material.base_color = np.hstack((self.material.colour, self.material.alpha))
         material.shader = "defaultLitTransparency"
+        material.base_metallic = self.material.metallic
+        material.base_roughness = self.material.roughness
+        material.base_reflectance = self.material.reflectance
+        material.base_anisotropy = self.material.anisotropy
 
         self.o3d_material = material
 
