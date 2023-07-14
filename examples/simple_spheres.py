@@ -24,7 +24,6 @@ import numpy as np
 
 import znvis as vis
 
-
 if __name__ == "__main__":
     """
     Run the simple spheres example.
