@@ -113,7 +113,7 @@ class Visualizer:
         self.app = gui.Application.instance
         self.app.initialize()
 
-        self.vis = o3d.visualization.O3DVisualizer("ZnVis Visualizer", 1024, 768)
+        self.vis = o3d.visualization.O3DVisualizer("ZnVis Visualizer", 1920, 1080)
         self.vis.show_settings = True
         self.vis.reset_camera_to_default()
 
