@@ -47,7 +47,7 @@ class Material:
             How anisotopic the material is.
     """
 
-    colour: np.ndarray
+    colour: np.ndarray = np.array([59.0, 53.0, 97.0]) / 255
     alpha: float = 1.0
     roughness: float = 0.5
     metallic: float = 0.0

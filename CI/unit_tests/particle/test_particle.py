@@ -23,6 +23,7 @@ import unittest
 
 import numpy as np
 
+from znvis import Material
 from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 
@@ -41,6 +42,7 @@ class TestParticle(unittest.TestCase):
         -------
 
         """
+        cls.material = Material()
         name = "my_particle"
         position = np.random.uniform(-5, 5, (10, 2, 3))
         cls.particle = Particle(name=name, position=position, mesh=Sphere())

@@ -39,7 +39,7 @@ class Mesh:
             A ZnVis material class.
     """
 
-    material: Material = None
+    material: Material = Material()
 
     def __post_init__(self):
         """
