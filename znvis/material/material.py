@@ -19,22 +19,18 @@ If you use this module please cite us with:
 
 Summary
 -------
-init file for the main ZnVis package.
+Material parent class.
 """
-from znvis.bounding_objects.bounding_box import BoundingBox
-from znvis.material.material import Material
-from znvis.mesh.custom import CustomMesh
-from znvis.mesh.cylinder import Cylinder
-from znvis.mesh.sphere import Sphere
-from znvis.particle.particle import Particle
-from znvis.visualizer.visualizer import Visualizer
+from dataclasses import dataclass
 
-__all__ = [
-    Particle.__name__,
-    Sphere.__name__,
-    Visualizer.__name__,
-    Cylinder.__name__,
-    CustomMesh.__name__,
-    BoundingBox.__name__,
-    Material.__name__,
-]
+import numpy as np
+
+
+@dataclass
+class Material:
+    """
+    Parent class for the ZnVis materials.
+    """
+
+    colour: np.ndarray
+    alpha: float = 1.0

@@ -19,22 +19,8 @@ If you use this module please cite us with:
 
 Summary
 -------
-init file for the main ZnVis package.
+Initi file for the material module.
 """
-from znvis.bounding_objects.bounding_box import BoundingBox
 from znvis.material.material import Material
-from znvis.mesh.custom import CustomMesh
-from znvis.mesh.cylinder import Cylinder
-from znvis.mesh.sphere import Sphere
-from znvis.particle.particle import Particle
-from znvis.visualizer.visualizer import Visualizer
 
-__all__ = [
-    Particle.__name__,
-    Sphere.__name__,
-    Visualizer.__name__,
-    Cylinder.__name__,
-    CustomMesh.__name__,
-    BoundingBox.__name__,
-    Material.__name__,
-]
+__all__ = [Material.__name__]
