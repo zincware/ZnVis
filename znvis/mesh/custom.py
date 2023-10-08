@@ -69,6 +69,5 @@ class CustomMesh(Mesh):
         if starting_orientation is not None:
             matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
             mesh.rotate(matrix)
-        mesh.paint_uniform_color(self.colour)
 
         return mesh

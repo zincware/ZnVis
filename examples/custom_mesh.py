@@ -37,7 +37,9 @@ if __name__ == "__main__":
     virus_trajectory = np.random.uniform(-10, 10, (10, 1, 3))
     virus_orientation = np.random.uniform(0, 1, (10, 1, 3))
 
-    virus_mesh = vis.CustomMesh(file="example_data/virus.stl")
+    material = vis.Material(colour=np.array([30, 144, 255]) / 255, alpha=0.7)
+
+    virus_mesh = vis.CustomMesh(file="example_data/virus.stl", material=material)
     virus = vis.Particle(
         name="Virus",
         mesh=virus_mesh,

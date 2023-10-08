@@ -83,6 +83,5 @@ class Cylinder(Mesh):
         if starting_orientation is not None:
             matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
             cylinder.rotate(matrix)
-        cylinder.paint_uniform_color(self.colour)
 
         return cylinder

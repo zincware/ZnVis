@@ -25,6 +25,7 @@ import unittest
 import numpy as np
 import open3d as o3d
 
+from znvis import Material
 from znvis.mesh.cylinder import Cylinder
 
 
@@ -42,8 +43,9 @@ class TestCylinder(unittest.TestCase):
         -------
         Sets up a sphere instance for testing
         """
+        cls.material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
         cls.cylinder = Cylinder(
-            colour=np.array([0.7, 0.3, 0.1]),
+            material=cls.material,
             radius=10,
             height=20,
             split=6,
@@ -58,7 +60,7 @@ class TestCylinder(unittest.TestCase):
         -------
         Check that parameters are set correctly.
         """
-        np.testing.assert_array_equal(self.cylinder.colour, np.array([0.7, 0.3, 0.1]))
+        self.assertEqual(self.cylinder.material, self.material)
         self.assertEqual(self.cylinder.radius, 10)
         self.assertEqual(self.cylinder.height, 20)
         self.assertEqual(self.cylinder.split, 6)
@@ -77,6 +79,5 @@ class TestCylinder(unittest.TestCase):
             starting_orientation=np.array([1, 1, 1]),
         )
         self.assertEqual(cylinder.has_vertex_normals(), True)
-        self.assertEqual(cylinder.has_vertex_colors(), True)
         self.assertEqual(type(cylinder), o3d.geometry.TriangleMesh)
         np.testing.assert_almost_equal(cylinder.get_center(), [1.0, 1.0, 1.0])

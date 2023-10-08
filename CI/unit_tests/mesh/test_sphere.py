@@ -42,7 +42,7 @@ class TestSphere(unittest.TestCase):
         -------
         Sets up a sphere instance for testing
         """
-        cls.sphere = Sphere(colour=np.array([0.7, 0.3, 0.1]), radius=10, resolution=10)
+        cls.sphere = Sphere(radius=10, resolution=10)
 
     def test_instantiation(self):
         """
@@ -52,7 +52,6 @@ class TestSphere(unittest.TestCase):
         -------
         Check that parameters are set correctly.
         """
-        np.testing.assert_array_equal(self.sphere.colour, np.array([0.7, 0.3, 0.1]))
         self.assertEqual(self.sphere.radius, 10)
         self.assertEqual(self.sphere.resolution, 10)
 
@@ -66,6 +65,5 @@ class TestSphere(unittest.TestCase):
         """
         sphere = self.sphere.create_mesh(starting_position=np.array([1, 1, 1]))
         self.assertEqual(sphere.has_vertex_normals(), True)
-        self.assertEqual(sphere.has_vertex_colors(), True)
         self.assertEqual(type(sphere), o3d.geometry.TriangleMesh)
         np.testing.assert_almost_equal(sphere.get_center(), [1.0, 1.0, 1.0])

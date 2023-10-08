@@ -113,7 +113,7 @@ class Visualizer:
         self.app = gui.Application.instance
         self.app.initialize()
 
-        self.vis = o3d.visualization.O3DVisualizer("ZnVis Visualizer", 1024, 768)
+        self.vis = o3d.visualization.O3DVisualizer("ZnVis Visualizer", 1920, 1080)
         self.vis.show_settings = True
         self.vis.reset_camera_to_default()
 
@@ -220,7 +220,7 @@ class Visualizer:
         """
         Export the current visualization scene.
 
-        Parameters
+        Parametersor texture in ("albedo", "normal", "ao", "metallic", "roughness"):
         ----------
         vis : Visualizer
                 The active visualizer.
@@ -238,7 +238,7 @@ class Visualizer:
                 mesh += item.mesh_list[self.counter]
 
         o3d.io.write_triangle_mesh(
-            (self.output_folder / f"My_mesh_{self.counter}.ply").as_posix(), mesh
+            (self.output_folder / f"My_mesh_{self.counter}.obj").as_posix(), mesh
         )
 
         # Restart live feed if it was running before the export.
@@ -300,7 +300,9 @@ class Visualizer:
         # Add the particles to the visualizer.
         if initial:
             for i, item in enumerate(self.particles):
-                visualizer.add_geometry(item.name, item.mesh_list[self.counter])
+                visualizer.add_geometry(
+                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                )
 
             # check for bounding box
             if self.bounding_box is not None:
@@ -308,7 +310,9 @@ class Visualizer:
         else:
             for i, item in enumerate(self.particles):
                 visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(item.name, item.mesh_list[self.counter])
+                visualizer.add_geometry(
+                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                )
 
     def _continuous_trajectory(self, vis):
         """
