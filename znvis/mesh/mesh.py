@@ -23,6 +23,9 @@ from dataclasses import dataclass
 
 import numpy as np
 import open3d as o3d
+import open3d.visualization.rendering as rendering
+
+from znvis.material.material import Material
 
 
 @dataclass
@@ -32,11 +35,25 @@ class Mesh:
 
     Attributes
     ----------
-    colour : np.ndarray
-            The colour of the mesh in reduced RGB/A e.g. [0.6, 0.4, 0.2, 1.0]
+    material : Material
+            A ZnVis material class.
     """
 
-    colour: np.ndarray = np.array([0, 0, 0])
+    material: Material = Material()
+
+    def __post_init__(self):
+        """
+        Post init function to create materials.
+        """
+        material = rendering.MaterialRecord()
+        material.base_color = np.hstack((self.material.colour, self.material.alpha))
+        material.shader = "defaultLitTransparency"
+        material.base_metallic = self.material.metallic
+        material.base_roughness = self.material.roughness
+        material.base_reflectance = self.material.reflectance
+        material.base_anisotropy = self.material.anisotropy
+
+        self.o3d_material = material
 
     def create_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None

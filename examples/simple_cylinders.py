@@ -37,9 +37,9 @@ if __name__ == "__main__":
     trajectory = np.random.uniform(-5, 5, (100, 10, 3))
     orientation = np.random.uniform(0, 1, (100, 10, 3))
 
-    mesh = vis.Cylinder(
-        radius=0.2, height=3.0, colour=np.array([30, 144, 255]) / 255, resolution=10
-    )
+    material = vis.Material(colour=np.array([30, 144, 255]) / 255)
+
+    mesh = vis.Cylinder(radius=0.2, height=3.0, material=material, resolution=10)
     particle = vis.Particle(
         name="Blue", mesh=mesh, position=trajectory, director=orientation
     )

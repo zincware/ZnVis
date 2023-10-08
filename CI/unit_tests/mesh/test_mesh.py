@@ -24,6 +24,7 @@ import unittest
 
 import numpy as np
 
+from znvis import Material
 from znvis.mesh.mesh import Mesh
 
 
@@ -40,5 +41,6 @@ class TestMesh(unittest.TestCase):
         -------
         Check that parameters are set correctly.
         """
-        mesh = Mesh(colour=np.array([0, 1, 3]))
-        np.testing.assert_array_equal(mesh.colour, np.array([0, 1, 3]))
+        material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
+        mesh = Mesh(material=material)
+        np.testing.assert_array_equal(mesh.material, material)

@@ -50,6 +50,10 @@ class Particle:
             Director tensor of the shape (n_confs, n_particles, n_dims)
     mesh_list : list
             A list of mesh objects, one for each time step.
+    smoothing : bool (default=False)
+            If true, apply smoothing to each mesh object as it is rendered.
+            This will slow down the initial construction of the mesh objects
+            but not the deployment.
     """
 
     name: str
@@ -59,6 +63,8 @@ class Particle:
     force: np.ndarray = None
     director: np.ndarray = None
     mesh_list: typing.List[Mesh] = None
+
+    smoothing: bool = False
 
     def _create_mesh(self, position, director):
         """
@@ -80,7 +86,10 @@ class Particle:
             mesh = self.mesh.create_mesh(position, starting_orientation=director)
         else:
             mesh = self.mesh.create_mesh(position)
-        return mesh
+        if self.smoothing:
+            return mesh.filter_smooth_taubin(100)
+        else:
+            return mesh
 
     def construct_mesh_list(self):
         """
