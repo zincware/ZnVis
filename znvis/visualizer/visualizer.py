@@ -394,7 +394,7 @@ class Visualizer:
                     mesh += item.mesh_list[self.counter]
 
             o3d.io.write_triangle_mesh(
-                (self.obj_folder / f"export_mesh_{self.counter}.obj").as_posix(), mesh
+                (self.obj_folder / f"export_mesh_{self.counter}.ply").as_posix(), mesh
             )
             self.save_thread_finished = True
 
