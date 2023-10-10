@@ -55,5 +55,4 @@ class Material:
     metallic: float = 0.0
     reflectance: float = 0.4
     anisotropy: float = 0.4
-
-    mitsuba_bsdf = None
+    mitsuba_bsdf: object = None

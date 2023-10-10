@@ -37,6 +37,7 @@ from rich.progress import Progress, track
 
 import znvis
 from znvis.rendering import Mitsuba
+import numpy as np
 
 
 class Visualizer:
@@ -62,9 +63,9 @@ class Visualizer:
         output_folder: typing.Union[str, pathlib.Path] = "./",
         frame_rate: int = 24,
         number_of_steps: int = None,
-        keep_frames: bool = False,
+        keep_frames: bool = True,
         bounding_box: znvis.BoundingBox = None,
-        video_format: str = "avi",
+        video_format: str = "mp4",
         renderer: Mitsuba = Mitsuba(),
     ):
         """
@@ -198,7 +199,7 @@ class Visualizer:
         image storing thread can run to completion before
         this one is called. (GIL stuff)
         """
-        images = [f.as_posix() for f in self.frame_folder.glob("*.exr")]
+        images = [f.as_posix() for f in self.frame_folder.glob("*.png")]
 
         # Sort images by number
         images = sorted(images, key=lambda s: int(re.search(r"\d+", s).group()))
@@ -267,17 +268,21 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         mesh_dict = {}
-
+        mesh_center = []
         for item in self.particles:
             mesh_dict[item.name] = {
                 "mesh": item.mesh_list[self.counter],
                 "bsdf": item.mesh.material.mitsuba_bsdf,
                 "material": item.mesh.o3d_material,
             }
+            mesh_center.append(item.mesh_list[self.counter].get_axis_aligned_bounding_box().get_center())
 
         view_matrix = vis.scene.camera.get_view_matrix()
+
         self.renderer.render_mesh_objects(
-            mesh_dict, view_matrix, save_name=f"frame_{self.counter}.exr"
+            mesh_dict, 
+            view_matrix,
+            save_name=f"frame_{self.counter}.png"
         )
 
         # Restart live feed if it was running before the export.
@@ -382,7 +387,7 @@ class Visualizer:
                 mesh_dict,
                 view_matrix,
                 save_dir=self.frame_folder,
-                save_name=f"frame_{self.counter:0>6}.exr",
+                save_name=f"frame_{self.counter:0>6}.png",
             )
 
             self.save_thread_finished = True

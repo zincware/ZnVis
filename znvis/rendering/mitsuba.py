@@ -26,7 +26,7 @@ import mitsuba as mi
 import numpy as np
 import open3d as o3d
 
-mi.set_variant("llvm_ad_rgb")
+mi.set_variant("cuda_ad_rgb")
 
 
 # Default scene dict.
@@ -36,7 +36,7 @@ default_scene_dict = {
     "light": {"type": "constant", "radiance": {"type": "rgb", "value": 1.0}},
     "sensor": {
         "type": "perspective",
-        "fov": 60,
+        "fov": 90,
         "thefilm": {
             "type": "hdrfilm",
             "width": 4096,
@@ -44,7 +44,7 @@ default_scene_dict = {
         },
         "thesampler": {
             "type": "multijitter",
-            "sample_count": 20,
+            "sample_count": 64,
         },
     },
 }
@@ -91,15 +91,7 @@ class Mitsuba:
         This function updates the camera in the scene_dict.
         It should be called before rendering.
         """
-        camera_position = view_matrix[:3, 3]
-        forward_direction = view_matrix[:3, 2]
-        camera_target = -1 * camera_position + forward_direction
-        up_direction = view_matrix[:3, 1]
-
-        view_matrix = mi.ScalarTransform4f.look_at(
-            origin=camera_position, target=camera_target, up=up_direction
-        )
-        self.scene_dict["sensor"]["to_world"] = view_matrix
+        self.scene_dict["sensor"]["to_world"] = mi.ScalarTransform4f(view_matrix)
 
     def render_mesh_objects(
         self,
@@ -162,4 +154,6 @@ class Mitsuba:
 
         img = mi.render(scene)
         bmp = mi.Bitmap(img)
+
+        bmp = bmp.convert(mi.Bitmap.PixelFormat.RGB, mi.Struct.Type.UInt8, True)
         bmp.write(os.path.join(save_dir, save_name))
