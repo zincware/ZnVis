@@ -37,7 +37,6 @@ from rich.progress import Progress, track
 
 import znvis
 from znvis.rendering import Mitsuba
-import numpy as np
 
 
 class Visualizer:
@@ -275,14 +274,16 @@ class Visualizer:
                 "bsdf": item.mesh.material.mitsuba_bsdf,
                 "material": item.mesh.o3d_material,
             }
-            mesh_center.append(item.mesh_list[self.counter].get_axis_aligned_bounding_box().get_center())
+            mesh_center.append(
+                item.mesh_list[self.counter]
+                .get_axis_aligned_bounding_box()
+                .get_center()
+            )
 
         view_matrix = vis.scene.camera.get_view_matrix()
 
         self.renderer.render_mesh_objects(
-            mesh_dict, 
-            view_matrix,
-            save_name=f"frame_{self.counter}.png"
+            mesh_dict, view_matrix, save_name=f"frame_{self.counter}.png"
         )
 
         # Restart live feed if it was running before the export.
