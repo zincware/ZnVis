@@ -19,6 +19,7 @@ Summary
 -------
 Test the rotation matrices module.
 """
+
 import unittest
 
 import numpy as np

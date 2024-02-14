@@ -21,6 +21,7 @@ Summary
 -------
 Material parent class.
 """
+
 from dataclasses import dataclass
 
 import numpy as np

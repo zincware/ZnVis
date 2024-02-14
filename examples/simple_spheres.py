@@ -20,6 +20,7 @@ Summary
 -------
 Tutorial script to visualize simple spheres over a random trajectory.
 """
+
 import numpy as np
 
 import znvis as vis

@@ -20,6 +20,7 @@ Summary
 -------
 Main visualizer class.
 """
+
 import pathlib
 import re
 import shutil

@@ -25,6 +25,7 @@ Summary
 -------
 Example script for visualizing simple cylinders.
 """
+
 import numpy as np
 
 import znvis as vis
