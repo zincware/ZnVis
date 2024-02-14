@@ -22,6 +22,7 @@ Summary
 init file for the main ZnVis package.
 """
 from znvis import rendering
+
 from znvis.bounding_objects.bounding_box import BoundingBox
 from znvis.material.material import Material
 from znvis.mesh.custom import CustomMesh

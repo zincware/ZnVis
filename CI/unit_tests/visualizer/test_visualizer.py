@@ -22,6 +22,7 @@ Summary
 -------
 Test the visualizer module.
 """
+
 import time
 import unittest
 

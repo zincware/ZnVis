@@ -19,6 +19,7 @@ Summary
 -------
 Test the particle dataclass operations.
 """
+
 import unittest
 
 import numpy as np
