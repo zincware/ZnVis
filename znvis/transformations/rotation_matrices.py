@@ -19,6 +19,7 @@ Summary
 -------
 Module for the computation of rotation matrices.
 """
+
 import numpy as np
 
 

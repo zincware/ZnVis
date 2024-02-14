@@ -21,6 +21,7 @@ Summary
 -------
 Initi file for the material module.
 """
+
 from znvis.material.material import Material
 
 __all__ = [Material.__name__]

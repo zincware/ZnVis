@@ -23,6 +23,7 @@ Summary
 -------
 Create a cylinder mesh
 """
+
 from dataclasses import dataclass
 
 import numpy as np

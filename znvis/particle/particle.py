@@ -20,6 +20,7 @@ Summary
 -------
 Module for the particle parent class
 """
+
 import typing
 from dataclasses import dataclass
 

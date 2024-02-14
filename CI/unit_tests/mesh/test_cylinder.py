@@ -20,6 +20,7 @@ Summary
 -------
 Run unit tests on the sphere module.
 """
+
 import unittest
 
 import numpy as np
