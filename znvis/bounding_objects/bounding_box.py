@@ -21,7 +21,7 @@ Summary
 Create  bounding box.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import open3d as o3d
@@ -43,10 +43,12 @@ class BoundingBox:
     colour : np.ndarray shape=(3,)
     """
 
-    center: np.ndarray = np.array([0, 0, 0])
-    box_size: np.ndarray = np.array([1.0, 1.0, 1.0])
-    rotation_matrix: np.ndarray = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    colour: np.ndarray = np.array([0.0, 0.0, 0.0])
+    center: np.ndarray = field(default_factory=lambda: np.array([0, 0, 0]))
+    box_size: np.ndarray = field(default_factory=lambda: np.array([1.0, 1.0, 1.0]))
+    rotation_matrix: np.ndarray = field(
+        default_factory=lambda: np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    )
+    colour: np.ndarray = field(default_factory=lambda: np.array([0.0, 0.0, 0.0]))
 
     def __call__(self) -> o3d.geometry.TriangleMesh:
         """

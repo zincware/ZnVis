@@ -22,7 +22,7 @@ Summary
 Material parent class.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -46,11 +46,16 @@ class Material:
             How reflective the material is.
     anisotropy: float
             How anisotopic the material is.
+    mitsuba_bsdf: mitsuba.bsdf (default: None)
+            Mitsuba bsdf object.
     """
 
-    colour: np.ndarray = np.array([59.0, 53.0, 97.0]) / 255
+    colour: np.ndarray = field(
+        default_factory=lambda: np.array([59.0, 53.0, 97.0]) / 255
+    )
     alpha: float = 1.0
     roughness: float = 0.5
     metallic: float = 0.0
     reflectance: float = 0.4
     anisotropy: float = 0.4
+    mitsuba_bsdf: object = None

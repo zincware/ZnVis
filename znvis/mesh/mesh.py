@@ -20,7 +20,7 @@ Summary
 Module for the mesh parent class.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import open3d as o3d
@@ -40,7 +40,8 @@ class Mesh:
             A ZnVis material class.
     """
 
-    material: Material = Material()
+    material: Material = field(default_factory=lambda: Material())
+    base_direction: np.ndarray = field(default_factory=lambda: np.array([1, 0, 0]))
 
     def __post_init__(self):
         """

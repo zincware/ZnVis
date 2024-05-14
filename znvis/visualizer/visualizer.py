@@ -21,6 +21,10 @@ Summary
 Main visualizer class.
 """
 
+import os
+
+os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
+
 import pathlib
 import re
 import shutil
@@ -34,6 +38,7 @@ import open3d.visualization.gui as gui
 from rich.progress import Progress, track
 
 import znvis
+from znvis.rendering import Mitsuba
 
 
 class Visualizer:
@@ -59,9 +64,10 @@ class Visualizer:
         output_folder: typing.Union[str, pathlib.Path] = "./",
         frame_rate: int = 24,
         number_of_steps: int = None,
-        keep_frames: bool = False,
+        keep_frames: bool = True,
         bounding_box: znvis.BoundingBox = None,
         video_format: str = "mp4",
+        renderer: Mitsuba = Mitsuba(),
     ):
         """
         Constructor for the visualizer.
@@ -94,6 +100,7 @@ class Visualizer:
         self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
         self.keep_frames = keep_frames
+        self.renderer = renderer
 
         self.obj_folder = self.output_folder / "obj_files"
 
@@ -259,9 +266,31 @@ class Visualizer:
         -------
         Takes a screenshot and dumps it
         """
-        vis.export_current_image(
-            (self.output_folder / f"screenshot_{self.counter}.png").as_posix()
+        old_state = self.interrupt  # get old state
+        self.interrupt = 0  # stop live feed if running.
+        mesh_dict = {}
+        mesh_center = []
+        for item in self.particles:
+            mesh_dict[item.name] = {
+                "mesh": item.mesh_list[self.counter],
+                "bsdf": item.mesh.material.mitsuba_bsdf,
+                "material": item.mesh.o3d_material,
+            }
+            mesh_center.append(
+                item.mesh_list[self.counter]
+                .get_axis_aligned_bounding_box()
+                .get_center()
+            )
+
+        view_matrix = vis.scene.camera.get_view_matrix()
+
+        self.renderer.render_mesh_objects(
+            mesh_dict, view_matrix, save_name=f"frame_{self.counter}.png"
         )
+
+        # Restart live feed if it was running before the export.
+        if old_state == 1:
+            self._continuous_trajectory(vis)
 
     def _initialize_particles(self):
         """
@@ -347,14 +376,27 @@ class Visualizer:
             """
             Function to be called on thread to save image.
             """
-            self.vis.export_current_image(
-                (self.frame_folder / f"frame_{self.counter:0>6}.png").as_posix()
+            mesh_dict = {}
+
+            for item in self.particles:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[self.counter],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
+
+            view_matrix = self.vis.scene.camera.get_view_matrix()
+            self.renderer.render_mesh_objects(
+                mesh_dict,
+                view_matrix,
+                save_dir=self.frame_folder,
+                save_name=f"frame_{self.counter:0>6}.png",
             )
+
             self.save_thread_finished = True
 
         with Progress() as progress:
             task = progress.add_task("Saving scenes...", total=self.number_of_steps)
-            # while self.counter < (self.number_of_steps - 1):
             while not progress.finished:
                 time.sleep(1 / self.frame_rate)
 
@@ -399,7 +441,7 @@ class Visualizer:
                     mesh += item.mesh_list[self.counter]
 
             o3d.io.write_triangle_mesh(
-                (self.obj_folder / f"export_mesh_{self.counter}.obj").as_posix(), mesh
+                (self.obj_folder / f"export_mesh_{self.counter}.ply").as_posix(), mesh
             )
             self.save_thread_finished = True
 
