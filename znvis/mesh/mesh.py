@@ -40,7 +40,7 @@ class Mesh:
             A ZnVis material class.
     """
 
-    material: Material = Material()
+    material: Material = field(default_factory=lambda: Material())
     base_direction = field(default_factory=lambda: np.array([1, 0, 0]))
 
     def __post_init__(self):
