@@ -41,7 +41,7 @@ class Mesh:
     """
 
     material: Material = field(default_factory=lambda: Material())
-    base_direction = field(default_factory=lambda: np.array([1, 0, 0]))
+    base_direction: np.ndarray = field(default_factory=lambda: np.array([1, 0, 0]))
 
     def __post_init__(self):
         """
