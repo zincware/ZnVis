@@ -20,6 +20,7 @@ Summary
 -------
 Init file for the rendering module.
 """
+
 from znvis.rendering.mitsuba import Mitsuba
 
 __all__ = [Mitsuba.__name__]

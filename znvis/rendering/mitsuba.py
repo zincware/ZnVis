@@ -20,6 +20,7 @@ Summary
 -------
 Mitsuba rendering module.
 """
+
 import os
 
 import mitsuba as mi
@@ -149,9 +150,9 @@ class Mitsuba:
                 mesh.material.vector_properties["base_color"] = material.base_color
                 mesh.material.scalar_properties["roughness"] = material.base_roughness
                 mesh.material.scalar_properties["metallic"] = material.base_metallic
-                mesh.material.scalar_properties[
-                    "reflectance"
-                ] = material.base_reflectance
+                mesh.material.scalar_properties["reflectance"] = (
+                    material.base_reflectance
+                )
                 mesh.material.scalar_properties["anisotropy"] = material.base_anisotropy
 
             # Convert to Mitsuba mesh

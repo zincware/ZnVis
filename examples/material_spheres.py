@@ -20,6 +20,7 @@ Summary
 -------
 Tutorial script to visualize simple spheres over a random trajectory.
 """
+
 import mitsuba as mi
 import numpy as np
 
