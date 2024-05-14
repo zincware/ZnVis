@@ -27,7 +27,11 @@ import mitsuba as mi
 import numpy as np
 import open3d as o3d
 
-mi.set_variant("cuda_ad_rgb")
+try:
+    mi.set_variant("cuda_ad_rgb")
+except AttributeError:
+    mi.set_variant("scalar_rgb")
+    # mi.set_variant("llvm_ad_rgb")
 
 
 # Default scene dict.
