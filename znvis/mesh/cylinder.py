@@ -81,7 +81,7 @@ class Cylinder(Mesh):
         cylinder.compute_vertex_normals()
         cylinder.translate(starting_position.astype(float))
         if starting_orientation is not None:
-            matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
+            matrix = rotation_matrix(self.base_direction, starting_orientation)
             cylinder.rotate(matrix)
 
         return cylinder

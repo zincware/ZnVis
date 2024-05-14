@@ -69,7 +69,7 @@ class Sphere(Mesh):
         sphere.compute_vertex_normals()
         sphere.translate(starting_position.astype(float))
         if starting_orientation is not None:
-            matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
+            matrix = rotation_matrix(self.base_direction, starting_orientation)
             sphere.rotate(matrix)
 
         return sphere

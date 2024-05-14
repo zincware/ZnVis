@@ -40,6 +40,7 @@ class Mesh:
     """
 
     material: Material = Material()
+    base_direction = np.array([1, 0, 0])
 
     def __post_init__(self):
         """

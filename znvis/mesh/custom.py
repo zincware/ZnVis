@@ -45,6 +45,7 @@ class CustomMesh(Mesh):
     """
 
     file: str = None
+    scale: float = 1.0
 
     def create_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
@@ -65,9 +66,10 @@ class CustomMesh(Mesh):
         """
         mesh = o3d.io.read_triangle_mesh(self.file)
         mesh.compute_vertex_normals()
+        mesh.scale(self.scale, center=mesh.get_center())
         mesh.translate(starting_position.astype(float))
         if starting_orientation is not None:
-            matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
+            matrix = rotation_matrix(self.base_direction, starting_orientation)
             mesh.rotate(matrix)
 
         return mesh

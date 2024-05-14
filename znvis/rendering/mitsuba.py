@@ -91,7 +91,17 @@ class Mitsuba:
         This function updates the camera in the scene_dict.
         It should be called before rendering.
         """
-        self.scene_dict["sensor"]["to_world"] = mi.ScalarTransform4f(view_matrix)
+        to_world_matrix = np.linalg.inv(view_matrix)
+
+        # Step 2: Adjust the coordinate system by flipping the Z-axis
+        z_flip_matrix = np.array(
+            [[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]
+        )
+        adjusted_to_world_matrix = np.dot(to_world_matrix, z_flip_matrix)
+
+        self.scene_dict["sensor"]["to_world"] = mi.ScalarTransform4f(
+            adjusted_to_world_matrix
+        )
 
     def render_mesh_objects(
         self,
