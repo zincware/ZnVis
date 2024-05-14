@@ -20,6 +20,7 @@ Summary
 -------
 Unit test for the bounding box.
 """
+
 import numpy as np
 import open3d as o3d
 

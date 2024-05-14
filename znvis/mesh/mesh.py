@@ -19,6 +19,7 @@ Summary
 -------
 Module for the mesh parent class.
 """
+
 from dataclasses import dataclass
 
 import numpy as np

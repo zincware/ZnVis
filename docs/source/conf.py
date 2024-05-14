@@ -1,6 +1,7 @@
 """
 Conf file for the PyRND docs.
 """
+
 import os
 import sys
 

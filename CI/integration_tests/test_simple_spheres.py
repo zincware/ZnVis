@@ -22,6 +22,7 @@ Summary
 -------
 Test the visualization of simple spheres.
 """
+
 import time
 
 import numpy as np

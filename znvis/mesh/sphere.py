@@ -20,6 +20,7 @@ Summary
 -------
 Create a sphere mesh.
 """
+
 from dataclasses import dataclass
 
 import numpy as np
