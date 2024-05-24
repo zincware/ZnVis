@@ -28,7 +28,7 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from .mesh import Mesh
+from znvis.mesh import Mesh
 
 
 @dataclass
@@ -40,9 +40,11 @@ class Arrow(Mesh):
     ----------
     scale : float
             Scale of the arrow
+    resolution : int
+            Resolution of the mesh.
     """
     scale: float = 1.0
-    resolution = 10
+    resolution: int = 10
 
     def create_mesh(
         self, starting_position: np.ndarray, direction: np.ndarray = None
