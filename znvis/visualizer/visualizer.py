@@ -61,6 +61,7 @@ class Visualizer:
     def __init__(
         self,
         particles: typing.List[znvis.Particle],
+        vector_field: typing.List[znvis.VectorField] = None,
         output_folder: typing.Union[str, pathlib.Path] = "./",
         frame_rate: int = 24,
         number_of_steps: int = None,
@@ -89,6 +90,7 @@ class Visualizer:
                 The format of the video to be generated.
         """
         self.particles = particles
+        self.vector_field = vector_field
         self.frame_rate = frame_rate
         self.bounding_box = bounding_box() if bounding_box else None
 
@@ -305,6 +307,11 @@ class Visualizer:
 
         self._draw_particles(initial=True)
 
+    def _initialize_vector_field(self):
+        for item in self.vector_field:
+            item.construct_mesh_list()
+        self._draw_vector_field(initial=True)
+
     def _draw_particles(self, visualizer=None, initial: bool = False):
         """
         Draw the particles on the visualizer.
@@ -339,6 +346,36 @@ class Visualizer:
                 visualizer.add_geometry("Box", self.bounding_box)
         else:
             for i, item in enumerate(self.particles):
+                visualizer.remove_geometry(item.name)
+                visualizer.add_geometry(
+                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                )
+
+
+    def _draw_vector_field(self, visualizer=None, initial: bool = False):
+        """
+        Draw the vector field on the visualizer.
+
+        Parameters
+        ----------
+        initial : bool (default = True)
+                If true, no particles are removed.
+
+        Returns
+        -------
+        updates the information in the visualizer.
+        -----
+        """
+        if visualizer is None:
+            visualizer = self.vis
+        
+        if initial:
+            for i, item in enumerate(self.vector_field):
+                visualizer.add_geometry(
+                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                )
+        else:
+            for i, item in enumerate(self.vector_field):
                 visualizer.remove_geometry(item.name)
                 visualizer.add_geometry(
                     item.name, item.mesh_list[self.counter], item.mesh.o3d_material
@@ -509,6 +546,10 @@ class Visualizer:
             step = self.counter
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
+
+        if self.vector_field is not None:
+            self._draw_vector_field(visualizer=visualizer)
+
         visualizer.post_redraw()  # re-draw the window.
 
     def run_visualization(self):
@@ -521,6 +562,8 @@ class Visualizer:
         """
         self._initialize_app()
         self._initialize_particles()
+        if self.vector_field is not None:
+            self._initialize_vector_field()
 
         self.vis.reset_camera_to_default()
         self.app.run()
