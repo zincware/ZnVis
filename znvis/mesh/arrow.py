@@ -82,6 +82,6 @@ class Arrow(Mesh):
         arrow.rotate(matrix, center=(0, 0, 0))
 
         # Translate the arrow to the starting position and center the origin
-        arrow.translate(starting_position.astype(float) + direction * 0.5 * self.scale)
+        arrow.translate(starting_position.astype(float))
 
         return arrow
