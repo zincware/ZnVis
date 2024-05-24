@@ -27,23 +27,24 @@ from dataclasses import dataclass
 import numpy as np
 from rich.progress import track
 
-from znvis.mesh import Mesh
+from znvis.mesh.arrow import Arrow
 
 
 @dataclass
 class VectorField:
     """
-    Parent class for a ZnVis particle.
+    A class to represent a vector field.
 
     Attributes
     ----------
     name : str
-            Name of the particle
+            Name of the vector field
     mesh : Mesh
-            Mesh to use e.g. sphere
+            Mesh to use 
     position : np.ndarray
-            Position tensor of the shape (n_confs, n_particles, n_dims)
-
+            Position tensor of the shape (n_steps, n_vectors, n_dims)
+    direction : np.ndarray
+            Direction tensor of the shape (n_steps, n_vectors, n_dims)
     mesh_list : list
             A list of mesh objects, one for each time step.
     smoothing : bool (default=False)
@@ -53,23 +54,23 @@ class VectorField:
     """
 
     name: str
-    mesh: Mesh = None
+    mesh: Arrow = None # Should be an instance of the Arrow class
     position: np.ndarray = None
     direction: np.ndarray = None
-    mesh_list: typing.List[Mesh] = None
+    mesh_list: typing.List[Arrow] = None
 
     smoothing: bool = False
 
     def _create_mesh(self, position, direction):
         """
-        Create a mesh object for the particle.
+        Create a mesh object for the vector field.
 
         Parameters
         ----------
         position : np.ndarray
-                Position of the particle
-        director : np.ndarray
-                Director of the particle
+                Position of the arrow
+        direction : np.ndarray
+                Direction of the arrow
 
         Returns
         -------
@@ -99,7 +100,7 @@ class VectorField:
             n_particles = int(self.position.shape[1])
             n_time_steps = int(self.position.shape[0])
         except ValueError:
-            raise ValueError("There is no data for these particles.")
+            raise ValueError("There is no data for this vector field.")
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             for j in range(n_particles):

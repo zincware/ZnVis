@@ -547,8 +547,9 @@ class Visualizer:
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
 
+        # draw the vector field if it exists.
         if self.vector_field is not None:
-            self._draw_vector_field(visualizer=visualizer)
+            self._draw_vector_field(visualizer=visualizer) 
 
         visualizer.post_redraw()  # re-draw the window.
 

@@ -62,15 +62,12 @@ class Arrow(Mesh):
         mesh : o3d.geometry.TriangleMesh
         """
 
-        # Calculate the length of the direction vector
         direction_length = np.linalg.norm(direction)
 
-        # Scale the arrow size with the direction length
         cylinder_radius = 0.06 * direction_length * self.scale
         cylinder_height = 0.85 * direction_length * self.scale
         cone_radius = 0.15 * direction_length * self.scale
         cone_height = 0.15 * direction_length * self.scale
-
 
         arrow = o3d.geometry.TriangleMesh.create_arrow(
             cylinder_radius=cylinder_radius, 
@@ -84,6 +81,7 @@ class Arrow(Mesh):
         matrix = rotation_matrix(np.array([0, 0, 1]), direction)
         arrow.rotate(matrix)
 
+        # Translate the arrow to the starting position and center the origin
         arrow.translate(starting_position.astype(float) + direction * 0.5 * self.scale)
 
         return arrow
