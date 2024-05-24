@@ -93,7 +93,7 @@ class Visualizer:
         self.bounding_box = bounding_box() if bounding_box else None
 
         if number_of_steps is None:
-            number_of_steps = particles[0].position.shape[0]
+            number_of_steps = len(particles[0].position)
         self.number_of_steps = number_of_steps
 
         self.output_folder = pathlib.Path(output_folder).resolve()
