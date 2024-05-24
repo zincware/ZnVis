@@ -61,7 +61,7 @@ class VectorField:
 
     smoothing: bool = False
 
-    def _create_mesh(self, position, direction):
+    def _create_mesh(self, position: np.ndarray, direction: np.ndarray):
         """
         Create a mesh object for the vector field.
 
