@@ -28,12 +28,16 @@ from znvis.material.material import Material
 from znvis.mesh.custom import CustomMesh
 from znvis.mesh.cylinder import Cylinder
 from znvis.mesh.sphere import Sphere
+from znvis.mesh.arrow import Arrow
 from znvis.particle.particle import Particle
+from znvis.particle.vector_field import VectorField
 from znvis.visualizer.visualizer import Visualizer
 
 __all__ = [
     Particle.__name__,
     Sphere.__name__,
+    Arrow.__name__,
+    VectorField.__name__,
     Visualizer.__name__,
     Cylinder.__name__,
     CustomMesh.__name__,
