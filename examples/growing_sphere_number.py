@@ -31,21 +31,29 @@ if __name__ == "__main__":
     """
     material_1 = vis.Material(colour=np.array([30, 144, 255]) / 255, alpha=0.6)
     # Define the first particle.
-    trajectory = np.random.uniform(-100, 100, (100, 10000, 3))
+    trajectory = np.random.uniform(-100, 100, (100, 1000, 3))
+    trajectory = []
+    p_number = 1
+    for t in range(1000):
+        trajectory.append(np.random.uniform(-100, 100, (p_number, 3)))
+
+        p_number = np.random.randint(p_number, 5 * p_number)
+
+        if p_number > 20000:
+            p_number = 20000
+
     mesh = vis.Sphere(radius=2.0, resolution=3, material=material_1)
     particle = vis.Particle(
         name="Blue", mesh=mesh, position=trajectory, smoothing=False
     )
 
-    material_2 = vis.Material(colour=np.array([255, 140, 0]) / 255, alpha=1.0)
-
-    # Define the second particle.
-    trajectory_2 = np.random.uniform(-10, 10, (100, 10000, 3))
-    mesh_2 = vis.Sphere(radius=1.0, resolution=3, material=material_2)
-    particle_2 = vis.Particle(
-        name="Orange", mesh=mesh_2, position=trajectory_2, smoothing=False
+    # Create a bounding box
+    bounding_box = vis.BoundingBox(
+        center=np.array([0, 0, 0]), box_size=np.array([100, 100, 100])
     )
 
     # Construct the visualizer and run
-    visualizer = vis.Visualizer(particles=[particle, particle_2], frame_rate=20)
+    visualizer = vis.Visualizer(
+        particles=[particle], frame_rate=20, bounding_box=bounding_box
+    )
     visualizer.run_visualization()

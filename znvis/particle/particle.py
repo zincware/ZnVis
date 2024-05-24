@@ -105,13 +105,13 @@ class Particle:
         """
         self.mesh_list = []
         try:
-            n_particles = int(self.position.shape[1])
-            n_time_steps = int(self.position.shape[0])
+            # n_particles = int(self.position.shape[1])
+            n_time_steps = int(len(self.position))
         except ValueError:
             raise ValueError("There is no data for these particles.")
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
-            for j in range(n_particles):
+            for j in range(np.shape(self.position[i])[0]):
                 if j == 0:
                     if self.director is not None:
                         mesh = self._create_mesh(
