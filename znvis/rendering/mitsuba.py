@@ -29,9 +29,11 @@ import open3d as o3d
 
 try:
     mi.set_variant("cuda_ad_rgb")
-except AttributeError:
-    mi.set_variant("scalar_rgb")
-    # mi.set_variant("llvm_ad_rgb")
+except (AttributeError, ImportError):
+    try:
+        mi.set_variant("llvm_ad_rgb")
+    except (AttributeError, ImportError):
+        mi.set_variant("scalar_rgb")
 
 
 # Default scene dict.
