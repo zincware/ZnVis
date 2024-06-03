@@ -410,6 +410,11 @@ class Visualizer:
                     visualizer.add_geometry(
                         item.name, item.mesh_list[self.counter], item.mesh.o3d_material
                     )
+                if not item.static:
+                    visualizer.remove_geometry(item.name)
+                    visualizer.add_geometry(
+                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    )
 
     def _continuous_trajectory(self, vis):
         """
@@ -463,24 +468,24 @@ class Visualizer:
                 for item in self.vector_field:
                     if item.static:
                         mesh_dict[item.name] = {
-                            "mesh": item.mesh_list[0],
-                            "bsdf": item.mesh.material.mitsuba_bsdf,
-                            "material": item.mesh.o3d_material,
-                        }
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
                     else:
                         mesh_dict[item.name] = {
                             "mesh": item.mesh_list[self.counter],
                             "bsdf": item.mesh.material.mitsuba_bsdf,
                             "material": item.mesh.o3d_material,
                         }
-
+            
             for item in self.particles:
                 if item.static:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[0],
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
-                    }
+                }
                 else:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[self.counter],
