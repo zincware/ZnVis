@@ -377,10 +377,11 @@ class Visualizer:
                 )
         else:
             for i, item in enumerate(self.vector_field):
-                visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                )
+                if not item.static:
+                    visualizer.remove_geometry(item.name)
+                    visualizer.add_geometry(
+                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    )
 
     def _continuous_trajectory(self, vis):
         """
@@ -416,19 +417,34 @@ class Visualizer:
             """
             mesh_dict = {}
 
-            for item in self.vector_field:
-                mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[self.counter],
-                    "bsdf": item.mesh.material.mitsuba_bsdf,
-                    "material": item.mesh.o3d_material,
-                }
+            if self.vector_field is not None:
+                for item in self.vector_field:
+                    if item.static:
+                        mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
+                    else:
+                        mesh_dict[item.name] = {
+                            "mesh": item.mesh_list[self.counter],
+                            "bsdf": item.mesh.material.mitsuba_bsdf,
+                            "material": item.mesh.o3d_material,
+                        }
             
             for item in self.particles:
-                mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[self.counter],
-                    "bsdf": item.mesh.material.mitsuba_bsdf,
-                    "material": item.mesh.o3d_material,
+                if item.static:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
                 }
+                else:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[self.counter],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
 
             view_matrix = self.vis.scene.camera.get_view_matrix()
             self.renderer.render_mesh_objects(
