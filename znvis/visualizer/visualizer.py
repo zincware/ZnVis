@@ -346,10 +346,11 @@ class Visualizer:
                 visualizer.add_geometry("Box", self.bounding_box)
         else:
             for i, item in enumerate(self.particles):
-                visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                )
+                if not item.static:
+                    visualizer.remove_geometry(item.name)
+                    visualizer.add_geometry(
+                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    )
 
 
     def _draw_vector_field(self, visualizer=None, initial: bool = False):
@@ -415,6 +416,13 @@ class Visualizer:
             """
             mesh_dict = {}
 
+            for item in self.vector_field:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[self.counter],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
+            
             for item in self.particles:
                 mesh_dict[item.name] = {
                     "mesh": item.mesh_list[self.counter],
