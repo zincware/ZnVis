@@ -271,18 +271,35 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         mesh_dict = {}
-        mesh_center = []
+        
+        if self.vector_field is not None:
+            for item in self.vector_field:
+                if item.static:
+                    mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[0],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
+                else:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[self.counter],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
+        
         for item in self.particles:
-            mesh_dict[item.name] = {
-                "mesh": item.mesh_list[self.counter],
-                "bsdf": item.mesh.material.mitsuba_bsdf,
-                "material": item.mesh.o3d_material,
+            if item.static:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[0],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
             }
-            mesh_center.append(
-                item.mesh_list[self.counter]
-                .get_axis_aligned_bounding_box()
-                .get_center()
-            )
+            else:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[self.counter],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
 
         view_matrix = vis.scene.camera.get_view_matrix()
 
