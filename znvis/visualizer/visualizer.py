@@ -513,10 +513,16 @@ class Visualizer:
             Function to be called on thread to save image.
             """
             for i, item in enumerate(self.particles):
-                if i == 0:
-                    mesh = item.mesh_list[self.counter]
+                if item.static:
+                    if i == 0:
+                        mesh = item.mesh_list[0]
+                    else:
+                        mesh += item.mesh_list[0]
                 else:
-                    mesh += item.mesh_list[self.counter]
+                    if i == 0:
+                        mesh = item.mesh_list[self.counter]
+                    else:
+                        mesh += item.mesh_list[self.counter]
 
             o3d.io.write_triangle_mesh(
                 (self.obj_folder / f"export_mesh_{self.counter}.ply").as_posix(), mesh
