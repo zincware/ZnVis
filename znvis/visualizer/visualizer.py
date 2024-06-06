@@ -128,8 +128,9 @@ class Visualizer:
         self.vis.reset_camera_to_default()
 
         # Add actions to the visualizer.
-        self.vis.add_action("Step", self._update_particles)
+        self.vis.add_action("<<", self._update_particles_back)
         self.vis.add_action("Play", self._continuous_trajectory)
+        self.vis.add_action(">>", self._update_particles)
         self.vis.add_action("Export Scene", self._export_scene)
         self.vis.add_action("Screenshot", self._take_screenshot)
         self.vis.add_action("Export Video", self._export_video)
@@ -553,6 +554,50 @@ class Visualizer:
 
         visualizer.post_redraw()  # re-draw the window.
 
+    def _update_particles_back(self, visualizer=None, step: int = None):
+        """
+        Update the positions of the particles one step back (rewind-feature)
+
+        Parameters
+        ----------
+        step : int
+                Step to update to.
+
+        Returns
+        -------
+        Updates the positions of the particles in the box.
+        """
+        if visualizer is None:
+            visualizer = self.vis
+        if step is None:
+            if self.counter == self.number_of_steps - 1:
+                self.counter = self.number_of_steps - 1
+            else:
+                self.counter -= 1
+            step = self.counter
+
+        self._draw_particles(visualizer=visualizer)  # draw the particles.
+
+        # draw the vector field if it exists.
+        if self.vector_field is not None:
+            self._draw_vector_field(visualizer=visualizer) 
+
+        visualizer.post_redraw()  # re-draw the window.
+
+    def _restart_trajectory(self, visualizer=None):
+        if visualizer is None:
+            visualizer = self.vis
+        self.counter = 0
+
+        self._draw_particles(visualizer=visualizer)  # draw the particles.
+
+        # draw the vector field if it exists.
+        if self.vector_field is not None:
+            self._draw_vector_field(visualizer=visualizer) 
+
+        visualizer.post_redraw()  # re-draw the window.
+
+    
     def run_visualization(self):
         """
         Run the visualization.
