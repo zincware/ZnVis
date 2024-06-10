@@ -95,7 +95,11 @@ class Visualizer:
         self.bounding_box = bounding_box() if bounding_box else None
 
         if number_of_steps is None:
-            number_of_steps = len(particles[0].position)
+            len_list = []
+            for particle in particles:
+                if not particle.static:
+                    len_list.append(len(particle.position))
+            number_of_steps = min(len_list)
         self.number_of_steps = number_of_steps
 
         self.output_folder = pathlib.Path(output_folder).resolve()
@@ -103,6 +107,7 @@ class Visualizer:
         self.video_format = video_format
         self.keep_frames = keep_frames
         self.renderer = renderer
+        self.play_speed = 1
 
         self.obj_folder = self.output_folder / "obj_files"
 
@@ -131,10 +136,14 @@ class Visualizer:
         self.vis.add_action("<<", self._update_particles_back)
         self.vis.add_action("Play", self._continuous_trajectory)
         self.vis.add_action(">>", self._update_particles)
+        self.vis.add_action(">>>", self._toggle_play_speed)
+        self.vis.add_action("Slow", self._toggle_slowmotion)
+        self.vis.add_action("Restart", self._restart_trajectory)
         self.vis.add_action("Export Scene", self._export_scene)
         self.vis.add_action("Screenshot", self._take_screenshot)
         self.vis.add_action("Export Video", self._export_video)
         self.vis.add_action("Export Mesh Trajectory", self._export_mesh_trajectory)
+
 
         # Add the visualizer to the app.
         self.app.add_window(self.vis)
@@ -272,18 +281,35 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         mesh_dict = {}
-        mesh_center = []
+        
+        if self.vector_field is not None:
+            for item in self.vector_field:
+                if item.static:
+                    mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[0],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
+                else:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[self.counter],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
+        
         for item in self.particles:
-            mesh_dict[item.name] = {
-                "mesh": item.mesh_list[self.counter],
-                "bsdf": item.mesh.material.mitsuba_bsdf,
-                "material": item.mesh.o3d_material,
+            if item.static:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[0],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
             }
-            mesh_center.append(
-                item.mesh_list[self.counter]
-                .get_axis_aligned_bounding_box()
-                .get_center()
-            )
+            else:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[self.counter],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
 
         view_matrix = vis.scene.camera.get_view_matrix()
 
@@ -347,10 +373,12 @@ class Visualizer:
                 visualizer.add_geometry("Box", self.bounding_box)
         else:
             for i, item in enumerate(self.particles):
-                visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                )
+                if not item.static:
+                    print(item.name)
+                    visualizer.remove_geometry(item.name)
+                    visualizer.add_geometry(
+                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    )
 
 
     def _draw_vector_field(self, visualizer=None, initial: bool = False):
@@ -377,10 +405,11 @@ class Visualizer:
                 )
         else:
             for i, item in enumerate(self.vector_field):
-                visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                )
+                if not item.static:
+                    visualizer.remove_geometry(item.name)
+                    visualizer.add_geometry(
+                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    )
 
     def _continuous_trajectory(self, vis):
         """
@@ -395,6 +424,20 @@ class Visualizer:
             self._pause_run(vis)
         else:
             threading.Thread(target=self._run_trajectory).start()
+
+    def _continuous_trajectory_backwards(self, vis):
+        """
+        Button command for running the simulation in the visualizer backwards.
+
+        Parameters
+        ----------
+        vis : visualizer
+                Object passed during the callback.
+        """
+        if self.interrupt == 1:
+            self._pause_run(vis)
+        else:
+            threading.Thread(target=self._run_trajectory_backwards).start()
 
     def _record_trajectory(self):
         """
@@ -416,12 +459,34 @@ class Visualizer:
             """
             mesh_dict = {}
 
+            if self.vector_field is not None:
+                for item in self.vector_field:
+                    if item.static:
+                        mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
+                    else:
+                        mesh_dict[item.name] = {
+                            "mesh": item.mesh_list[self.counter],
+                            "bsdf": item.mesh.material.mitsuba_bsdf,
+                            "material": item.mesh.o3d_material,
+                        }
+            
             for item in self.particles:
-                mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[self.counter],
-                    "bsdf": item.mesh.material.mitsuba_bsdf,
-                    "material": item.mesh.o3d_material,
+                if item.static:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
                 }
+                else:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[self.counter],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
 
             view_matrix = self.vis.scene.camera.get_view_matrix()
             self.renderer.render_mesh_objects(
@@ -473,10 +538,16 @@ class Visualizer:
             Function to be called on thread to save image.
             """
             for i, item in enumerate(self.particles):
-                if i == 0:
-                    mesh = item.mesh_list[self.counter]
+                if item.static:
+                    if i == 0:
+                        mesh = item.mesh_list[0]
+                    else:
+                        mesh += item.mesh_list[0]
                 else:
-                    mesh += item.mesh_list[self.counter]
+                    if i == 0:
+                        mesh = item.mesh_list[self.counter]
+                    else:
+                        mesh += item.mesh_list[self.counter]
 
             o3d.io.write_triangle_mesh(
                 (self.obj_folder / f"export_mesh_{self.counter}.ply").as_posix(), mesh
@@ -514,7 +585,7 @@ class Visualizer:
         """
         self.interrupt = 1  # set global run state.
         while self.counter < self.number_of_steps:
-            time.sleep(1 / self.frame_rate)
+            time.sleep(1 / (self.frame_rate * self.play_speed))
             o3d.visualization.gui.Application.instance.post_to_main_thread(
                 self.vis, self._update_particles
             )
@@ -524,6 +595,7 @@ class Visualizer:
 
         self.interrupt = 0  # reset global state.
 
+    
     def _update_particles(self, visualizer=None, step: int = None):
         """
         Update the positions of the particles.
@@ -570,12 +642,11 @@ class Visualizer:
         if visualizer is None:
             visualizer = self.vis
         if step is None:
-            if self.counter == self.number_of_steps - 1:
+            if self.counter == 0:
                 self.counter = self.number_of_steps - 1
             else:
                 self.counter -= 1
             step = self.counter
-
         self._draw_particles(visualizer=visualizer)  # draw the particles.
 
         # draw the vector field if it exists.
@@ -583,6 +654,7 @@ class Visualizer:
             self._draw_vector_field(visualizer=visualizer) 
 
         visualizer.post_redraw()  # re-draw the window.
+
 
     def _restart_trajectory(self, visualizer=None):
         if visualizer is None:
@@ -597,7 +669,49 @@ class Visualizer:
 
         visualizer.post_redraw()  # re-draw the window.
 
-    
+    def _toggle_play_speed(self, visualizer=None):
+        """ 
+        Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
+        
+        """
+        if self.play_speed == 1:
+            self.play_speed = 2
+        elif self.play_speed == 2:
+            self.play_speed = 4
+        elif self.play_speed == 4:
+            self.play_speed = 8
+        else:
+            self.play_speed = 1
+            
+    def _toggle_play_speed_back(self, visualizer=None):
+        """ 
+        Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
+        """
+ 
+        self._run_trajectory_backwards()
+        if self.play_speed == 1:
+            self.play_speed = 2
+        elif self.play_speed == 2:
+            self.play_speed = 4
+        elif self.play_speed == 4:
+            self.play_speed = 8
+        else:
+            self.play_speed = 1
+        
+    def _toggle_slowmotion(self, visualizer=None):
+        """ 
+        Toggle the play speed from 1 to 1/2 to 1/4 to 1/8 and back to 1
+        """
+        if self.play_speed >= 1:
+            self.play_speed = 1/2
+        elif self.play_speed == 1/2:
+            self.play_speed = 1/4
+        elif self.play_speed == 1/4:
+            self.play_speed = 1/8
+        else:
+            self.play_speed = 1
+
+        
     def run_visualization(self):
         """
         Run the visualization.
