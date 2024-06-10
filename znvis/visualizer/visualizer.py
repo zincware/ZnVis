@@ -374,7 +374,6 @@ class Visualizer:
         else:
             for i, item in enumerate(self.particles):
                 if not item.static:
-                    print(item.name)
                     visualizer.remove_geometry(item.name)
                     visualizer.add_geometry(
                         item.name, item.mesh_list[self.counter], item.mesh.o3d_material
