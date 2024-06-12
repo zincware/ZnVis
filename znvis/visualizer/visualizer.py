@@ -68,6 +68,8 @@ class Visualizer:
         keep_frames: bool = True,
         bounding_box: znvis.BoundingBox = None,
         video_format: str = "mp4",
+        renderer_resolution: list = [4096, 2160],
+        renderer_spp: int = 64,
         renderer: Mitsuba = Mitsuba(),
     ):
         """
@@ -88,6 +90,10 @@ class Visualizer:
                 after combining them into a video.
         video_format : str
                 The format of the video to be generated.
+        renderer_resolution : list
+                List containing the resolution of the rendered videos and screenshots
+        renderer_spp : int
+                Samples per pixel for the rendered videos and screenshots.
         """
         self.particles = particles
         self.vector_field = vector_field
@@ -101,6 +107,8 @@ class Visualizer:
         self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
+        self.renderer_resolution = renderer_resolution,
+        self.renderer_spp = renderer_spp,
         self.keep_frames = keep_frames
         self.renderer = renderer
 
@@ -287,7 +295,11 @@ class Visualizer:
         view_matrix = vis.scene.camera.get_view_matrix()
 
         self.renderer.render_mesh_objects(
-            mesh_dict, view_matrix, save_name=f"frame_{self.counter}.png"
+            mesh_dict,
+            view_matrix,
+            save_name=f"frame_{self.counter}.png",
+            resolution=self.renderer_resolution,
+            sample_count=self.renderer_spp
         )
 
         # Restart live feed if it was running before the export.
@@ -428,6 +440,8 @@ class Visualizer:
                 view_matrix,
                 save_dir=self.frame_folder,
                 save_name=f"frame_{self.counter:0>6}.png",
+                resolution=self.renderer_resolution,
+                samples_per_pixel=self.renderer_spp
             )
 
             self.save_thread_finished = True
