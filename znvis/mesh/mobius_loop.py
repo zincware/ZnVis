@@ -86,7 +86,7 @@ class MobiusLoop(Mesh):
             length_split=self.length_split,
             width_split=self.width_split,
             twists=self.twists,
-            radius=self.radius,
+            raidus=self.radius, # typo in open3d
             flatness=self.flatness,
             width=self.width,
             scale=self.scale,
