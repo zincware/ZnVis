@@ -47,14 +47,11 @@ class Box(Mesh):
             Height of the box.
     depth : float
             Depth of the box.    
-    resolution : int
-            Resolution of the box.
     """
 
     width: float = 1.0
     height: float = 1.0
     depth: float = 1.0
-    resolution: int = 10
 
     def create_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
@@ -77,7 +74,6 @@ class Box(Mesh):
             width=self.width,
             height=self.height,
             depth=self.depth,
-            resolution=self.resolution,
         )
         box.compute_vertex_normals()
         box.translate(starting_position.astype(float))
