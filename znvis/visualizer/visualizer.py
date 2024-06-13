@@ -299,7 +299,7 @@ class Visualizer:
             view_matrix,
             save_name=f"frame_{self.counter}.png",
             resolution=self.renderer_resolution,
-            sample_count=self.renderer_spp
+            samples_per_pixel=self.renderer_spp
         )
 
         # Restart live feed if it was running before the export.
