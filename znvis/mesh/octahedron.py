@@ -65,7 +65,7 @@ class Octahedron(Mesh):
         mesh : o3d.geometry.TriangleMesh
         """
         octahedron = o3d.geometry.TriangleMesh.create_octahedron(
-            radius = self.radius
+            radius=self.radius
         )
         octahedron.compute_vertex_normals()
         octahedron.translate(starting_position.astype(float))

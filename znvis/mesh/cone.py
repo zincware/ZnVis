@@ -74,7 +74,11 @@ class Cone(Mesh):
         mesh : o3d.geometry.TriangleMesh
         """
         cone = o3d.geometry.TriangleMesh.create_cone(
-            radius = self.radius
+            radius=self.radius,
+            height=self.height,
+            resolution=self.resolution,
+            split=self.split
+
         )
         cone.compute_vertex_normals()
         cone.translate(starting_position.astype(float))

@@ -73,7 +73,7 @@ class Box(Mesh):
         box = o3d.geometry.TriangleMesh.create_box(
             width=self.width,
             height=self.height,
-            depth=self.depth,
+            depth=self.depth
         )
         box.compute_vertex_normals()
         box.translate(starting_position.astype(float))

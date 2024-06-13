@@ -65,7 +65,7 @@ class Tetrahedron(Mesh):
         mesh : o3d.geometry.TriangleMesh
         """
         tetrahedron = o3d.geometry.TriangleMesh.create_tetrahedron(
-            radius = self.radius
+            radius=self.radius
         )
         tetrahedron.compute_vertex_normals()
         tetrahedron.translate(starting_position.astype(float))

@@ -65,7 +65,7 @@ class Icosahedron(Mesh):
         mesh : o3d.geometry.TriangleMesh
         """
         icosahedron = o3d.geometry.TriangleMesh.create_icosahedron(
-            radius = self.radius
+            radius=self.radius
         )
         icosahedron.compute_vertex_normals()
         icosahedron.translate(starting_position.astype(float))
