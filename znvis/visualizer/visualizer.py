@@ -107,8 +107,8 @@ class Visualizer:
         self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
-        self.renderer_resolution = renderer_resolution,
-        self.renderer_spp = renderer_spp,
+        self.renderer_resolution = renderer_resolution
+        self.renderer_spp = renderer_spp
         self.keep_frames = keep_frames
         self.renderer = renderer
 
