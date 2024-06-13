@@ -113,10 +113,16 @@ class VectorField:
         except ValueError:
             raise ValueError("There is no data for this vector field.")
 
+        new_mesh = True
+
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             for j in range(n_particles):
-                if j == 0:
-                    mesh = self._create_mesh(self.position[i][j], self.direction[i][j])
-                else:
-                    mesh += self._create_mesh(self.position[i][j], self.direction[i][j])
+                if np.max(self.direction[i][j]) > 0: # ignore vectors with length zero
+                    if new_mesh is False:
+                        mesh += self._create_mesh(self.position[i][j], self.direction[i][j])
+                    else:
+                        mesh = self._create_mesh(self.position[i][j], self.direction[i][j])
+                        new_mesh = False
+            new_mesh = True
+
             self.mesh_list.append(mesh)
