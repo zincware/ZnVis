@@ -114,6 +114,8 @@ class Mitsuba:
         self,
         mesh_objects: dict,
         view_matrix: np.ndarray,
+        resolution: list,
+        samples_per_pixel: int,
         save_dir: str = "./",
         save_name: str = "znvis_render.exr",
     ):
@@ -126,6 +128,10 @@ class Mitsuba:
             List of mesh objects to render.
         view_matrix : np.ndarray
             View matrix for the camera from open3d.
+        resolution : list
+            Resolution of the exported image/video.
+        samples_per_pixel : int
+            Sample count per pixel for the sampler.
         save_dir : str (default = "./")
             Directory to save the rendered image.
         save_name : str (default = "znvis_render.exr")
@@ -167,6 +173,11 @@ class Mitsuba:
             self.scene_dict[mesh_name] = mitsuba_mesh
 
         # Render the scene.
+        self.scene_dict["sensor"]["thefilm"]["width"] = resolution[0]
+        self.scene_dict["sensor"]["thefilm"]["height"] = resolution[1]
+
+        self.scene_dict["sensor"]["thesampler"]["sample_count"] = samples_per_pixel
+
         scene = mi.load_dict(self.scene_dict)
 
         img = mi.render(scene)
