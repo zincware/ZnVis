@@ -144,7 +144,6 @@ class Visualizer:
         self.vis.add_action("Export Video", self._export_video)
         self.vis.add_action("Export Mesh Trajectory", self._export_mesh_trajectory)
 
-
         # Add the visualizer to the app.
         self.app.add_window(self.vis)
 
@@ -281,29 +280,29 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         mesh_dict = {}
-        
+
         if self.vector_field is not None:
             for item in self.vector_field:
                 if item.static:
                     mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[0],
-                    "bsdf": item.mesh.material.mitsuba_bsdf,
-                    "material": item.mesh.o3d_material,
-                }
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
                 else:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[self.counter],
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
                     }
-        
+
         for item in self.particles:
             if item.static:
                 mesh_dict[item.name] = {
                     "mesh": item.mesh_list[0],
                     "bsdf": item.mesh.material.mitsuba_bsdf,
                     "material": item.mesh.o3d_material,
-            }
+                }
             else:
                 mesh_dict[item.name] = {
                     "mesh": item.mesh_list[self.counter],
@@ -379,7 +378,6 @@ class Visualizer:
                         item.name, item.mesh_list[self.counter], item.mesh.o3d_material
                     )
 
-
     def _draw_vector_field(self, visualizer=None, initial: bool = False):
         """
         Draw the vector field on the visualizer.
@@ -396,7 +394,7 @@ class Visualizer:
         """
         if visualizer is None:
             visualizer = self.vis
-        
+
         if initial:
             for i, item in enumerate(self.vector_field):
                 visualizer.add_geometry(
@@ -462,24 +460,24 @@ class Visualizer:
                 for item in self.vector_field:
                     if item.static:
                         mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[0],
-                        "bsdf": item.mesh.material.mitsuba_bsdf,
-                        "material": item.mesh.o3d_material,
-                    }
+                            "mesh": item.mesh_list[0],
+                            "bsdf": item.mesh.material.mitsuba_bsdf,
+                            "material": item.mesh.o3d_material,
+                        }
                     else:
                         mesh_dict[item.name] = {
                             "mesh": item.mesh_list[self.counter],
                             "bsdf": item.mesh.material.mitsuba_bsdf,
                             "material": item.mesh.o3d_material,
                         }
-            
+
             for item in self.particles:
                 if item.static:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[0],
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
-                }
+                    }
                 else:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[self.counter],
@@ -594,7 +592,6 @@ class Visualizer:
 
         self.interrupt = 0  # reset global state.
 
-    
     def _update_particles(self, visualizer=None, step: int = None):
         """
         Update the positions of the particles.
@@ -621,7 +618,7 @@ class Visualizer:
 
         # draw the vector field if it exists.
         if self.vector_field is not None:
-            self._draw_vector_field(visualizer=visualizer) 
+            self._draw_vector_field(visualizer=visualizer)
 
         visualizer.post_redraw()  # re-draw the window.
 
@@ -650,10 +647,9 @@ class Visualizer:
 
         # draw the vector field if it exists.
         if self.vector_field is not None:
-            self._draw_vector_field(visualizer=visualizer) 
+            self._draw_vector_field(visualizer=visualizer)
 
         visualizer.post_redraw()  # re-draw the window.
-
 
     def _restart_trajectory(self, visualizer=None):
         if visualizer is None:
@@ -664,14 +660,14 @@ class Visualizer:
 
         # draw the vector field if it exists.
         if self.vector_field is not None:
-            self._draw_vector_field(visualizer=visualizer) 
+            self._draw_vector_field(visualizer=visualizer)
 
         visualizer.post_redraw()  # re-draw the window.
 
     def _toggle_play_speed(self, visualizer=None):
-        """ 
+        """
         Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
-        
+
         """
         if self.play_speed == 1:
             self.play_speed = 2
@@ -681,12 +677,12 @@ class Visualizer:
             self.play_speed = 8
         else:
             self.play_speed = 1
-            
+
     def _toggle_play_speed_back(self, visualizer=None):
-        """ 
+        """
         Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
         """
- 
+
         self._run_trajectory_backwards()
         if self.play_speed == 1:
             self.play_speed = 2
@@ -696,21 +692,20 @@ class Visualizer:
             self.play_speed = 8
         else:
             self.play_speed = 1
-        
+
     def _toggle_slowmotion(self, visualizer=None):
-        """ 
+        """
         Toggle the play speed from 1 to 1/2 to 1/4 to 1/8 and back to 1
         """
         if self.play_speed >= 1:
-            self.play_speed = 1/2
-        elif self.play_speed == 1/2:
-            self.play_speed = 1/4
-        elif self.play_speed == 1/4:
-            self.play_speed = 1/8
+            self.play_speed = 1 / 2
+        elif self.play_speed == 1 / 2:
+            self.play_speed = 1 / 4
+        elif self.play_speed == 1 / 4:
+            self.play_speed = 1 / 8
         else:
             self.play_speed = 1
 
-        
     def run_visualization(self):
         """
         Run the visualization.
