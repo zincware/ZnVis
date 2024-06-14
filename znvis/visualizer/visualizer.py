@@ -99,8 +99,11 @@ class Visualizer:
             for particle in particles:
                 if not particle.static:
                     len_list.append(len(particle.position))
-            number_of_steps = min(len_list)
-        self.number_of_steps = number_of_steps
+            
+            if len_list == []:
+                self.number_of_steps = 1
+            else:
+                self.number_of_steps = min(len_list)
 
         self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"
