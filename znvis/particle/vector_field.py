@@ -117,7 +117,7 @@ class VectorField:
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             for j in range(n_particles):
-                if np.max(self.direction[i][j]) > 0: # ignore vectors with length zero
+                if np.max(np.abs(self.direction[i][j])) > 0: # ignore vectors with length zero
                     if new_mesh is False:
                         mesh += self._create_mesh(self.position[i][j], self.direction[i][j])
                     else:
