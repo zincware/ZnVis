@@ -410,11 +410,6 @@ class Visualizer:
                     visualizer.add_geometry(
                         item.name, item.mesh_list[self.counter], item.mesh.o3d_material
                     )
-                if not item.static:
-                    visualizer.remove_geometry(item.name)
-                    visualizer.add_geometry(
-                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                    )
 
     def _continuous_trajectory(self, vis):
         """
