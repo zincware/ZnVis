@@ -34,7 +34,8 @@ from znvis.mesh import Mesh
 @dataclass
 class Arrow(Mesh):
     """
-    A class to produce arrow meshes.
+    A class to produce arrow meshes. Arrow meshes are a special case and need to
+    overwrite the create_mesh object of the parent mesh class.
 
     Attributes
     ----------
@@ -47,23 +48,26 @@ class Arrow(Mesh):
     resolution: int = 10
 
     def create_mesh(
-        self, starting_position: np.ndarray, direction: np.ndarray = None
+        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
     ) -> o3d.geometry.TriangleMesh:
         """
-        Create a mesh object defined by the dataclass.
-
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        direction : np.ndarray shape=(3,) (default = None)
-                Direction of the mesh.
-
-        Returns
-        -------
-        mesh : o3d.geometry.TriangleMesh
+        Create and correctly orient an arrow mesh. Overwrites the parent class
         """
+        mesh = self.create_mesh_object(starting_orientation)
+        mesh.compute_vertex_normals()
+        if starting_orientation is not None:
+            matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
+            mesh.rotate(matrix, center=(0, 0, 0))
 
+        # Translate the arrow to the starting position and center the origin
+        mesh.translate(starting_position.astype(float))
+
+        return mesh
+
+    def create_mesh_object(self, direction: np.ndarray) -> o3d.geometry.TriangleMesh:
+        """
+        Creates an arrow mesh object.
+        """
         direction_length = np.linalg.norm(direction)
 
         cylinder_radius = 0.06 * direction_length * self.scale
@@ -71,19 +75,10 @@ class Arrow(Mesh):
         cone_radius = 0.15 * direction_length * self.scale
         cone_height = 0.15 * direction_length * self.scale
 
-        arrow = o3d.geometry.TriangleMesh.create_arrow(
+        return o3d.geometry.TriangleMesh.create_arrow(
             cylinder_radius=cylinder_radius, 
             cylinder_height=cylinder_height, 
             cone_radius=cone_radius, 
             cone_height=cone_height,
             resolution=self.resolution
         )
-
-        arrow.compute_vertex_normals()
-        matrix = rotation_matrix(np.array([0, 0, 1]), direction)
-        arrow.rotate(matrix, center=(0, 0, 0))
-
-        # Translate the arrow to the starting position and center the origin
-        arrow.translate(starting_position.astype(float))
-
-        return arrow
