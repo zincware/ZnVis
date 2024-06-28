@@ -31,7 +31,7 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from .mesh import Mesh
+from znvis.mesh import Mesh
 
 
 @dataclass
@@ -56,34 +56,12 @@ class Cone(Mesh):
     resolution: int = 20
     split: int = 1
 
-    def create_mesh(
-        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
-    ) -> o3d.geometry.TriangleMesh:
-        """
-        Create a mesh object defined by the dataclass.
+    def create_mesh(self) -> o3d.geometry.TriangleMesh:
 
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        starting_orientation : np.ndarray shape=(3,) (default = None)
-                Starting orientation of the mesh.
-
-        Returns
-        -------
-        mesh : o3d.geometry.TriangleMesh
-        """
-        cone = o3d.geometry.TriangleMesh.create_cone(
+        return o3d.geometry.TriangleMesh.create_cone(
             radius=self.radius,
             height=self.height,
             resolution=self.resolution,
-            split=self.split
-
+            split=self.split,
         )
-        cone.compute_vertex_normals()
-        cone.translate(starting_position.astype(float))
-        if starting_orientation is not None:
-            matrix = rotation_matrix(self.base_direction, starting_orientation)
-            cone.rotate(matrix)
 
-        return cone

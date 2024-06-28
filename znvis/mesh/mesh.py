@@ -27,7 +27,7 @@ import open3d as o3d
 import open3d.visualization.rendering as rendering
 
 from znvis.material.material import Material
-
+from znvis.transformations.rotation_matrices import rotation_matrix
 
 @dataclass
 class Mesh:
@@ -74,4 +74,17 @@ class Mesh:
         -------
         mesh : o3d.geometry.TriangleMesh
         """
-        raise NotImplementedError("Implemented in child class.")
+        mesh = self.create_mesh_object()
+        mesh.compute_vertex_normals()
+        mesh.translate(starting_position.astype(float))
+        if starting_orientation is not None:
+            matrix = rotation_matrix(self.base_direction, starting_orientation)
+            mesh.rotate(matrix)
+
+        return mesh
+    
+    def create_mesh_object(self) -> o3d.geometry.TriangleMesh:
+        """
+        Create a mesh object defined by the dataclass.
+        """
+        raise NotImplementedError("Method not implemented.")

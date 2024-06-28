@@ -31,7 +31,7 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from .mesh import Mesh
+from znvis.mesh import Mesh
 
 
 @dataclass
@@ -47,30 +47,9 @@ class Octahedron(Mesh):
 
     radius: float = 1.0
 
-    def create_mesh(
-        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
-    ) -> o3d.geometry.TriangleMesh:
-        """
-        Create a mesh object defined by the dataclass.
-
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        starting_orientation : np.ndarray shape=(3,) (default = None)
-                Starting orientation of the mesh.
-
-        Returns
-        -------
-        mesh : o3d.geometry.TriangleMesh
-        """
-        octahedron = o3d.geometry.TriangleMesh.create_octahedron(
+    def create_mesh(self) -> o3d.geometry.TriangleMesh:
+        
+        return o3d.geometry.TriangleMesh.create_octahedron(
             radius=self.radius
         )
-        octahedron.compute_vertex_normals()
-        octahedron.translate(starting_position.astype(float))
-        if starting_orientation is not None:
-            matrix = rotation_matrix(self.base_direction, starting_orientation)
-            octahedron.rotate(matrix)
 
-        return octahedron

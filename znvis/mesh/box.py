@@ -53,32 +53,11 @@ class Box(Mesh):
     height: float = 1.0
     depth: float = 1.0
 
-    def create_mesh(
-        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
-    ) -> o3d.geometry.TriangleMesh:
-        """
-        Create a mesh object defined by the dataclass.
-
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        starting_orientation : np.ndarray shape=(3,) (default = None)
-                Starting orientation of the mesh.
-
-        Returns
-        -------
-        mesh : o3d.geometry.TriangleMesh
-        """
-        box = o3d.geometry.TriangleMesh.create_box(
+    def create_mesh(self) -> o3d.geometry.TriangleMesh:
+        
+        return o3d.geometry.TriangleMesh.create_box(
             width=self.width,
             height=self.height,
             depth=self.depth
         )
-        box.compute_vertex_normals()
-        box.translate(starting_position.astype(float))
-        if starting_orientation is not None:
-            matrix = rotation_matrix(self.base_direction, starting_orientation)
-            box.rotate(matrix)
 
-        return box

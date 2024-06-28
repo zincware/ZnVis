@@ -31,13 +31,14 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from .mesh import Mesh
+from znvis.mesh import Mesh
 
 
 @dataclass
 class CustomMesh(Mesh):
     """
-    A class to produce cylinder meshes.
+    A class to produce custom meshes. Custom meshes are special and need to override
+    the create_mesh method.
 
     Attributes
     ----------
@@ -53,17 +54,6 @@ class CustomMesh(Mesh):
     ) -> o3d.geometry.TriangleMesh:
         """
         Create a mesh object defined by the dataclass.
-
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        starting_orientation : np.ndarray shape=(3,) (default = None)
-                Starting orientation of the mesh.
-
-        Returns
-        -------
-        mesh : o3d.geometry.TriangleMesh
         """
         mesh = o3d.io.read_triangle_mesh(self.file)
         mesh.compute_vertex_normals()

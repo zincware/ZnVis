@@ -28,7 +28,7 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from .mesh import Mesh
+from znvis.mesh import Mesh
 
 
 @dataclass
@@ -47,30 +47,8 @@ class Sphere(Mesh):
     radius: float = 1.0
     resolution: int = 10
 
-    def create_mesh(
-        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
-    ) -> o3d.geometry.TriangleMesh:
-        """
-        Create a mesh object defined by the dataclass.
-
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        starting_orientation : np.ndarray shape=(3,) (default = None)
-                Starting orientation of the mesh.
-
-        Returns
-        -------
-        mesh : o3d.geometry.TriangleMesh
-        """
-        sphere = o3d.geometry.TriangleMesh.create_sphere(
+    def create_mesh_object(self) -> o3d.geometry.TriangleMesh:
+        
+        return o3d.geometry.TriangleMesh.create_sphere(
             radius=self.radius, resolution=self.resolution
         )
-        sphere.compute_vertex_normals()
-        sphere.translate(starting_position.astype(float))
-        if starting_orientation is not None:
-            matrix = rotation_matrix(self.base_direction, starting_orientation)
-            sphere.rotate(matrix)
-
-        return sphere

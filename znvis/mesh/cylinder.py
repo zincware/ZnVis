@@ -31,7 +31,7 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from .mesh import Mesh
+from znvis.mesh import Mesh
 
 
 @dataclass
@@ -56,33 +56,12 @@ class Cylinder(Mesh):
     split: int = 1
     resolution: int = 10
 
-    def create_mesh(
-        self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
-    ) -> o3d.geometry.TriangleMesh:
-        """
-        Create a mesh object defined by the dataclass.
-
-        Parameters
-        ----------
-        starting_position : np.ndarray shape=(3,)
-                Starting position of the mesh.
-        starting_orientation : np.ndarray shape=(3,) (default = None)
-                Starting orientation of the mesh.
-
-        Returns
-        -------
-        mesh : o3d.geometry.TriangleMesh
-        """
-        cylinder = o3d.geometry.TriangleMesh.create_cylinder(
+    def create_mesh(self) -> o3d.geometry.TriangleMesh:
+        
+        return o3d.geometry.TriangleMesh.create_cylinder(
             radius=self.radius,
             height=self.height,
             split=self.split,
             resolution=self.resolution,
         )
-        cylinder.compute_vertex_normals()
-        cylinder.translate(starting_position.astype(float))
-        if starting_orientation is not None:
-            matrix = rotation_matrix(self.base_direction, starting_orientation)
-            cylinder.rotate(matrix)
 
-        return cylinder
