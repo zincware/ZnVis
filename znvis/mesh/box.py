@@ -31,7 +31,7 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from .mesh import Mesh
+from znvis.mesh import Mesh
 
 
 @dataclass
@@ -54,7 +54,7 @@ class Box(Mesh):
     depth: float = 1.0
 
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
-        
+
         return o3d.geometry.TriangleMesh.create_box(
             width=self.width,
             height=self.height,
