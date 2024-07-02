@@ -60,16 +60,16 @@ class TestSimpleSpheres:
         Execute the run on the given process.
         """
         # Define the first particle.
-        trajectory = np.random.uniform(-10, 10, (100, 50, 3))
+        trajectory = np.random.uniform(-10, 10, (10, 10, 3))
         material_1 = vis.Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
 
-        mesh = vis.Sphere(radius=2.0, material=material_1, resolution=10)
+        mesh = vis.Sphere(radius=2.0, material=material_1, resolution=3)
         particle = vis.Particle(name="Blue", mesh=mesh, position=trajectory)
 
         # Define the second particle.
         material_2 = vis.Material(colour=np.array([255, 140, 0]) / 255, alpha=1.0)
-        trajectory_2 = np.random.uniform(-10, 10, (100, 50, 3))
-        mesh_2 = vis.Sphere(radius=1.0, material=material_2, resolution=10)
+        trajectory_2 = np.random.uniform(-10, 10, (10, 10, 3))
+        mesh_2 = vis.Sphere(radius=1.0, material=material_2, resolution=3)
         particle_2 = vis.Particle(name="Orange", mesh=mesh_2, position=trajectory_2)
 
         # Create a bounding box

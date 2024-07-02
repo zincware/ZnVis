@@ -40,7 +40,7 @@ class VectorField:
     name : str
             Name of the vector field
     mesh : Mesh
-            Mesh to use 
+            Mesh to use
     position : np.ndarray
             Position tensor of the shape (n_steps, n_vectors, n_dims)
     direction : np.ndarray
@@ -54,7 +54,7 @@ class VectorField:
     """
 
     name: str
-    mesh: Arrow = None # Should be an instance of the Arrow class
+    mesh: Arrow = None  # Should be an instance of the Arrow class
     position: np.ndarray = None
     direction: np.ndarray = None
     mesh_list: typing.List[Arrow] = None
@@ -77,7 +77,7 @@ class VectorField:
         mesh : o3d.geometry.TriangleMesh
                 A mesh object
         """
-        
+
         mesh = self.mesh.create_mesh(position, direction)
         if self.smoothing:
             return mesh.filter_smooth_taubin(100)

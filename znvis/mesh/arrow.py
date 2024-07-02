@@ -26,9 +26,8 @@ from dataclasses import dataclass
 import numpy as np
 import open3d as o3d
 
-from znvis.transformations.rotation_matrices import rotation_matrix
-
 from znvis.mesh import Mesh
+from znvis.transformations.rotation_matrices import rotation_matrix
 
 
 @dataclass
@@ -43,6 +42,7 @@ class Arrow(Mesh):
     resolution : int
             Resolution of the mesh.
     """
+
     scale: float = 1.0
     resolution: int = 10
 
@@ -72,11 +72,11 @@ class Arrow(Mesh):
         cone_height = 0.15 * direction_length * self.scale
 
         arrow = o3d.geometry.TriangleMesh.create_arrow(
-            cylinder_radius=cylinder_radius, 
-            cylinder_height=cylinder_height, 
-            cone_radius=cone_radius, 
+            cylinder_radius=cylinder_radius,
+            cylinder_height=cylinder_height,
+            cone_radius=cone_radius,
             cone_height=cone_height,
-            resolution=self.resolution
+            resolution=self.resolution,
         )
 
         arrow.compute_vertex_normals()
