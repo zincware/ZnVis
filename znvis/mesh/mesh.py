@@ -57,7 +57,7 @@ class Mesh:
 
         self.o3d_material = material
 
-    def create_mesh(
+    def instantiate_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
     ) -> o3d.geometry.TriangleMesh:
         """

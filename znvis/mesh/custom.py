@@ -49,7 +49,7 @@ class CustomMesh(Mesh):
     file: str = None
     scale: float = 1.0
 
-    def create_mesh(
+    def instantiate_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
     ) -> o3d.geometry.TriangleMesh:
         """

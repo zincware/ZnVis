@@ -35,7 +35,7 @@ from znvis.mesh import Mesh
 class Arrow(Mesh):
     """
     A class to produce arrow meshes. Arrow meshes are a special case and need to
-    overwrite the create_mesh object of the parent mesh class.
+    overwrite the instantiate_mesh of the parent mesh class.
 
     Attributes
     ----------
@@ -47,7 +47,7 @@ class Arrow(Mesh):
     scale: float = 1.0
     resolution: int = 10
 
-    def create_mesh(
+    def instantiate_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
     ) -> o3d.geometry.TriangleMesh:
         """

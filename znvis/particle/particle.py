@@ -88,9 +88,9 @@ class Particle:
                 A mesh object
         """
         if director is not None:
-            mesh = self.mesh.create_mesh(position, starting_orientation=director)
+            mesh = self.mesh.instantiate_mesh(position, starting_orientation=director)
         else:
-            mesh = self.mesh.create_mesh(position)
+            mesh = self.mesh.instantiate_mesh(position)
         if self.smoothing:
             return mesh.filter_smooth_taubin(100)
         else:

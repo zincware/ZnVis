@@ -81,8 +81,8 @@ class VectorField:
         mesh : o3d.geometry.TriangleMesh
                 A mesh object
         """
-        
-        mesh = self.mesh.create_mesh(position, direction)
+
+        mesh = self.mesh.instantiate_mesh(position, direction)
         if self.smoothing:
             return mesh.filter_smooth_taubin(100)
         else:
