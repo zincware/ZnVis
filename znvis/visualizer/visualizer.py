@@ -111,6 +111,7 @@ class Visualizer:
         self.keep_frames = keep_frames
         self.renderer = renderer
         self.play_speed = 1
+        self.do_rewind = False
 
         self.obj_folder = self.output_folder / "obj_files"
 
@@ -136,10 +137,12 @@ class Visualizer:
         self.vis.reset_camera_to_default()
 
         # Add actions to the visualizer.
+        self.vis.add_action("<<<", self._toggle_play_speed_back)
         self.vis.add_action("<<", self._update_particles_back)
         self.vis.add_action("Play", self._continuous_trajectory)
         self.vis.add_action(">>", self._update_particles)
         self.vis.add_action(">>>", self._toggle_play_speed)
+        self.vis.add_action("Toggle Direction", self._toogle_play_direction)
         self.vis.add_action("Slow", self._toggle_slowmotion)
         self.vis.add_action("Restart", self._restart_trajectory)
         self.vis.add_action("Export Scene", self._export_scene)
@@ -175,6 +178,7 @@ class Visualizer:
         -------
         Saves a video locally.
         """
+        self.do_rewind = False
         self.interrupt = 0  # stop live feed if running.
 
         # Create temporary directory
@@ -253,9 +257,20 @@ class Visualizer:
         """
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
+        created_mesh = False
         for i, item in enumerate(self.particles):
-            if i == 0:
+            if item.static:
+                if i == 0 and not created_mesh:
+                    mesh = item.mesh_list[0]
+                    created_mesh = True
+                elif i == 0 and created_mesh:
+                    mesh += item.mesh_list[0]
+                else:
+                    continue
+
+            if i == 0 and not created_mesh:
                 mesh = item.mesh_list[self.counter]
+                created_mesh = True
             else:
                 mesh += item.mesh_list[self.counter]
 
@@ -420,24 +435,11 @@ class Visualizer:
         vis : visualizer
                 Object passed during the callback.
         """
+        self.do_rewind = False
         if self.interrupt == 1:
             self._pause_run(vis)
         else:
             threading.Thread(target=self._run_trajectory).start()
-
-    def _continuous_trajectory_backwards(self, vis):
-        """
-        Button command for running the simulation in the visualizer backwards.
-
-        Parameters
-        ----------
-        vis : visualizer
-                Object passed during the callback.
-        """
-        if self.interrupt == 1:
-            self._pause_run(vis)
-        else:
-            threading.Thread(target=self._run_trajectory_backwards).start()
 
     def _record_trajectory(self):
         """
@@ -616,6 +618,11 @@ class Visualizer:
             else:
                 self.counter += 1
             step = self.counter
+        if self.do_rewind == True:
+            if self.counter <= 1:
+                self.counter = self.number_of_steps - 2
+            else:
+                self.counter -= 2 
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
 
@@ -654,6 +661,16 @@ class Visualizer:
 
         visualizer.post_redraw()  # re-draw the window.
 
+    def _toogle_play_direction(self, visualizer=None):
+        """
+        Reverts the direction of play.
+
+        Returns
+        -------
+        Rewinds the trajectory.
+        """
+        self.do_rewind = not self.do_rewind
+
     def _restart_trajectory(self, visualizer=None):
         if visualizer is None:
             visualizer = self.vis
@@ -672,6 +689,10 @@ class Visualizer:
         Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
 
         """
+        if self.do_rewind == True:
+            self.do_rewind = False
+            self.play_speed = 1
+
         if self.play_speed == 1:
             self.play_speed = 2
         elif self.play_speed == 2:
@@ -685,8 +706,11 @@ class Visualizer:
         """
         Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
         """
+        if self.do_rewind == False:
+            self.play_speed = 1
 
-        self._run_trajectory_backwards()
+        self.do_rewind = True
+
         if self.play_speed == 1:
             self.play_speed = 2
         elif self.play_speed == 2:
