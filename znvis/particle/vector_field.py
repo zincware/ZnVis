@@ -65,7 +65,7 @@ class VectorField:
     static: bool = False
     smoothing: bool = False
 
-    def _create_mesh(self, position: np.ndarray, direction: np.ndarray):
+    def _create_mesh(self, position: np.ndarray, direction: np.ndarray, time_step: int, index: int):
         """
         Create a mesh object for the vector field.
 
@@ -84,9 +84,12 @@ class VectorField:
 
         mesh = self.mesh.instantiate_mesh(position, direction)
         if self.smoothing:
-            return mesh.filter_smooth_taubin(100)
-        else:
-            return mesh
+            mesh = mesh.filter_smooth_taubin(100)
+        
+        if self.mesh.dynamic_color:
+            mesh = mesh.paint_uniform_color(self.mesh.material.colour[time_step, index, :])
+
+        return mesh
 
     def construct_mesh_list(self):
         """
@@ -119,9 +122,9 @@ class VectorField:
             for j in range(n_particles):
                 if np.max(np.abs(self.direction[i][j])) > 0: # ignore vectors with length zero
                     if new_mesh is False:
-                        mesh += self._create_mesh(self.position[i][j], self.direction[i][j])
+                        mesh += self._create_mesh(self.position[i][j], self.direction[i][j], i, j)
                     else:
-                        mesh = self._create_mesh(self.position[i][j], self.direction[i][j])
+                        mesh = self._create_mesh(self.position[i][j], self.direction[i][j], i, j)
                         new_mesh = False
             new_mesh = True
 

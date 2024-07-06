@@ -42,13 +42,15 @@ class Mesh:
 
     material: Material = field(default_factory=lambda: Material())
     base_direction: np.ndarray = field(default_factory=lambda: np.array([1, 0, 0]))
+    dynamic_color: bool = False
 
     def __post_init__(self):
         """
         Post init function to create materials.
         """
         material = rendering.MaterialRecord()
-        material.base_color = np.hstack((self.material.colour, self.material.alpha))
+        if not self.dynamic_color:
+            material.base_color = np.hstack((self.material.colour, self.material.alpha))
         material.shader = "defaultLitTransparency"
         material.base_metallic = self.material.metallic
         material.base_roughness = self.material.roughness

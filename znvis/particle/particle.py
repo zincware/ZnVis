@@ -71,7 +71,7 @@ class Particle:
     static: bool = False
     smoothing: bool = False
 
-    def _create_mesh(self, position, director):
+    def _create_mesh(self, position, director, time_step=None, index=None):
         """
         Create a mesh object for the particle.
 
@@ -91,10 +91,14 @@ class Particle:
             mesh = self.mesh.instantiate_mesh(position, starting_orientation=director)
         else:
             mesh = self.mesh.instantiate_mesh(position)
+        
         if self.smoothing:
-            return mesh.filter_smooth_taubin(100)
-        else:
-            return mesh
+            mesh = mesh.filter_smooth_taubin(100)
+        
+        if self.mesh.dynamic_color:
+            mesh.paint_uniform_color(self.mesh.material.colour[time_step, index, :])
+
+        return mesh
 
     def construct_mesh_list(self):
         """
@@ -127,16 +131,16 @@ class Particle:
                 if j == 0:
                     if self.director is not None:
                         mesh = self._create_mesh(
-                            self.position[i][j], self.director[i][j]
+                            self.position[i][j], self.director[i][j], i, j
                         )
                     else:
-                        mesh = self._create_mesh(self.position[i][j], None)
+                        mesh = self._create_mesh(self.position[i][j], None, i, j)
                 else:
                     if self.director is not None:
                         mesh += self._create_mesh(
-                            self.position[i][j], self.director[i][j]
+                            self.position[i][j], self.director[i][j], i, j
                         )
                     else:
-                        mesh += self._create_mesh(self.position[i][j], None)
+                        mesh += self._create_mesh(self.position[i][j], None, i, j)
 
             self.mesh_list.append(mesh)
