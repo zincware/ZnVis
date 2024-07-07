@@ -64,7 +64,7 @@ class Arrow(Mesh):
 
         return mesh
 
-    def create_mesh_object(self, direction: np.ndarray) -> o3d.geometry.TriangleMesh:
+    def create_mesh(self, direction: np.ndarray) -> o3d.geometry.TriangleMesh:
         """
         Creates an arrow mesh object.
         """

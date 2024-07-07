@@ -83,7 +83,7 @@ class Mesh:
 
         return mesh
     
-    def create_mesh_object(self) -> o3d.geometry.TriangleMesh:
+    def create_mesh(self) -> o3d.geometry.TriangleMesh:
         """
         Create a mesh object defined by the dataclass.
         """

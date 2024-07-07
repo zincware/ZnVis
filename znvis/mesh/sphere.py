@@ -47,7 +47,7 @@ class Sphere(Mesh):
     radius: float = 1.0
     resolution: int = 10
 
-    def create_mesh_object(self) -> o3d.geometry.TriangleMesh:
+    def create_mesh(self) -> o3d.geometry.TriangleMesh:
         
         return o3d.geometry.TriangleMesh.create_sphere(
             radius=self.radius, resolution=self.resolution
