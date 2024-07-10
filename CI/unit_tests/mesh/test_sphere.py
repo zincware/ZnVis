@@ -64,7 +64,7 @@ class TestSphere(unittest.TestCase):
         -------
         Test if a sphere mesh is constructed correctly.
         """
-        sphere = self.sphere.create_mesh(starting_position=np.array([1, 1, 1]))
+        sphere = self.sphere.instantiate_mesh(starting_position=np.array([1, 1, 1]))
         self.assertEqual(sphere.has_vertex_normals(), True)
         self.assertEqual(type(sphere), o3d.geometry.TriangleMesh)
         np.testing.assert_almost_equal(sphere.get_center(), [1.0, 1.0, 1.0])

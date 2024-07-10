@@ -76,7 +76,7 @@ class Mesh:
         -------
         mesh : o3d.geometry.TriangleMesh
         """
-        mesh = self.create_mesh_object()
+        mesh = self.create_mesh()
         mesh.compute_vertex_normals()
         mesh.translate(starting_position.astype(float))
         if starting_orientation is not None:

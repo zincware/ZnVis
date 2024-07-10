@@ -53,7 +53,7 @@ class Arrow(Mesh):
         """
         Create and correctly orient an arrow mesh. Overwrites the parent class
         """
-        mesh = self.create_mesh_object(starting_orientation)
+        mesh = self.create_mesh(starting_orientation)
         mesh.compute_vertex_normals()
         if starting_orientation is not None:
             matrix = rotation_matrix(np.array([0, 0, 1]), starting_orientation)
