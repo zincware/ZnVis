@@ -29,6 +29,7 @@ import open3d.visualization.rendering as rendering
 from znvis.material.material import Material
 from znvis.transformations.rotation_matrices import rotation_matrix
 
+
 @dataclass
 class Mesh:
     """
@@ -42,14 +43,14 @@ class Mesh:
 
     material: Material = field(default_factory=lambda: Material())
     base_direction: np.ndarray = field(default_factory=lambda: np.array([1, 0, 0]))
-    dynamic_color: bool = False
 
     def __post_init__(self):
         """
         Post init function to create materials.
         """
         material = rendering.MaterialRecord()
-        if not self.dynamic_color:
+        self.material.colour = np.array(self.material.colour)
+        if self.material.colour.ndim != 3:
             material.base_color = np.hstack((self.material.colour, self.material.alpha))
         material.shader = "defaultLitTransparency"
         material.base_metallic = self.material.metallic
@@ -84,7 +85,7 @@ class Mesh:
             mesh.rotate(matrix)
 
         return mesh
-    
+
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
         """
         Create a mesh object defined by the dataclass.

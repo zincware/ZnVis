@@ -34,30 +34,27 @@ if __name__ == "__main__":
     # Basically give each particle a specified color for each frame
     colours = np.tile([30, 144, 255], (100, 5, 1))
     # Change the color of the first particle to red
-    colours[:,0,0] = np.linspace(30, 255, 100)
+    colours[:, 0, 0] = np.linspace(30, 255, 100)
     # Change the color of the second particle to green
-    colours[:,1,1] = np.linspace(144, 255, 100)
-    colours[:,1,2] = np.linspace(255, 30, 100)
+    colours[:, 1, 1] = np.linspace(144, 255, 100)
+    colours[:, 1, 2] = np.linspace(255, 30, 100)
     # Change the color of the third particle to blue
-    colours[:,2,0] = np.linspace(30, 10, 100)
-    colours[:,2,1] = np.linspace(140, 90, 100)
+    colours[:, 2, 0] = np.linspace(30, 10, 100)
+    colours[:, 2, 1] = np.linspace(140, 90, 100)
     # Change the color of the fourth particle to white
-    colours[:,3,0] = np.linspace(30, 255, 100)
-    colours[:,3,1] = np.linspace(144, 255, 100)
+    colours[:, 3, 0] = np.linspace(30, 255, 100)
+    colours[:, 3, 1] = np.linspace(144, 255, 100)
     # Change the color of the fifth particle to black
-    colours[:,4,0] = np.linspace(30, 0, 100)
-    colours[:,4,1] = np.linspace(144, 0, 100)
-    colours[:,4,2] = np.linspace(255, 0, 100)
+    colours[:, 4, 0] = np.linspace(30, 0, 100)
+    colours[:, 4, 1] = np.linspace(144, 0, 100)
+    colours[:, 4, 2] = np.linspace(255, 0, 100)
 
     material_1 = vis.Material(colour=colours / 255, alpha=1.0)
     # Define the first particle.
     trajectory = np.random.uniform(-5, 5, (1, 5, 3))
     trajectory = np.tile(trajectory, (100, 1, 1))
     # Turn on dynamic coloring for the mesh
-    mesh = vis.Sphere(radius=2.0,
-                      resolution=20,
-                      material=material_1,
-                      dynamic_color=True)
+    mesh = vis.Sphere(radius=2.0, resolution=20, material=material_1)
     particle = vis.Particle(
         name="Spheres", mesh=mesh, position=trajectory, smoothing=False
     )

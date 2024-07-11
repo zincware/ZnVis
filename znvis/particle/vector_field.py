@@ -40,7 +40,7 @@ class VectorField:
     name : str
             Name of the vector field
     mesh : Mesh
-            Mesh to use 
+            Mesh to use
     position : np.ndarray
             Position tensor of the shape (n_steps, n_vectors, n_dims)
     direction : np.ndarray
@@ -49,8 +49,8 @@ class VectorField:
             A list of mesh objects, one for each time step.
     static : bool (default=False)
             If true, only render the mesh once at initialization. Be careful
-            as this changes the shape of the required position and direction 
-            to (n_particles, n_dims) 
+            as this changes the shape of the required position and direction
+            to (n_particles, n_dims)
     smoothing : bool (default=False)
             If true, apply smoothing to each mesh object as it is rendered.
             This will slow down the initial construction of the mesh objects
@@ -58,14 +58,16 @@ class VectorField:
     """
 
     name: str
-    mesh: Arrow = None # Should be an instance of the Arrow class
+    mesh: Arrow = None  # Should be an instance of the Arrow class
     position: np.ndarray = None
     direction: np.ndarray = None
     mesh_list: typing.List[Arrow] = None
     static: bool = False
     smoothing: bool = False
 
-    def _create_mesh(self, position: np.ndarray, direction: np.ndarray, time_step: int, index: int):
+    def _create_mesh(
+        self, position: np.ndarray, direction: np.ndarray, time_step: int, index: int
+    ):
         """
         Create a mesh object for the vector field.
 
@@ -85,9 +87,11 @@ class VectorField:
         mesh = self.mesh.instantiate_mesh(position, direction)
         if self.smoothing:
             mesh = mesh.filter_smooth_taubin(100)
-        
-        if self.mesh.dynamic_color:
-            mesh = mesh.paint_uniform_color(self.mesh.material.colour[time_step, index, :])
+
+        if self.mesh.material.colour.ndim == 3:
+            mesh = mesh.paint_uniform_color(
+                self.mesh.material.colour[time_step, index, :]
+            )
 
         return mesh
 
@@ -104,7 +108,7 @@ class VectorField:
         """
         self.mesh_list = []
         try:
-            if not self.static: 
+            if not self.static:
                 n_particles = int(self.position.shape[1])
                 n_time_steps = int(self.position.shape[0])
             else:
@@ -120,12 +124,19 @@ class VectorField:
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             for j in range(n_particles):
-                if np.max(np.abs(self.direction[i][j])) > 0: # ignore vectors with length zero
-                    if new_mesh is False:
-                        mesh += self._create_mesh(self.position[i][j], self.direction[i][j], i, j)
-                    else:
-                        mesh = self._create_mesh(self.position[i][j], self.direction[i][j], i, j)
+                if (
+                    np.max(np.abs(self.direction[i][j])) > 0
+                ):  # ignore vectors with length zero
+                    if new_mesh is True:
+                        mesh = self._create_mesh(
+                            self.position[i][j], self.direction[i][j], i, j
+                        )
                         new_mesh = False
+                    else:
+                        mesh += self._create_mesh(
+                            self.position[i][j], self.direction[i][j], i, j
+                        )
+
             new_mesh = True
 
             self.mesh_list.append(mesh)
