@@ -30,4 +30,4 @@ jobs:
           pip install .
       - name: Pytest
         run: |
-          pytest CI/test_me.py
+          pytest .
