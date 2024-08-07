@@ -68,6 +68,8 @@ class Visualizer:
         keep_frames: bool = True,
         bounding_box: znvis.BoundingBox = None,
         video_format: str = "mp4",
+        renderer_resolution: list = [4096, 2160],
+        renderer_spp: int = 64,
         renderer: Mitsuba = Mitsuba(),
     ):
         """
@@ -88,6 +90,10 @@ class Visualizer:
                 after combining them into a video.
         video_format : str
                 The format of the video to be generated.
+        renderer_resolution : list
+                List containing the resolution of the rendered videos and screenshots
+        renderer_spp : int
+                Samples per pixel for the rendered videos and screenshots.
         """
         self.particles = particles
         self.vector_field = vector_field
@@ -95,12 +101,17 @@ class Visualizer:
         self.bounding_box = bounding_box() if bounding_box else None
 
         if number_of_steps is None:
-            number_of_steps = len(particles[0].position)
-        self.number_of_steps = number_of_steps
+            len_list = []
+            for particle in particles:
+                if not particle.static:
+                    len_list.append(len(particle.position))
+            self.number_of_steps = min(len_list)
 
         self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
+        self.renderer_resolution = renderer_resolution
+        self.renderer_spp = renderer_spp
         self.keep_frames = keep_frames
         self.renderer = renderer
 
@@ -271,23 +282,44 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         mesh_dict = {}
-        mesh_center = []
+        
+        if self.vector_field is not None:
+            for item in self.vector_field:
+                if item.static:
+                    mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[0],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
+                else:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[self.counter],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
+        
         for item in self.particles:
-            mesh_dict[item.name] = {
-                "mesh": item.mesh_list[self.counter],
-                "bsdf": item.mesh.material.mitsuba_bsdf,
-                "material": item.mesh.o3d_material,
+            if item.static:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[0],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
             }
-            mesh_center.append(
-                item.mesh_list[self.counter]
-                .get_axis_aligned_bounding_box()
-                .get_center()
-            )
+            else:
+                mesh_dict[item.name] = {
+                    "mesh": item.mesh_list[self.counter],
+                    "bsdf": item.mesh.material.mitsuba_bsdf,
+                    "material": item.mesh.o3d_material,
+                }
 
         view_matrix = vis.scene.camera.get_view_matrix()
 
         self.renderer.render_mesh_objects(
-            mesh_dict, view_matrix, save_name=f"frame_{self.counter}.png"
+            mesh_dict,
+            view_matrix,
+            save_name=f"frame_{self.counter}.png",
+            resolution=self.renderer_resolution,
+            samples_per_pixel=self.renderer_spp
         )
 
         # Restart live feed if it was running before the export.
@@ -346,10 +378,11 @@ class Visualizer:
                 visualizer.add_geometry("Box", self.bounding_box)
         else:
             for i, item in enumerate(self.particles):
-                visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                )
+                if not item.static:
+                    visualizer.remove_geometry(item.name)
+                    visualizer.add_geometry(
+                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    )
 
     def _draw_vector_field(self, visualizer=None, initial: bool = False):
         """
@@ -375,10 +408,11 @@ class Visualizer:
                 )
         else:
             for i, item in enumerate(self.vector_field):
-                visualizer.remove_geometry(item.name)
-                visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                )
+                if not item.static:
+                    visualizer.remove_geometry(item.name)
+                    visualizer.add_geometry(
+                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    )
 
     def _continuous_trajectory(self, vis):
         """
@@ -414,12 +448,34 @@ class Visualizer:
             """
             mesh_dict = {}
 
+            if self.vector_field is not None:
+                for item in self.vector_field:
+                    if item.static:
+                        mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
+                    else:
+                        mesh_dict[item.name] = {
+                            "mesh": item.mesh_list[self.counter],
+                            "bsdf": item.mesh.material.mitsuba_bsdf,
+                            "material": item.mesh.o3d_material,
+                        }
+            
             for item in self.particles:
-                mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[self.counter],
-                    "bsdf": item.mesh.material.mitsuba_bsdf,
-                    "material": item.mesh.o3d_material,
+                if item.static:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
                 }
+                else:
+                    mesh_dict[item.name] = {
+                        "mesh": item.mesh_list[self.counter],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
 
             view_matrix = self.vis.scene.camera.get_view_matrix()
             self.renderer.render_mesh_objects(
@@ -427,6 +483,8 @@ class Visualizer:
                 view_matrix,
                 save_dir=self.frame_folder,
                 save_name=f"frame_{self.counter:0>6}.png",
+                resolution=self.renderer_resolution,
+                samples_per_pixel=self.renderer_spp
             )
 
             self.save_thread_finished = True
@@ -471,10 +529,16 @@ class Visualizer:
             Function to be called on thread to save image.
             """
             for i, item in enumerate(self.particles):
-                if i == 0:
-                    mesh = item.mesh_list[self.counter]
+                if item.static:
+                    if i == 0:
+                        mesh = item.mesh_list[0]
+                    else:
+                        mesh += item.mesh_list[0]
                 else:
-                    mesh += item.mesh_list[self.counter]
+                    if i == 0:
+                        mesh = item.mesh_list[self.counter]
+                    else:
+                        mesh += item.mesh_list[self.counter]
 
             o3d.io.write_triangle_mesh(
                 (self.obj_folder / f"export_mesh_{self.counter}.ply").as_posix(), mesh

@@ -47,6 +47,10 @@ class VectorField:
             Direction tensor of the shape (n_steps, n_vectors, n_dims)
     mesh_list : list
             A list of mesh objects, one for each time step.
+    static : bool (default=False)
+            If true, only render the mesh once at initialization. Be careful
+            as this changes the shape of the required position and direction
+            to (n_particles, n_dims)
     smoothing : bool (default=False)
             If true, apply smoothing to each mesh object as it is rendered.
             This will slow down the initial construction of the mesh objects
@@ -58,10 +62,12 @@ class VectorField:
     position: np.ndarray = None
     direction: np.ndarray = None
     mesh_list: typing.List[Arrow] = None
-
+    static: bool = False
     smoothing: bool = False
 
-    def _create_mesh(self, position: np.ndarray, direction: np.ndarray):
+    def _create_mesh(
+        self, position: np.ndarray, direction: np.ndarray, time_step: int, index: int
+    ):
         """
         Create a mesh object for the vector field.
 
@@ -78,11 +84,16 @@ class VectorField:
                 A mesh object
         """
 
-        mesh = self.mesh.create_mesh(position, direction)
+        mesh = self.mesh.instantiate_mesh(position, direction)
         if self.smoothing:
-            return mesh.filter_smooth_taubin(100)
-        else:
-            return mesh
+            mesh = mesh.filter_smooth_taubin(100)
+
+        if self.mesh.material.colour.ndim == 3:
+            mesh = mesh.paint_uniform_color(
+                self.mesh.material.colour[time_step, index, :]
+            )
+
+        return mesh
 
     def construct_mesh_list(self):
         """
@@ -97,15 +108,35 @@ class VectorField:
         """
         self.mesh_list = []
         try:
-            n_particles = int(self.position.shape[1])
-            n_time_steps = int(self.position.shape[0])
+            if not self.static:
+                n_particles = int(self.position.shape[1])
+                n_time_steps = int(self.position.shape[0])
+            else:
+                n_particles = int(self.position.shape[0])
+                n_time_steps = 1
+                self.position = self.position[np.newaxis, :, :]
+                self.direction = self.direction[np.newaxis, :, :]
+
         except ValueError:
             raise ValueError("There is no data for this vector field.")
 
+        new_mesh = True
+
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             for j in range(n_particles):
-                if j == 0:
-                    mesh = self._create_mesh(self.position[i][j], self.direction[i][j])
-                else:
-                    mesh += self._create_mesh(self.position[i][j], self.direction[i][j])
+                if (
+                    np.max(np.abs(self.direction[i][j])) > 0
+                ):  # ignore vectors with length zero
+                    if new_mesh is True:
+                        mesh = self._create_mesh(
+                            self.position[i][j], self.direction[i][j], i, j
+                        )
+                        new_mesh = False
+                    else:
+                        mesh += self._create_mesh(
+                            self.position[i][j], self.direction[i][j], i, j
+                        )
+
+            new_mesh = True
+
             self.mesh_list.append(mesh)

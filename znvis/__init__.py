@@ -29,6 +29,14 @@ from znvis.mesh.arrow import Arrow
 from znvis.mesh.custom import CustomMesh
 from znvis.mesh.cylinder import Cylinder
 from znvis.mesh.sphere import Sphere
+from znvis.mesh.arrow import Arrow
+from znvis.mesh.box import Box
+from znvis.mesh.cone import Cone
+from znvis.mesh.tetrahedron import Tetrahedron
+from znvis.mesh.octahedron import Octahedron
+from znvis.mesh.icosahedron import Icosahedron
+from znvis.mesh.torus import Torus
+from znvis.mesh.mobius_loop import MobiusLoop
 from znvis.particle.particle import Particle
 from znvis.particle.vector_field import VectorField
 from znvis.visualizer.visualizer import Visualizer
@@ -37,6 +45,13 @@ __all__ = [
     Particle.__name__,
     Sphere.__name__,
     Arrow.__name__,
+    Box.__name__,
+    Cone.__name__,
+    Tetrahedron.__name__,
+    Octahedron.__name__,
+    Icosahedron.__name__,
+    Torus.__name__,
+    MobiusLoop.__name__,
     VectorField.__name__,
     Visualizer.__name__,
     Cylinder.__name__,

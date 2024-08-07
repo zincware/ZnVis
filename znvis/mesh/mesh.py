@@ -27,6 +27,7 @@ import open3d as o3d
 import open3d.visualization.rendering as rendering
 
 from znvis.material.material import Material
+from znvis.transformations.rotation_matrices import rotation_matrix
 
 
 @dataclass
@@ -48,7 +49,9 @@ class Mesh:
         Post init function to create materials.
         """
         material = rendering.MaterialRecord()
-        material.base_color = np.hstack((self.material.colour, self.material.alpha))
+        self.material.colour = np.array(self.material.colour)
+        if self.material.colour.ndim != 3:
+            material.base_color = np.hstack((self.material.colour, self.material.alpha))
         material.shader = "defaultLitTransparency"
         material.base_metallic = self.material.metallic
         material.base_roughness = self.material.roughness
@@ -57,7 +60,7 @@ class Mesh:
 
         self.o3d_material = material
 
-    def create_mesh(
+    def instantiate_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None
     ) -> o3d.geometry.TriangleMesh:
         """
@@ -74,4 +77,17 @@ class Mesh:
         -------
         mesh : o3d.geometry.TriangleMesh
         """
-        raise NotImplementedError("Implemented in child class.")
+        mesh = self.create_mesh()
+        mesh.compute_vertex_normals()
+        mesh.translate(starting_position.astype(float))
+        if starting_orientation is not None:
+            matrix = rotation_matrix(self.base_direction, starting_orientation)
+            mesh.rotate(matrix)
+
+        return mesh
+
+    def create_mesh(self) -> o3d.geometry.TriangleMesh:
+        """
+        Create a mesh object defined by the dataclass.
+        """
+        raise NotImplementedError("Method not implemented.")

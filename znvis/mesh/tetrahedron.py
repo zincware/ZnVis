@@ -21,7 +21,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Create a cylinder mesh
+Create a tetrahedron mesh
 """
 
 from dataclasses import dataclass
@@ -31,37 +31,24 @@ import open3d as o3d
 
 from znvis.transformations.rotation_matrices import rotation_matrix
 
-from znvis.mesh import Mesh
+from .mesh import Mesh
 
 
 @dataclass
-class Cylinder(Mesh):
+class Tetrahedron(Mesh):
     """
-    A class to produce cylinder meshes.
+    A class to produce tetrahedron meshes.
 
     Attributes
     ----------
     radius : float
-            Radius of the sphere.
-    height : float
-            Height of the cylinder.
-    split : int
-            Number of segment the mesh will be split into.
-    resolution : int
-            Resolution of the sphere.
+                Distance from centroid to mesh vertices.
     """
 
     radius: float = 1.0
-    height: float = 3.0
-    split: int = 1
-    resolution: int = 10
 
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
-        
-        return o3d.geometry.TriangleMesh.create_cylinder(
-            radius=self.radius,
-            height=self.height,
-            split=self.split,
-            resolution=self.resolution,
-        )
 
+        return o3d.geometry.TriangleMesh.create_tetrahedron(
+            radius=self.radius
+        )
