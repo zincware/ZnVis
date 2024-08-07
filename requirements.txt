@@ -1,5 +1,5 @@
-open3d
-numpy
+open3d==0.17.0
+numpy==1.26.4
 pytest
 rich
 opencv-python
