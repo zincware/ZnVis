@@ -75,7 +75,7 @@ class TestCylinder(unittest.TestCase):
         -------
         Test if a sphere mesh is constructed correctly.
         """
-        cylinder = self.cylinder.create_mesh(
+        cylinder = self.cylinder.instantiate_mesh(
             starting_position=np.array([1, 1, 1]),
             starting_orientation=np.array([1, 1, 1]),
         )
