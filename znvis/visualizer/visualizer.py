@@ -384,7 +384,6 @@ class Visualizer:
                         item.name, item.mesh_list[self.counter], item.mesh.o3d_material
                     )
 
-
     def _draw_vector_field(self, visualizer=None, initial: bool = False):
         """
         Draw the vector field on the visualizer.
@@ -401,7 +400,7 @@ class Visualizer:
         """
         if visualizer is None:
             visualizer = self.vis
-        
+
         if initial:
             for i, item in enumerate(self.vector_field):
                 visualizer.add_geometry(
@@ -613,7 +612,7 @@ class Visualizer:
 
         # draw the vector field if it exists.
         if self.vector_field is not None:
-            self._draw_vector_field(visualizer=visualizer) 
+            self._draw_vector_field(visualizer=visualizer)
 
         visualizer.post_redraw()  # re-draw the window.
 

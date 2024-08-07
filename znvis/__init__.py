@@ -25,6 +25,7 @@ init file for the main ZnVis package.
 from znvis import rendering
 from znvis.bounding_objects.bounding_box import BoundingBox
 from znvis.material.material import Material
+from znvis.mesh.arrow import Arrow
 from znvis.mesh.custom import CustomMesh
 from znvis.mesh.cylinder import Cylinder
 from znvis.mesh.sphere import Sphere
