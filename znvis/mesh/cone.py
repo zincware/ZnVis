@@ -21,7 +21,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Create a cylinder mesh
+Create a cone mesh
 """
 
 from dataclasses import dataclass
@@ -35,33 +35,33 @@ from znvis.mesh import Mesh
 
 
 @dataclass
-class Cylinder(Mesh):
+class Cone(Mesh):
     """
-    A class to produce cylinder meshes.
+    A class to produce cone meshes.
 
     Attributes
     ----------
     radius : float
-            Radius of the sphere.
+            Radius of the cone.
     height : float
-            Height of the cylinder.
-    split : int
-            Number of segment the mesh will be split into.
+            Height of the cone.
     resolution : int
-            Resolution of the sphere.
+            Resolution of the cone.
+    split : int
+            The height will be split into this many segments.
     """
 
     radius: float = 1.0
-    height: float = 3.0
+    height: float = 2.0
+    resolution: int = 20
     split: int = 1
-    resolution: int = 10
 
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
-        
-        return o3d.geometry.TriangleMesh.create_cylinder(
+
+        return o3d.geometry.TriangleMesh.create_cone(
             radius=self.radius,
             height=self.height,
-            split=self.split,
             resolution=self.resolution,
+            split=self.split,
         )
 

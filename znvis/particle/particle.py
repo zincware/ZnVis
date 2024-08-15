@@ -51,6 +51,11 @@ class Particle:
             Director tensor of the shape (n_confs, n_particles, n_dims)
     mesh_list : list
             A list of mesh objects, one for each time step.
+    static : bool (default=False)
+            If true, only render the mesh once at initialization. Be careful
+            as this changes the shape of the required position and director 
+            to (n_particles, n_dims) 
+
     smoothing : bool (default=False)
             If true, apply smoothing to each mesh object as it is rendered.
             This will slow down the initial construction of the mesh objects
@@ -64,10 +69,10 @@ class Particle:
     force: np.ndarray = None
     director: np.ndarray = None
     mesh_list: typing.List[Mesh] = None
-
+    static: bool = False
     smoothing: bool = False
 
-    def _create_mesh(self, position, director):
+    def _create_mesh(self, position, director, time_step=None, index=None):
         """
         Create a mesh object for the particle.
 
@@ -84,13 +89,17 @@ class Particle:
                 A mesh object
         """
         if director is not None:
-            mesh = self.mesh.create_mesh(position, starting_orientation=director)
+            mesh = self.mesh.instantiate_mesh(position, starting_orientation=director)
         else:
-            mesh = self.mesh.create_mesh(position)
+            mesh = self.mesh.instantiate_mesh(position)
+
         if self.smoothing:
-            return mesh.filter_smooth_taubin(100)
-        else:
-            return mesh
+            mesh = mesh.filter_smooth_taubin(100)
+
+        if self.mesh.material.colour.ndim == 3:
+            mesh.paint_uniform_color(self.mesh.material.colour[time_step, index, :])
+
+        return mesh
 
     def construct_mesh_list(self):
         """
@@ -105,26 +114,34 @@ class Particle:
         """
         self.mesh_list = []
         try:
-            # n_particles = int(self.position.shape[1])
-            n_time_steps = int(len(self.position))
+            if not self.static: 
+                n_particles = int(self.position.shape[1])
+                n_time_steps = int(self.position.shape[0])
+            else:
+                n_particles = int(self.position.shape[0])
+                n_time_steps = 1
+                self.position = self.position[np.newaxis, :, :]
+                if self.director is not None:
+                    self.director = self.director[np.newaxis, :, :]
+
         except ValueError:
             raise ValueError("There is no data for these particles.")
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
-            for j in range(np.shape(self.position[i])[0]):
+            for j in range(n_particles):
                 if j == 0:
                     if self.director is not None:
                         mesh = self._create_mesh(
-                            self.position[i][j], self.director[i][j]
+                            self.position[i][j], self.director[i][j], i, j
                         )
                     else:
-                        mesh = self._create_mesh(self.position[i][j], None)
+                        mesh = self._create_mesh(self.position[i][j], None, i, j)
                 else:
                     if self.director is not None:
                         mesh += self._create_mesh(
-                            self.position[i][j], self.director[i][j]
+                            self.position[i][j], self.director[i][j], i, j
                         )
                     else:
-                        mesh += self._create_mesh(self.position[i][j], None)
+                        mesh += self._create_mesh(self.position[i][j], None, i, j)
 
             self.mesh_list.append(mesh)

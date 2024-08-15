@@ -21,7 +21,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Create a cylinder mesh
+Create a torus mesh
 """
 
 from dataclasses import dataclass
@@ -35,33 +35,33 @@ from znvis.mesh import Mesh
 
 
 @dataclass
-class Cylinder(Mesh):
+class Torus(Mesh):
     """
-    A class to produce cylinder meshes.
+    A class to produce torus meshes.
 
     Attributes
     ----------
-    radius : float
-            Radius of the sphere.
-    height : float
-            Height of the cylinder.
-    split : int
-            Number of segment the mesh will be split into.
-    resolution : int
-            Resolution of the sphere.
+    torus_radius : float
+            The radius from the center of the torus to the center of the tube.
+    tube_radius : float
+            The radius of the torus tube.
+    tubular_resolution : int
+            The number of segments along the tubular direction.    
+    radial_resolution : int
+            The number of segments along the radial direction.
     """
 
-    radius: float = 1.0
-    height: float = 3.0
-    split: int = 1
-    resolution: int = 10
+    torus_radius: float = 1.0
+    tube_radius: float = 0.3
+    tubular_resolution: int = 20
+    radial_resolution: int = 30
 
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
-        
-        return o3d.geometry.TriangleMesh.create_cylinder(
-            radius=self.radius,
-            height=self.height,
-            split=self.split,
-            resolution=self.resolution,
+
+        return o3d.geometry.TriangleMesh.create_torus(
+            torus_radius=self.torus_radius,
+            tube_radius=self.tube_radius,
+            tubular_resolution=self.tubular_resolution,
+            radial_resolution=self.radial_resolution,
         )
 
