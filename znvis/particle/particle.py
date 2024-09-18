@@ -53,8 +53,8 @@ class Particle:
             A list of mesh objects, one for each time step.
     static : bool (default=False)
             If true, only render the mesh once at initialization. Be careful
-            as this changes the shape of the required position and director 
-            to (n_particles, n_dims) 
+            as this changes the shape of the required position and director
+            to (n_particles, n_dims)
 
     smoothing : bool (default=False)
             If true, apply smoothing to each mesh object as it is rendered.
@@ -114,7 +114,7 @@ class Particle:
         """
         self.mesh_list = []
         try:
-            if not self.static: 
+            if not self.static:
                 n_particles = int(self.position.shape[1])
                 n_time_steps = int(self.position.shape[0])
             else:

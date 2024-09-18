@@ -45,12 +45,11 @@ if __name__ == "__main__":
 
     directions = np.random.uniform(-1, 1, (100, 441, 3))
     # confine the directions to be in the z = 0 plane
-    directions[:,:,2] = 0
+    directions[:, :, 2] = 0
 
-    vector_field = vis.VectorField(name="VectorField",
-                                   mesh=mesh,
-                                   position=grid,
-                                   direction=directions)
+    vector_field = vis.VectorField(
+        name="VectorField", mesh=mesh, position=grid, direction=directions
+    )
 
     # Define particles
     material_2 = vis.Material(colour=np.array([255, 140, 0]) / 255, alpha=1.0)
@@ -58,15 +57,14 @@ if __name__ == "__main__":
 
     trajectory_2 = np.random.uniform(-10, 10, (100, 1, 3))
     # confine the particles to be in the z = 0 plane
-    trajectory_2[:,:,2] = 0
+    trajectory_2[:, :, 2] = 0
 
-    particle = vis.Particle(name="Spheres",
-                            mesh=mesh_2,
-                            position=trajectory_2,
-                            smoothing=False)
+    particle = vis.Particle(
+        name="Spheres", mesh=mesh_2, position=trajectory_2, smoothing=False
+    )
 
     # Construct the visualizer and run
-    visualizer = vis.Visualizer(particles=[particle],
-                                vector_field=[vector_field],
-                                frame_rate=20)
+    visualizer = vis.Visualizer(
+        particles=[particle], vector_field=[vector_field], frame_rate=20
+    )
     visualizer.run_visualization()

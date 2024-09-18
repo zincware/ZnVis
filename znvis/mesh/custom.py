@@ -29,9 +29,8 @@ from dataclasses import dataclass
 import numpy as np
 import open3d as o3d
 
-from znvis.transformations.rotation_matrices import rotation_matrix
-
 from znvis.mesh import Mesh
+from znvis.transformations.rotation_matrices import rotation_matrix
 
 
 @dataclass
