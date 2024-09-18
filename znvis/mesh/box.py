@@ -26,10 +26,7 @@ Create a box mesh
 
 from dataclasses import dataclass
 
-import numpy as np
 import open3d as o3d
-
-from znvis.transformations.rotation_matrices import rotation_matrix
 
 from znvis.mesh import Mesh
 
@@ -46,7 +43,7 @@ class Box(Mesh):
     height : float
             Height of the box.
     depth : float
-            Depth of the box.    
+            Depth of the box.
     """
 
     width: float = 1.0
@@ -56,8 +53,5 @@ class Box(Mesh):
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
 
         return o3d.geometry.TriangleMesh.create_box(
-            width=self.width,
-            height=self.height,
-            depth=self.depth
+            width=self.width, height=self.height, depth=self.depth
         )
-

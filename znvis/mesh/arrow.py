@@ -76,9 +76,9 @@ class Arrow(Mesh):
         cone_height = 0.15 * direction_length * self.scale
 
         return o3d.geometry.TriangleMesh.create_arrow(
-            cylinder_radius=cylinder_radius, 
-            cylinder_height=cylinder_height, 
-            cone_radius=cone_radius, 
+            cylinder_radius=cylinder_radius,
+            cylinder_height=cylinder_height,
+            cone_radius=cone_radius,
             cone_height=cone_height,
             resolution=self.resolution,
         )

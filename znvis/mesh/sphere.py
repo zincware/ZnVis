@@ -23,10 +23,7 @@ Create a sphere mesh.
 
 from dataclasses import dataclass
 
-import numpy as np
 import open3d as o3d
-
-from znvis.transformations.rotation_matrices import rotation_matrix
 
 from znvis.mesh import Mesh
 
@@ -48,7 +45,7 @@ class Sphere(Mesh):
     resolution: int = 10
 
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
-        
+
         return o3d.geometry.TriangleMesh.create_sphere(
             radius=self.radius, resolution=self.resolution
         )

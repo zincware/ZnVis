@@ -26,10 +26,7 @@ Create a torus mesh
 
 from dataclasses import dataclass
 
-import numpy as np
 import open3d as o3d
-
-from znvis.transformations.rotation_matrices import rotation_matrix
 
 from znvis.mesh import Mesh
 
@@ -46,7 +43,7 @@ class Torus(Mesh):
     tube_radius : float
             The radius of the torus tube.
     tubular_resolution : int
-            The number of segments along the tubular direction.    
+            The number of segments along the tubular direction.
     radial_resolution : int
             The number of segments along the radial direction.
     """
@@ -64,4 +61,3 @@ class Torus(Mesh):
             tubular_resolution=self.tubular_resolution,
             radial_resolution=self.radial_resolution,
         )
-

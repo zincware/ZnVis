@@ -26,10 +26,7 @@ Create a octahedron mesh
 
 from dataclasses import dataclass
 
-import numpy as np
 import open3d as o3d
-
-from znvis.transformations.rotation_matrices import rotation_matrix
 
 from znvis.mesh import Mesh
 
@@ -48,8 +45,5 @@ class Octahedron(Mesh):
     radius: float = 1.0
 
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
-        
-        return o3d.geometry.TriangleMesh.create_octahedron(
-            radius=self.radius
-        )
 
+        return o3d.geometry.TriangleMesh.create_octahedron(radius=self.radius)
