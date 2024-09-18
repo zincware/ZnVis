@@ -39,11 +39,9 @@ if __name__ == "__main__":
     material_2 = vis.Material(colour=np.array([255, 140, 0]) / 255, alpha=1.0)
     # Define the cylinder.
     trajectory_2 = np.random.uniform(-10, 10, (10, 1, 3))
-    mesh_2 = vis.Cylinder(radius=1.0, 
-                          height=2.0, 
-                          split=1, 
-                          material=material_2, 
-                          resolution=30)
+    mesh_2 = vis.Cylinder(
+        radius=1.0, height=2.0, split=1, material=material_2, resolution=30
+    )
     particle_2 = vis.Particle(name="Cylinder", mesh=mesh_2, position=trajectory_2)
 
     material_3 = vis.Material(colour=np.array([100, 255, 130]) / 255, alpha=1.0)
@@ -55,23 +53,28 @@ if __name__ == "__main__":
     material_4 = vis.Material(colour=np.array([255, 200, 50]) / 255, alpha=1.0)
     # Define the torus.
     trajectory_4 = np.random.uniform(-10, 10, (10, 1, 3))
-    mesh_4 = vis.Torus(torus_radius=1.0,
-                       tube_radius=0.5, 
-                       tubular_resolution=30,
-                       radial_resolution=30, 
-                       material=material_4)
+    mesh_4 = vis.Torus(
+        torus_radius=1.0,
+        tube_radius=0.5,
+        tubular_resolution=30,
+        radial_resolution=30,
+        material=material_4,
+    )
     particle_4 = vis.Particle(name="Torus", mesh=mesh_4, position=trajectory_4)
 
     material_5 = vis.Material(colour=np.array([250, 50, 20]) / 255, alpha=1.0)
     # Define the mobius loop.
     trajectory_5 = np.random.uniform(-10, 10, (10, 1, 3))
-    mesh_5 = vis.MobiusLoop(twists=3,
-                            radius=2,
-                            flatness=1, 
-                            width=2, scale=1,
-                            length_split=200, 
-                            width_split=200, 
-                            material=material_5)
+    mesh_5 = vis.MobiusLoop(
+        twists=3,
+        radius=2,
+        flatness=1,
+        width=2,
+        scale=1,
+        length_split=200,
+        width_split=200,
+        material=material_5,
+    )
     particle_5 = vis.Particle(name="MobiusLoop", mesh=mesh_5, position=trajectory_5)
 
     material_6 = vis.Material(colour=np.array([255, 90, 255]) / 255, alpha=1.0)
@@ -91,10 +94,9 @@ if __name__ == "__main__":
     trajectory_8 = np.random.uniform(-10, 10, (10, 1, 3))
     direction_8 = np.random.uniform(-1, 1, (10, 1, 3))
     mesh_8 = vis.Arrow(scale=2, material=material_8, resolution=30)
-    particle_8 = vis.Particle(name="Arrow", 
-                              mesh=mesh_8,
-                              position=trajectory_8, 
-                              director=direction_8)
+    particle_8 = vis.Particle(
+        name="Arrow", mesh=mesh_8, position=trajectory_8, director=direction_8
+    )
 
     material_9 = vis.Material(colour=np.array([150, 255, 230]) / 255, alpha=1.0)
     # Define the box.
@@ -108,8 +110,18 @@ if __name__ == "__main__":
     mesh_10 = vis.Cone(radius=1.0, height=2.0, material=material_10, resolution=30)
     particle_10 = vis.Particle(name="Cone", mesh=mesh_10, position=trajectory_10)
 
-    particle_list = [particle, particle_2, particle_3, particle_4, particle_5,
-                     particle_6, particle_7, particle_8, particle_9, particle_10]
+    particle_list = [
+        particle,
+        particle_2,
+        particle_3,
+        particle_4,
+        particle_5,
+        particle_6,
+        particle_7,
+        particle_8,
+        particle_9,
+        particle_10,
+    ]
 
     # Create a bounding box
     bounding_box = vis.BoundingBox(

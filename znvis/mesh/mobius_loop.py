@@ -26,10 +26,7 @@ Create a mobius loop mesh
 
 from dataclasses import dataclass
 
-import numpy as np
 import open3d as o3d
-
-from znvis.transformations.rotation_matrices import rotation_matrix
 
 from znvis.mesh import Mesh
 
@@ -71,7 +68,7 @@ class MobiusLoop(Mesh):
             length_split=self.length_split,
             width_split=self.width_split,
             twists=self.twists,
-            raidus=self.radius, # typo in open3d
+            raidus=self.radius,  # typo in open3d
             flatness=self.flatness,
             width=self.width,
             scale=self.scale,
