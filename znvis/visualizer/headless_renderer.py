@@ -39,7 +39,7 @@ import znvis
 from znvis.rendering import Mitsuba
 
 
-class Headless_Visualizer:
+class Headless_Renderer:
     """
     Main class to perform visualization.
 
