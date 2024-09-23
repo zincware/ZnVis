@@ -114,7 +114,7 @@ class Headless_Visualizer:
             else:
                 self.number_of_steps = min(len_list)
     
-        self.output_folder = pathlib.Path(output_folder)
+        self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
         self.renderer_resolution = renderer_resolution
@@ -195,24 +195,24 @@ class Headless_Visualizer:
                 for item in self.vector_field:
                     if item.static:
                         mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[0],
-                        "bsdf": item.mesh.material.mitsuba_bsdf,
-                        "material": item.mesh.o3d_material,
-                    }
+                            "mesh": item.mesh_list[0],
+                            "bsdf": item.mesh.material.mitsuba_bsdf,
+                            "material": item.mesh.o3d_material,
+                        }
                     else:
                         mesh_dict[item.name] = {
                             "mesh": item.mesh_list[self.counter],
                             "bsdf": item.mesh.material.mitsuba_bsdf,
                             "material": item.mesh.o3d_material,
                         }
-            
+
             for item in self.particles:
                 if item.static:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[0],
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
-                }
+                    }
                 else:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[self.counter],
@@ -221,7 +221,6 @@ class Headless_Visualizer:
                     }
             self.output_folder.mkdir(parents=True, exist_ok=True)   
             self.frame_folder.mkdir(parents=True, exist_ok=True)
-
 
             self.renderer.render_mesh_objects(
                 mesh_dict,
