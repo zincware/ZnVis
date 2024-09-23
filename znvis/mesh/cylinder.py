@@ -26,10 +26,7 @@ Create a cylinder mesh
 
 from dataclasses import dataclass
 
-import numpy as np
 import open3d as o3d
-
-from znvis.transformations.rotation_matrices import rotation_matrix
 
 from znvis.mesh import Mesh
 
@@ -57,11 +54,10 @@ class Cylinder(Mesh):
     resolution: int = 10
 
     def create_mesh(self) -> o3d.geometry.TriangleMesh:
-        
+
         return o3d.geometry.TriangleMesh.create_cylinder(
             radius=self.radius,
             height=self.height,
             split=self.split,
             resolution=self.resolution,
         )
-

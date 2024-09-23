@@ -105,7 +105,7 @@ class Visualizer:
             for particle in particles:
                 if not particle.static:
                     len_list.append(len(particle.position))
-            
+
             if len_list == []:
                 self.number_of_steps = 1
             else:
@@ -306,29 +306,29 @@ class Visualizer:
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         mesh_dict = {}
-        
+
         if self.vector_field is not None:
             for item in self.vector_field:
                 if item.static:
                     mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[0],
-                    "bsdf": item.mesh.material.mitsuba_bsdf,
-                    "material": item.mesh.o3d_material,
-                }
+                        "mesh": item.mesh_list[0],
+                        "bsdf": item.mesh.material.mitsuba_bsdf,
+                        "material": item.mesh.o3d_material,
+                    }
                 else:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[self.counter],
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
                     }
-        
+
         for item in self.particles:
             if item.static:
                 mesh_dict[item.name] = {
                     "mesh": item.mesh_list[0],
                     "bsdf": item.mesh.material.mitsuba_bsdf,
                     "material": item.mesh.o3d_material,
-            }
+                }
             else:
                 mesh_dict[item.name] = {
                     "mesh": item.mesh_list[self.counter],
@@ -343,7 +343,7 @@ class Visualizer:
             view_matrix,
             save_name=f"frame_{self.counter}.png",
             resolution=self.renderer_resolution,
-            samples_per_pixel=self.renderer_spp
+            samples_per_pixel=self.renderer_spp,
         )
 
         # Restart live feed if it was running before the export.
@@ -477,24 +477,24 @@ class Visualizer:
                 for item in self.vector_field:
                     if item.static:
                         mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[0],
-                        "bsdf": item.mesh.material.mitsuba_bsdf,
-                        "material": item.mesh.o3d_material,
-                    }
+                            "mesh": item.mesh_list[0],
+                            "bsdf": item.mesh.material.mitsuba_bsdf,
+                            "material": item.mesh.o3d_material,
+                        }
                     else:
                         mesh_dict[item.name] = {
                             "mesh": item.mesh_list[self.counter],
                             "bsdf": item.mesh.material.mitsuba_bsdf,
                             "material": item.mesh.o3d_material,
                         }
-            
+
             for item in self.particles:
                 if item.static:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[0],
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
-                }
+                    }
                 else:
                     mesh_dict[item.name] = {
                         "mesh": item.mesh_list[self.counter],
@@ -509,7 +509,7 @@ class Visualizer:
                 save_dir=self.frame_folder,
                 save_name=f"frame_{self.counter:0>6}.png",
                 resolution=self.renderer_resolution,
-                samples_per_pixel=self.renderer_spp
+                samples_per_pixel=self.renderer_spp,
             )
 
             self.save_thread_finished = True
@@ -632,11 +632,11 @@ class Visualizer:
             else:
                 self.counter += 1
             step = self.counter
-        if self.do_rewind == True:
+        if self.do_rewind is True:
             if self.counter <= 1:
                 self.counter = self.number_of_steps - 2
             else:
-                self.counter -= 2 
+                self.counter -= 2
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
 
@@ -703,8 +703,8 @@ class Visualizer:
         Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
 
         """
-        if self.do_rewind == True:
-            self.do_rewind = False
+        if self.do_rewind is True:
+            self.do_rewind is False
             self.play_speed = 1
 
         if self.play_speed == 1:
@@ -720,7 +720,7 @@ class Visualizer:
         """
         Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
         """
-        if self.do_rewind == False:
+        if self.do_rewind is False:
             self.play_speed = 1
 
         self.do_rewind = True
