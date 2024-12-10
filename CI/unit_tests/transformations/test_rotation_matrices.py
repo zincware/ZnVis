@@ -43,3 +43,15 @@ class TestRotationMatrix(unittest.TestCase):
 
         rotated_vector = np.dot(rotation, reference)
         np.testing.assert_array_equal(new_direction, rotated_vector)
+    
+    def test_zero_rotation(self):
+        """
+        Test a zero rotation.
+        """
+        reference = np.array([1, 0, 0])
+        new_direction = np.array([1, 0, 0])
+
+        rotation = rotation_matrix(reference, new_direction)
+        rotated_vector = np.dot(rotation, reference)
+        np.testing.assert_array_equal(np.eye(3), rotation)
+        np.testing.assert_array_equal(new_direction, rotated_vector)

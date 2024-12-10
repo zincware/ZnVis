@@ -18,7 +18,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Run unit tests on the cylinder module.
+Run unit tests on the Icosahedron module.
 """
 
 import unittest
@@ -27,12 +27,12 @@ import numpy as np
 import open3d as o3d
 
 from znvis import Material
-from znvis.mesh.cylinder import Cylinder
+from znvis.mesh.icosahedron import Icosahedron
 
 
-class TestCylinder(unittest.TestCase):
+class TestMobius(unittest.TestCase):
     """
-    A test class for the Particle class.
+    A test class for the Icosahedron class.
     """
 
     @classmethod
@@ -42,15 +42,12 @@ class TestCylinder(unittest.TestCase):
 
         Returns
         -------
-        Sets up a cylinder instance for testing
+        Sets up a mobius loop instance for testing
         """
         cls.material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
-        cls.cylinder = Cylinder(
+        cls.icosahedron = Icosahedron(
             material=cls.material,
-            radius=10,
-            height=20,
-            split=6,
-            resolution=10,
+            radius=1,
         )
 
     def test_instantiation(self):
@@ -61,24 +58,21 @@ class TestCylinder(unittest.TestCase):
         -------
         Check that parameters are set correctly.
         """
-        self.assertEqual(self.cylinder.material, self.material)
-        self.assertEqual(self.cylinder.radius, 10)
-        self.assertEqual(self.cylinder.height, 20)
-        self.assertEqual(self.cylinder.split, 6)
-        self.assertEqual(self.cylinder.resolution, 10)
+        self.assertEqual(self.icosahedron.material, self.material)
+        self.assertEqual(self.icosahedron.radius, 1)
 
-    def test_build_cylinder(self):
+    def test_build_icosahedron(self):
         """
-        Test the construction of a cylinder mesh.
+        Test the construction of a icosahedron mesh.
 
         Returns
         -------
-        Test if a cylinder mesh is constructed correctly.
+        Test if a icosahedron mesh is constructed correctly.
         """
-        cylinder = self.cylinder.instantiate_mesh(
+        icosahedron = self.icosahedron.instantiate_mesh(
             starting_position=np.array([1, 1, 1]),
             starting_orientation=np.array([1, 1, 1]),
         )
-        self.assertEqual(cylinder.has_vertex_normals(), True)
-        self.assertEqual(type(cylinder), o3d.geometry.TriangleMesh)
-        np.testing.assert_almost_equal(cylinder.get_center(), [1.0, 1.0, 1.0])
+        self.assertEqual(icosahedron.has_vertex_normals(), True)
+        self.assertEqual(type(icosahedron), o3d.geometry.TriangleMesh)
+        np.testing.assert_almost_equal(icosahedron.get_center(), [1.0, 1.0, 1.0])

@@ -18,7 +18,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Run unit tests on the cylinder module.
+Run unit tests on the arrow module.
 """
 
 import unittest
@@ -27,12 +27,12 @@ import numpy as np
 import open3d as o3d
 
 from znvis import Material
-from znvis.mesh.cylinder import Cylinder
+from znvis.mesh.arrow import Arrow
 
 
-class TestCylinder(unittest.TestCase):
+class TestArrow(unittest.TestCase):
     """
-    A test class for the Particle class.
+    A test class for the Arrow class.
     """
 
     @classmethod
@@ -42,14 +42,12 @@ class TestCylinder(unittest.TestCase):
 
         Returns
         -------
-        Sets up a cylinder instance for testing
+        Sets up a arrow instance for testing
         """
         cls.material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
-        cls.cylinder = Cylinder(
+        cls.arrow = Arrow(
             material=cls.material,
-            radius=10,
-            height=20,
-            split=6,
+            scale=1.0,
             resolution=10,
         )
 
@@ -61,24 +59,22 @@ class TestCylinder(unittest.TestCase):
         -------
         Check that parameters are set correctly.
         """
-        self.assertEqual(self.cylinder.material, self.material)
-        self.assertEqual(self.cylinder.radius, 10)
-        self.assertEqual(self.cylinder.height, 20)
-        self.assertEqual(self.cylinder.split, 6)
-        self.assertEqual(self.cylinder.resolution, 10)
+        self.assertEqual(self.arrow.material, self.material)
+        self.assertEqual(self.arrow.scale, 1.0)
+        self.assertEqual(self.arrow.resolution, 10)
 
-    def test_build_cylinder(self):
+    def test_build_arrow(self):
         """
-        Test the construction of a cylinder mesh.
+        Test the construction of a arrow mesh.
 
         Returns
         -------
-        Test if a cylinder mesh is constructed correctly.
+        Test if a arrow mesh is constructed correctly.
         """
-        cylinder = self.cylinder.instantiate_mesh(
+        arrow = self.arrow.instantiate_mesh(
             starting_position=np.array([1, 1, 1]),
             starting_orientation=np.array([1, 1, 1]),
         )
-        self.assertEqual(cylinder.has_vertex_normals(), True)
-        self.assertEqual(type(cylinder), o3d.geometry.TriangleMesh)
-        np.testing.assert_almost_equal(cylinder.get_center(), [1.0, 1.0, 1.0])
+        self.assertEqual(arrow.has_vertex_normals(), True)
+        self.assertEqual(type(arrow), o3d.geometry.TriangleMesh)
+        np.testing.assert_almost_equal(arrow.get_center(), [1.5070313, 1.5070313, 1.5070313])

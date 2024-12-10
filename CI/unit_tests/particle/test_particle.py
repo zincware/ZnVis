@@ -43,10 +43,44 @@ class TestParticle(unittest.TestCase):
         -------
 
         """
-        cls.material = Material()
+        cls.material = Material(colour=np.zeros((10, 10, 3)))
         name = "my_particle"
         position = np.random.uniform(-5, 5, (10, 2, 3))
-        cls.particle = Particle(name=name, position=position, mesh=Sphere())
+
+        cls.particle = Particle(
+            name=name, 
+            position=position,
+            mesh=Sphere(material=cls.material),
+        )
+
+        static_name="my_static_particle"
+        static_position = np.random.uniform(-5, 5, (2, 3))
+
+        cls.static_particle = Particle(
+            name=static_name, 
+            position=static_position,
+            mesh=Sphere(),
+            static=True,
+            smoothing=True,
+            director=np.random.uniform(-5, 5, (2, 3))
+        )
+
+        empty_name = "my_empty_particle"
+
+        cls.empty_particle = Particle(
+            name=empty_name,
+            mesh=Sphere(),
+            position=np.array([])
+        )
+
+        nan_name = "my_nan_particle"
+
+        cls.nan_name = Particle(
+            name=nan_name,
+            mesh=Sphere(),
+            position=np.full_like(position, np.nan)
+        )
+
 
     def test_initialization(self):
         """
@@ -59,7 +93,7 @@ class TestParticle(unittest.TestCase):
         self.assertEqual(type(self.particle.mesh), Sphere)
         self.assertEqual(self.particle.name, "my_particle")
         np.testing.assert_array_equal(self.particle.position.shape, (10, 2, 3))
-
+    
     def test_construct_mesh_dict(self):
         """
         Test the construct_mesh_dict method.
@@ -73,3 +107,75 @@ class TestParticle(unittest.TestCase):
 
         # Check that all time steps are in the dict.
         self.assertEqual(len(self.particle.mesh_list), self.particle.position.shape[0])
+
+
+    def test_static_initialization(self):
+        """
+        Test the initialization of the class.
+
+        Returns
+        -------
+        Check if the attributes are set correctly.
+        """
+        self.assertEqual(type(self.static_particle.mesh), Sphere)
+        self.assertEqual(self.static_particle.name, "my_static_particle")
+        #NOTE
+        # What behavior is needed here? 
+        #np.testing.assert_array_equal(self.static_particle.position.shape, (1, 2, 3))
+        self.assertEqual(self.static_particle.static, True)
+        self.assertEqual(self.static_particle.smoothing, True)
+
+    def test_construct_static_mesh_dict(self):
+            # Build the mesh dict
+            np.testing.assert_array_equal(self.static_particle.position.shape, (2, 3))
+            self.static_particle.construct_mesh_list()
+            np.testing.assert_array_equal(self.static_particle.position.shape, (1, 2, 3))
+            # Check that all time steps are in the dict.
+            self.assertEqual(len(self.static_particle.mesh_list), self.static_particle.position.shape[0])
+
+    def test_empty_initialization(self):
+        """
+        Test the initialization of the class.
+
+        Returns
+        -------
+        Check if the attributes are set correctly.
+        """
+        self.assertEqual(type(self.empty_particle.mesh), Sphere)
+        self.assertEqual(self.empty_particle.name, "my_empty_particle")
+
+    def test_construct_empty_mesh_dict(self):
+        """
+        Test the construct_mesh_dict method for a static mesh.
+
+        Returns
+        -------
+        Tests whether the dict was created properly.
+        """
+        # Attempt to build the mesh dict
+
+        with self.assertRaises((IndexError)) as context:
+            self.empty_particle.construct_mesh_list()
+        # Check if error message is correct
+        self.assertEqual(
+            str(context.exception),
+           "The provided data has an incompatible shape."
+        )
+
+    def test_construct_nan_mesh_dict(self):
+        """
+        Test the construct_mesh_dict method for a particle with nans in the trajectory.
+
+        Returns
+        -------
+        Tests whether the dict was created properly.
+        """
+        # Attempt to build the mesh dict
+
+        with self.assertRaises((ValueError)) as context:
+            self.nan_name.construct_mesh_list()
+        # Check if error message is correct
+        self.assertEqual(
+            str(context.exception),
+           "The provided data contains NaN values."
+        )

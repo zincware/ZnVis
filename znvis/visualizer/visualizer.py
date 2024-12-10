@@ -105,6 +105,10 @@ class Visualizer:
             for particle in particles:
                 if not particle.static:
                     len_list.append(len(particle.position))
+            if vector_field is not None:
+                for vec_field in vector_field:
+                    if not vec_field.static:
+                        len_list.append(len(vec_field.position))
 
             if len_list == []:
                 self.number_of_steps = 1
@@ -337,10 +341,12 @@ class Visualizer:
                 }
 
         view_matrix = vis.scene.camera.get_view_matrix()
-
+        # Create output folder
+        self.output_folder.mkdir(parents=True, exist_ok=True)
         self.renderer.render_mesh_objects(
             mesh_dict,
             view_matrix,
+            save_dir=self.output_folder,
             save_name=f"frame_{self.counter}.png",
             resolution=self.renderer_resolution,
             samples_per_pixel=self.renderer_spp,
