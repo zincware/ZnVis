@@ -23,6 +23,8 @@ Main visualizer class.
 
 import os
 
+import znvis.cameras
+
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 
 import pathlib
@@ -30,16 +32,16 @@ import re
 import shutil
 import time
 import typing
-import numpy as np
+
 import cv2
-import open3d as o3d
+import numpy as np
 from rich.progress import Progress, track
 
 import znvis
 from znvis.rendering import Mitsuba
 
 
-class Headless_Renderer:
+class Headless_Visualizer:
     """
     Main class to perform visualization.
 
@@ -65,11 +67,9 @@ class Headless_Renderer:
         renderer_resolution: list = [4096, 2160],
         renderer_spp: int = 64,
         renderer: Mitsuba = Mitsuba(),
-        view_matrix: np.ndarray = np.array([[ 1,  0,  0, -100],
-                                            [ 0,  1,  0, -90],
-                                            [ 0,  0,  1, -230],
-                                            [ 0,  0,  0,  1]]),
-        ):
+        do_create_video: bool = True,
+        camera: znvis.cameras.Camera = None,
+    ):
         """
         Constructor for the visualizer.
 
@@ -79,6 +79,8 @@ class Headless_Renderer:
                 List of particles to add to the visualizer.
         vector_field : list[znvis.VectorField]
                 List of vector fields to add to the visualizer.
+        output_folder: typing.Union[str, pathlib.Path]
+                Path to the output folder where the video and frames will be saved.
         frame_rate : int
                 Frame rate for the visualizer measured in frames per second (fps)
         number_of_steps : int
@@ -94,26 +96,59 @@ class Headless_Renderer:
                 List containing the resolution of the rendered videos and screenshots
         renderer_spp : int
                 Samples per pixel for the rendered videos and screenshots.
-        view_matrix : np.array
-                The view matrix for the camera. Default is a view matrix exported from a 200x200x1 system.
+        do_create_video: bool
+                If True, the visualizer will create a video from the frames.
+        camera : znvis.cameras.Camera object
+                Camera object to use for the visualization. If None, a default camera
+                will be used.
         """
         self.particles = particles
         self.vector_field = vector_field
         self.frame_rate = frame_rate
         self.bounding_box = bounding_box() if bounding_box else None
-        self.view_matrix = view_matrix
+        self.do_create_video = do_create_video
+
+        # Set the camera
+        self.camera = camera
+
+        if self.camera is not None:
+            self.camera = camera
+            if isinstance(camera, znvis.cameras.KeyframeCamera):
+                print("Loading the interpolated camera view matrices.")
+                self.camera.load_view_matrices()
+            else:
+                if self.camera.view_matrix is not None:
+                    self.view_matrix = self.camera.view_matrix
+                else:
+                    print(
+                        "Couldn't find a view matrix in the camera object."
+                        " Using default."
+                    )
+                    self.view_matrix = np.array(
+                        [[1, 0, 0, -100], [0, 1, 0, -90], [0, 0, 1, -230], [0, 0, 0, 1]]
+                    )
+
+        else:
+            print(
+                "No camera provided, using a default view matrix.",
+                "Consider using the respective camera class methods to set the ",
+                "view matrix based on your particle positions or box size.",
+            )
+            self.view_matrix = np.array(
+                [[1, 0, 0, -100], [0, 1, 0, -90], [0, 0, 1, -230], [0, 0, 0, 1]]
+            )
 
         if number_of_steps is None:
             len_list = []
             for particle in particles:
                 if not particle.static:
                     len_list.append(len(particle.position))
-            
+
             if len_list == []:
                 self.number_of_steps = 1
             else:
                 self.number_of_steps = min(len_list)
-    
+
         self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
@@ -219,16 +254,18 @@ class Headless_Renderer:
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
                     }
-            self.output_folder.mkdir(parents=True, exist_ok=True)   
+            self.output_folder.mkdir(parents=True, exist_ok=True)
             self.frame_folder.mkdir(parents=True, exist_ok=True)
-
+            # Check if the camera should be used for deciding on the view matrix
+            if self.camera is not None:
+                self.view_matrix = self.camera.get_view_matrix(self.counter)
             self.renderer.render_mesh_objects(
                 mesh_dict,
                 self.view_matrix,
                 save_dir=self.frame_folder,
-                save_name=f"frame_{self.counter:0>6}.png", 
+                save_name=f"frame_{self.counter:0>6}.png",
                 resolution=self.renderer_resolution,
-                samples_per_pixel=self.renderer_spp
+                samples_per_pixel=self.renderer_spp,
             )
             self.save_thread_finished = True
 
@@ -243,10 +280,12 @@ class Headless_Renderer:
                     progress.update(task, advance=1)
 
                 if self.update_thread_finished:
+                    self.update_thread_finished = False
                     update_callable()
 
         time.sleep(1)  # Ensure the last image is saved
-        self._create_movie()
+        if self.do_create_video:
+            self._create_movie()
 
     def _update_particles(self, visualizer=None, step: int = None):
         """

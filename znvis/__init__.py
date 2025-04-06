@@ -24,6 +24,13 @@ init file for the main ZnVis package.
 
 from znvis import rendering
 from znvis.bounding_objects.bounding_box import BoundingBox
+from znvis.cameras.camera import Camera
+from znvis.cameras.keyframe_camera import KeyframeCamera
+from znvis.cameras.particle_following_camera import ParticleFollowingCamera
+from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
+from znvis.cameras.trajectories.circular_trajectory import CircularTrajectory
+from znvis.cameras.trajectories.zooming_trajectory import ZoomingTrajectory
+from znvis.cameras.trajectory_camera import TrajectoryCamera
 from znvis.material.material import Material
 from znvis.mesh.arrow import Arrow
 from znvis.mesh.box import Box
@@ -38,6 +45,7 @@ from znvis.mesh.tetrahedron import Tetrahedron
 from znvis.mesh.torus import Torus
 from znvis.particle.particle import Particle
 from znvis.particle.vector_field import VectorField
+from znvis.visualizer.headless_visualizer import Headless_Visualizer
 from znvis.visualizer.visualizer import Visualizer
 
 __all__ = [
@@ -53,9 +61,17 @@ __all__ = [
     MobiusLoop.__name__,
     VectorField.__name__,
     Visualizer.__name__,
+    Headless_Visualizer.__name__,
     Cylinder.__name__,
     CustomMesh.__name__,
     BoundingBox.__name__,
     Material.__name__,
     rendering.__name__,
+    Camera.__name__,
+    KeyframeCamera.__name__,
+    TrajectoryCamera.__name__,
+    ParticleFollowingCamera.__name__,
+    BaseTrajectory.__name__,
+    ZoomingTrajectory.__name__,
+    CircularTrajectory.__name__,
 ]

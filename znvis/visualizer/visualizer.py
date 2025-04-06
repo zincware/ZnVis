@@ -38,6 +38,7 @@ import open3d.visualization.gui as gui
 from rich.progress import Progress, track
 
 import znvis
+from znvis.cameras import KeyframeCamera
 from znvis.rendering import Mitsuba
 
 
@@ -71,6 +72,7 @@ class Visualizer:
         renderer_resolution: list = [4096, 2160],
         renderer_spp: int = 64,
         renderer: Mitsuba = Mitsuba(),
+        keyframe_camera: KeyframeCamera = None,
     ):
         """
         Constructor for the visualizer.
@@ -94,6 +96,11 @@ class Visualizer:
                 List containing the resolution of the rendered videos and screenshots
         renderer_spp : int
                 Samples per pixel for the rendered videos and screenshots.
+        renderer : Mitsuba
+                The renderer engine to use for rendering.
+        keyframe_camera : KeyframeCamera
+                The camera to use for interpolation
+
         """
         self.particles = particles
         self.vector_field = vector_field
@@ -105,6 +112,10 @@ class Visualizer:
             for particle in particles:
                 if not particle.static:
                     len_list.append(len(particle.position))
+            if vector_field is not None:
+                for vec_field in vector_field:
+                    if not vec_field.static:
+                        len_list.append(len(vec_field.position))
 
             if len_list == []:
                 self.number_of_steps = 1
@@ -120,6 +131,19 @@ class Visualizer:
         self.renderer = renderer
         self.play_speed = 1
         self.do_rewind = False
+
+        # Camera Handling
+        if keyframe_camera is not None:
+            if not self.output_folder.exists():
+                self.output_folder.mkdir(parents=True, exist_ok=True)
+
+            self.keyframe_camera = keyframe_camera
+            self.keyframe_camera.view_matrices_path = self.output_folder
+            self.keyframe_camera.number_of_frames = self.number_of_steps
+            self.keyframe_camera.initialize_keyframe_collection()
+            self.do_view_matrices = True
+        else:
+            self.do_view_matrices = False
 
         self.obj_folder = self.output_folder / "obj_files"
 
@@ -157,6 +181,29 @@ class Visualizer:
         self.vis.add_action("Screenshot", self._take_screenshot)
         self.vis.add_action("Export Video", self._export_video)
         self.vis.add_action("Export Mesh Trajectory", self._export_mesh_trajectory)
+
+        if self.do_view_matrices:
+            # Add actions to the visualizer for the keyframe camera.
+            # The lambdas are necessary, as vis.add_action does not allow
+            # passing arguments to the function.
+            self.vis.add_action(
+                "Add current View Matrix",
+                lambda _: self.keyframe_camera.add_view_matrix(
+                    self.counter, self.vis.scene.camera.get_view_matrix()
+                ),
+            )
+            self.vis.add_action(
+                "Remove current View Matrix",
+                lambda _: self.keyframe_camera.remove_view_matrix(self.counter),
+            )
+            self.vis.add_action(
+                "Interpolate and export view matrices",
+                lambda _: self.keyframe_camera.interpolate_and_export_view_matrices(),
+            )
+            self.vis.add_action(
+                "Reset View Matrix Progress",
+                lambda _: self.keyframe_camera.reset_view_matrix_progress(),
+            )
 
         # Add the visualizer to the app.
         self.app.add_window(self.vis)
@@ -337,10 +384,13 @@ class Visualizer:
                 }
 
         view_matrix = vis.scene.camera.get_view_matrix()
-
+    
+        # Create output folder
+        self.output_folder.mkdir(parents=True, exist_ok=True)
         self.renderer.render_mesh_objects(
             mesh_dict,
-            view_matrix,
+            view_matrix,            
+            save_dir=self.output_folder,
             save_name=f"frame_{self.counter}.png",
             resolution=self.renderer_resolution,
             samples_per_pixel=self.renderer_spp,
