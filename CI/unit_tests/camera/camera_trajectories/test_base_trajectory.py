@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from znvis.cameras.trajectories import BaseCameraTrajectory
+from znvis.cameras.trajectories import BaseTrajectory
 
 
 class BaseTrajectoryTester(unittest.TestCase):
@@ -16,7 +16,7 @@ class BaseTrajectoryTester(unittest.TestCase):
         """
         Prepare an instance of the InterpolationCamera class for testing
         """
-        cls.camera_trajectory = BaseCameraTrajectory(total_frames=10)
+        cls.camera_trajectory = BaseTrajectory(total_frames=10)
 
     def test_initialization(self):
         """
