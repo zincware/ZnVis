@@ -138,3 +138,6 @@ dmypy.json
 *.stl
 *.avi
 *.mp4
+
+# macOS system files
+.DS_Store
