@@ -46,9 +46,6 @@ class ParticleFollowingCamera(Camera):
         ----------
         particle_positions : np.ndarray shape=(n_frames, 3)
                 The positions of the particles in the simulation.
-        particle_directors : np.ndarray shape=(n_frames, 3)
-                The directors of the particles in the simulation.
-                If None, the camera will look in the direction of the particle.
         camera_particle_vector : np.ndarray shape=(3,)
                 The distance vector between the camera and the particle.
         camera_up_vector : np.ndarray shape=(3,)
