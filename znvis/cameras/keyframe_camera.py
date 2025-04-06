@@ -214,6 +214,7 @@ class KeyframeCamera(Camera):
         # aka a view matrix for each frame
         assert interpolated_view_matrices.shape[0] == frame_indexes[-1] + 1
         self.interpolated_view_matrices = interpolated_view_matrices
+        return interpolated_view_matrices
 
     def export_interpolated_view_matrices(
         self, interpolated_view_matrices_dictionnary: dict
