@@ -7,7 +7,7 @@ import unittest
 import numpy as np
 
 from znvis.cameras import TrajectoryCamera
-from znvis.cameras.trajectories import CircularCameraTrajectory
+from znvis.cameras.trajectories import CircularTrajectory
 
 
 class TrajectoryCameraTester(unittest.TestCase):
@@ -18,7 +18,7 @@ class TrajectoryCameraTester(unittest.TestCase):
         Prepare an instance of the InterpolationCamera class for testing
         """
 
-        cls.circular_trajectory = CircularCameraTrajectory(
+        cls.circular_trajectory = CircularTrajectory(
             total_frames=10,
             center=np.array([0, 0, 0]),
             radius=1,

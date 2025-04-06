@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from znvis.cameras.trajectories import CircularCameraTrajectory
+from znvis.cameras.trajectories import CircularTrajectory
 
 
 class CircularTrajectoryTester(unittest.TestCase):
@@ -16,7 +16,7 @@ class CircularTrajectoryTester(unittest.TestCase):
         """
         Prepare an instance of the InterpolationCamera class for testing
         """
-        cls.camera_trajectory = CircularCameraTrajectory(
+        cls.camera_trajectory = CircularTrajectory(
             total_frames=20,
             center=np.array([0, 0, 0]),
             radius=5,
@@ -28,7 +28,7 @@ class CircularTrajectoryTester(unittest.TestCase):
             clockwise=True,
             smoothing=True,
         )
-        cls.loop_pingpong_camera_trajectory = CircularCameraTrajectory(
+        cls.loop_pingpong_camera_trajectory = CircularTrajectory(
             total_frames=25,
             center=np.array([0, 0, 0]),
             radius=5,
@@ -40,7 +40,7 @@ class CircularTrajectoryTester(unittest.TestCase):
             clockwise=True,
             smoothing=False,
         )
-        cls.not_clockwise_camera_trajectory = CircularCameraTrajectory(
+        cls.not_clockwise_camera_trajectory = CircularTrajectory(
             total_frames=25,
             center=np.array([0, 0, 0]),
             radius=5,
@@ -53,7 +53,7 @@ class CircularTrajectoryTester(unittest.TestCase):
             smoothing=True,
         )
 
-        cls.camera_trajectory_axis_check = CircularCameraTrajectory(
+        cls.camera_trajectory_axis_check = CircularTrajectory(
             total_frames=25,
             center=np.array([0, 0, 0]),
             radius=5,
@@ -86,7 +86,7 @@ class CircularTrajectoryTester(unittest.TestCase):
         self.assertTrue(np.array_equal(self.camera_trajectory.smoothing, True))
 
         # Raise a frames_per_rotation error
-        zero_frames = CircularCameraTrajectory(
+        zero_frames = CircularTrajectory(
             total_frames=20,
             center=np.array([0, 0, 0]),
             radius=5,
@@ -102,7 +102,7 @@ class CircularTrajectoryTester(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             # Raise the xyz axis error
-            CircularCameraTrajectory(
+            CircularTrajectory(
                 total_frames=20,
                 center=np.array([0, 0, 0]),
                 radius=5,
@@ -117,7 +117,7 @@ class CircularTrajectoryTester(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             # Raise a frames_per_rotation error
-            zero_frames = CircularCameraTrajectory(
+            zero_frames = CircularTrajectory(
                 total_frames=20,
                 center=np.array([0, 0, 0]),
                 radius=5,

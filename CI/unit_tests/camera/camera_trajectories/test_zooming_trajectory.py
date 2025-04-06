@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from znvis.cameras.trajectories import ZoomingCameraTrajectory
+from znvis.cameras.trajectories import ZoomingTrajectory
 
 
 class ZoomingTrajectoryTester(unittest.TestCase):
@@ -16,7 +16,7 @@ class ZoomingTrajectoryTester(unittest.TestCase):
         """
         Prepare an instance of the InterpolationCamera class for testing
         """
-        cls.camera_trajectory = ZoomingCameraTrajectory(
+        cls.camera_trajectory = ZoomingTrajectory(
             total_frames=10,
             center=np.array([0, 0, 0]),
             initial_eye=np.array([0, 0, 10]),
@@ -25,7 +25,7 @@ class ZoomingTrajectoryTester(unittest.TestCase):
             frames_while_zooming=1.0,
         )
 
-        cls.camera_trajectory_None = ZoomingCameraTrajectory(
+        cls.camera_trajectory_None = ZoomingTrajectory(
             total_frames=10,
             center=np.array([0, 0, 0]),
             initial_eye=np.array([0, 0, 10]),
@@ -50,7 +50,7 @@ class ZoomingTrajectoryTester(unittest.TestCase):
         self.assertEqual(self.camera_trajectory.frames_while_zooming, 1.0)
 
         with self.assertRaises(ValueError):
-            ZoomingCameraTrajectory(
+            ZoomingTrajectory(
                 total_frames=0,
                 center=np.array([0, 0, 0]),
                 initial_eye=np.array([0, 0, 10]),

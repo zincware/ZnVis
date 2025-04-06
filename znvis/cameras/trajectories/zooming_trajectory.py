@@ -42,7 +42,7 @@ class ZoomingTrajectory(BaseTrajectory):
         frames_while_zooming: float = 1.0,
     ):
         """
-        Initialize the ZoomingCamera object.
+        Initialize the Zooming Trajectory object.
 
         Parameters
         ----------
