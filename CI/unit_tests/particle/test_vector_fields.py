@@ -43,7 +43,9 @@ class TestVectorField(unittest.TestCase):
         -------
 
         """
-        cls.material = Material(colour=np.full((10, 10, 3), np.array([0, 0, 255]) / 255))
+        cls.material = Material(
+            colour=np.full((10, 10, 3), np.array([0, 0, 255]) / 255)
+        )
         name = "my_vector_field"
 
         position = np.random.uniform(-5, 5, (10, 2, 3))
@@ -52,40 +54,38 @@ class TestVectorField(unittest.TestCase):
         static_directors = np.random.uniform(-5, 5, (2, 3))
 
         cls.vector_field = VectorField(
-            name=name, 
+            name=name,
             position=position,
-            mesh=Arrow(scale = 10, material=cls.material),
-            direction=directors
-
+            mesh=Arrow(scale=10, material=cls.material),
+            direction=directors,
         )
 
-        static_name="my_static_vector_field"
+        static_name = "my_static_vector_field"
 
         cls.static_vector_field = VectorField(
-            name=static_name, 
+            name=static_name,
             position=static_position,
-            mesh=Arrow(scale = 10, material=cls.material),
+            mesh=Arrow(scale=10, material=cls.material),
             direction=static_directors,
             smoothing=True,
-            static=True
+            static=True,
         )
 
         empty_name = "my_empty_vector_field"
         cls.empty_vector_field = VectorField(
-            name=empty_name, 
+            name=empty_name,
             position=np.array([]),
-            mesh=Arrow(scale = 10, material=cls.material),
+            mesh=Arrow(scale=10, material=cls.material),
             direction=np.array([]),
-            static=False
+            static=False,
         )
         nan_name = "my_nan_vector_field"
         cls.nan_vector_field = VectorField(
-            name=nan_name, 
+            name=nan_name,
             position=np.full_like(position, np.nan),
-            mesh=Arrow(scale = 10, material=cls.material),
+            mesh=Arrow(scale=10, material=cls.material),
             direction=np.full_like(directors, np.nan),
         )
-
 
     def test_initialization(self):
         """
@@ -100,7 +100,6 @@ class TestVectorField(unittest.TestCase):
         np.testing.assert_array_equal(self.vector_field.position.shape, (10, 2, 3))
         np.testing.assert_array_equal(self.vector_field.direction.shape, (10, 2, 3))
 
-    
     def test_construct_mesh_dict(self):
         """
         Test the construct_mesh_dict method.
@@ -113,7 +112,9 @@ class TestVectorField(unittest.TestCase):
         self.vector_field.construct_mesh_list()
 
         # Check that all time steps are in the dict.
-        self.assertEqual(len(self.vector_field.mesh_list), self.vector_field.position.shape[0])
+        self.assertEqual(
+            len(self.vector_field.mesh_list), self.vector_field.position.shape[0]
+        )
 
     def test_static_initialization(self):
         """
@@ -126,11 +127,15 @@ class TestVectorField(unittest.TestCase):
         self.assertEqual(type(self.static_vector_field.mesh), Arrow)
         self.assertEqual(self.static_vector_field.name, "my_static_vector_field")
 
-        # NOTE Same problem as in test_particle. This yields an error despite the construct mesh is called after this!
-        #np.testing.assert_array_equal(self.static_vector_field.position.shape, (10, 2, 3))
-        #np.testing.assert_array_equal(self.static_vector_field.direction.shape, (10, 2, 3))
+        # NOTE Same problem as in test_particle.
+        # This yields an error despite the construct mesh is called after this!
+        # np.testing.assert_array_equal(
+        #   self.static_vector_field.position.shape,
+        #   (10, 2, 3))
+        # np.testing.assert_array_equal(
+        #   self.static_vector_field.direction.shape,
+        #   (10, 2, 3))
 
-    
     def test_construct_static_mesh_dict(self):
         """
         Test the construct_mesh_dict method.
@@ -143,11 +148,18 @@ class TestVectorField(unittest.TestCase):
         np.testing.assert_array_equal(self.static_vector_field.position.shape, (2, 3))
         np.testing.assert_array_equal(self.static_vector_field.direction.shape, (2, 3))
         self.static_vector_field.construct_mesh_list()
-        np.testing.assert_array_equal(self.static_vector_field.position.shape, (1, 2, 3))
-        np.testing.assert_array_equal(self.static_vector_field.direction.shape, (1, 2, 3))
+        np.testing.assert_array_equal(
+            self.static_vector_field.position.shape, (1, 2, 3)
+        )
+        np.testing.assert_array_equal(
+            self.static_vector_field.direction.shape, (1, 2, 3)
+        )
 
         # Check that all time steps are in the dict.
-        self.assertEqual(len(self.static_vector_field.mesh_list), self.static_vector_field.position.shape[0])
+        self.assertEqual(
+            len(self.static_vector_field.mesh_list),
+            self.static_vector_field.position.shape[0],
+        )
 
     def test_empty_initialization(self):
         """
@@ -174,10 +186,9 @@ class TestVectorField(unittest.TestCase):
             self.empty_vector_field.construct_mesh_list()
         # Check if error message is correct
         self.assertEqual(
-            str(context.exception),
-           "The provided data has an incompatible shape."
+            str(context.exception), "The provided data has an incompatible shape."
         )
-    
+
     def test_construct_nan_mesh_dict(self):
         """
         Test the construct_mesh_dict method for an empty mesh.
@@ -191,9 +202,4 @@ class TestVectorField(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             self.nan_vector_field.construct_mesh_list()
         # Check if error message is correct
-        self.assertEqual(
-            str(context.exception),
-           "The provided data contains NaNs."
-        )
-
-    
+        self.assertEqual(str(context.exception), "The provided data contains NaNs.")

@@ -45,12 +45,7 @@ class TestBox(unittest.TestCase):
         Sets up a box instance for testing
         """
         cls.material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
-        cls.box = Box(
-            material=cls.material,
-            width=1.0,
-            height=5.0,
-            depth=10.0
-        )
+        cls.box = Box(material=cls.material, width=1.0, height=5.0, depth=10.0)
 
     def test_instantiation(self):
         """

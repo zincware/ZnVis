@@ -22,12 +22,10 @@ Run unit tests on the CustomMesh module.
 """
 
 import unittest
+from pathlib import Path
 
 import numpy as np
 import open3d as o3d
-
-from pathlib import Path
-import os
 
 from znvis import Material
 from znvis.mesh.custom import CustomMesh
@@ -68,7 +66,7 @@ class TestCustomMesh(unittest.TestCase):
         """
         self.assertEqual(self.custom.material, self.material)
         self.assertEqual(self.custom.scale, 1.0)
-    
+
     def test_build_custom(self):
         """
         Test the importing and construction of a custom mesh.
@@ -85,5 +83,6 @@ class TestCustomMesh(unittest.TestCase):
         self.assertEqual(type(custom), o3d.geometry.TriangleMesh)
         # THIS IS COMPLETELY DEPENDENT ON THE FILE PROVIDED...
 
-        np.testing.assert_almost_equal(custom.get_center(), [1.9000875, 2.0035554, 1.9946454])
-
+        np.testing.assert_almost_equal(
+            custom.get_center(), [1.9000875, 2.0035554, 1.9946454]
+        )

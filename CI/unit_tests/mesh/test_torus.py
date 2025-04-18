@@ -47,7 +47,7 @@ class TestTorus(unittest.TestCase):
         cls.material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
         cls.torus = Torus(
             material=cls.material,
-            torus_radius=1.0, 
+            torus_radius=1.0,
             tube_radius=0.3,
             tubular_resolution=20,
             radial_resolution=30,

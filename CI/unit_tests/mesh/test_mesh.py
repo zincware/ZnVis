@@ -47,9 +47,9 @@ class TestMesh(unittest.TestCase):
         np.testing.assert_array_equal(mesh.material, material)
 
     def test_create_mesh_not_implemented(self):
-            """
-            Test that calling create_mesh on the base Mesh class raises NotImplementedError.
-            """
-            mesh = Mesh()
-            with self.assertRaises(NotImplementedError):
-                mesh.create_mesh()
+        """
+        Test that calling create_mesh on the base Mesh class raises NotImplementedError.
+        """
+        mesh = Mesh()
+        with self.assertRaises(NotImplementedError):
+            mesh.create_mesh()

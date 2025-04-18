@@ -126,7 +126,7 @@ class Particle:
 
         except IndexError:
             raise IndexError("The provided data has an incompatible shape.")
-        
+
         if np.isnan(self.position).any():
             raise ValueError("The provided data contains NaN values.")
 

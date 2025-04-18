@@ -77,4 +77,6 @@ class TestArrow(unittest.TestCase):
         )
         self.assertEqual(arrow.has_vertex_normals(), True)
         self.assertEqual(type(arrow), o3d.geometry.TriangleMesh)
-        np.testing.assert_almost_equal(arrow.get_center(), [1.5070313, 1.5070313, 1.5070313])
+        np.testing.assert_almost_equal(
+            arrow.get_center(), [1.5070313, 1.5070313, 1.5070313]
+        )

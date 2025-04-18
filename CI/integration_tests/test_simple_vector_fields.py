@@ -28,10 +28,9 @@ import time
 import numpy as np
 
 import znvis as vis
-from znvis.testing.znvis_process import Process
 from znvis import Material
-from znvis.particle.vector_field import VectorField
-from znvis.mesh.arrow import Arrow
+from znvis.testing.znvis_process import Process
+
 
 class TestSimpleVectorFields:
     """
@@ -71,45 +70,45 @@ class TestSimpleVectorFields:
         y_grid = np.arange(0, y_dim, 1)
         pos_grid = np.array(np.meshgrid(x_grid, y_grid)).T
         pos = np.zeros((x_dim, y_dim, 3))
-        pos[:, :, 0] = pos_grid[:,:,0]
-        pos[:, :, 1] = pos_grid[:,:,1]
+        pos[:, :, 0] = pos_grid[:, :, 0]
+        pos[:, :, 1] = pos_grid[:, :, 1]
         pos[:, :, 2] = -5
 
         pos = pos.reshape(-1, pos.shape[-1])
         rotation_angle = np.radians(10)
-        R_z = np.array([
-            [np.cos(rotation_angle), -np.sin(rotation_angle), 0],
-            [np.sin(rotation_angle), np.cos(rotation_angle), 0],
-            [0, 0, 1]
-        ])
+        R_z = np.array(
+            [
+                [np.cos(rotation_angle), -np.sin(rotation_angle), 0],
+                [np.sin(rotation_angle), np.cos(rotation_angle), 0],
+                [0, 0, 1],
+            ]
+        )
 
         dynamic_pos = np.zeros((n_frames, pos.shape[0], pos.shape[1]))
         for i in range(dynamic_pos.shape[0]):
-            dynamic_pos[i,:,:] = pos[np.newaxis, :] - np.array([10,10,0])
+            dynamic_pos[i, :, :] = pos[np.newaxis, :] - np.array([10, 10, 0])
         dynamic_directors = np.zeros((n_frames, pos.shape[0], pos.shape[1]))
         static_directors = np.full_like(pos, np.array([0, 0, 1]))
-        dynamic_directors[0,:,:] = static_directors[np.newaxis, :]
-        dynamic_directors[0,:,:] = np.array([1, 1, 1]) / np.linalg.norm(np.array([1, 1, 1]))
-        for i in range(1,n_frames):
+        dynamic_directors[0, :, :] = static_directors[np.newaxis, :]
+        dynamic_directors[0, :, :] = np.array([1, 1, 1]) / np.linalg.norm(
+            np.array([1, 1, 1])
+        )
+        for i in range(1, n_frames):
             for j in range(dynamic_directors.shape[1]):
-                last_vec = dynamic_directors[i-1,j,:]
+                last_vec = dynamic_directors[i - 1, j, :]
                 new_vec = np.dot(R_z, last_vec)
                 new_vec = new_vec / np.linalg.norm(new_vec)
-                dynamic_directors[i,j,:] = new_vec
+                dynamic_directors[i, j, :] = new_vec
 
-
-        
         v_mesh = vis.Arrow(scale=1, material=material)
         dyn_mesh = vis.Arrow(scale=1, material=dyn_material)
 
-        static_field = vis.VectorField("Static", mesh=v_mesh, position=pos, direction=static_directors, static=True)
-        dynamic_field = vis.VectorField("Dynamic", mesh=dyn_mesh, position=dynamic_pos, direction=dynamic_directors)
-
-        trajectory = np.random.uniform(-10, 10, (10, 10, 3))
-        material_1 = vis.Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
-
-        mesh = vis.Sphere(radius=2.0, material=material_1, resolution=3)
-        particle = vis.Particle(name="Blue", mesh=mesh, position=trajectory)
+        static_field = vis.VectorField(
+            "Static", mesh=v_mesh, position=pos, direction=static_directors, static=True
+        )
+        dynamic_field = vis.VectorField(
+            "Dynamic", mesh=dyn_mesh, position=dynamic_pos, direction=dynamic_directors
+        )
 
         # Create a bounding box
         bounding_box = vis.BoundingBox(
@@ -117,11 +116,14 @@ class TestSimpleVectorFields:
             box_size=np.array([20, 20, 20]),
             colour=np.array([0.7, 0.3, 0.1]),
         )
-        
+
         # Construct the visualizer and run
         visualizer = vis.Visualizer(
             particles=[],
-            vector_field=[static_field, dynamic_field,],
+            vector_field=[
+                static_field,
+                dynamic_field,
+            ],
             frame_rate=20,
             bounding_box=bounding_box,
         )

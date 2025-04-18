@@ -30,6 +30,7 @@ import numpy as np
 import znvis as vis
 from znvis.testing.znvis_process import Process
 
+
 class TestDifferentShapes:
     """
     A test class for the Particle class.
@@ -59,28 +60,58 @@ class TestDifferentShapes:
         Execute the run on the given process.
         """
         # Define several meshes
-        names = [ 'Box', 'Cone', 'Cylinder', 'Icosahedron', 
-        'MobiusLoop', 'Octahedron', 'Sphere', 'Tetrahedron', 'Torus']
-        meshs = [vis.Box, vis.Cone, vis.Cylinder, vis.Icosahedron, 
-            vis.MobiusLoop, vis.Octahedron, vis.Sphere, vis.Tetrahedron, vis.Torus]
+        names = [
+            "Box",
+            "Cone",
+            "Cylinder",
+            "Icosahedron",
+            "MobiusLoop",
+            "Octahedron",
+            "Sphere",
+            "Tetrahedron",
+            "Torus",
+        ]
+        meshs = [
+            vis.Box,
+            vis.Cone,
+            vis.Cylinder,
+            vis.Icosahedron,
+            vis.MobiusLoop,
+            vis.Octahedron,
+            vis.Sphere,
+            vis.Tetrahedron,
+            vis.Torus,
+        ]
 
-        n_particles = 2
         particle_list = []
-        for (name, mesh) in zip(names, meshs):
+        for name, mesh in zip(names, meshs):
 
             trajectory = np.random.uniform(-10, 10, (10, 10, 3))
-            material = vis.Material(colour=np.random.uniform(0,255,(3)) / 255, alpha=0.9)
+            material = vis.Material(
+                colour=np.random.uniform(0, 255, (3)) / 255, alpha=0.9
+            )
             mesh = mesh(material=material)
-            if name == 'Octahedron':
+            if name == "Octahedron":
                 mesh = vis.Octahedron(material=material)
-                particle_list.append(vis.Particle(name=name, mesh=mesh, position=np.random.uniform(-20, 20, (10, 3)), static=True))
+                particle_list.append(
+                    vis.Particle(
+                        name=name,
+                        mesh=mesh,
+                        position=np.random.uniform(-20, 20, (10, 3)),
+                        static=True,
+                    )
+                )
             else:
-                particle_list.append(vis.Particle(name=name, mesh=mesh, position=trajectory))
+                particle_list.append(
+                    vis.Particle(name=name, mesh=mesh, position=trajectory)
+                )
 
         trajectory = np.zeros((10, 3))
-        material = vis.Material(colour= np.array([136, 8, 8]) / 255, alpha=1)
+        material = vis.Material(colour=np.array([136, 8, 8]) / 255, alpha=1)
         mesh = vis.CustomMesh(file="../test_files/red_blood_particle.obj", scale=0.7)
-        particle_list.append(vis.Particle(name="Custom", mesh=mesh, position=trajectory, static=True))
+        particle_list.append(
+            vis.Particle(name="Custom", mesh=mesh, position=trajectory, static=True)
+        )
 
         # Create a bounding box
         bounding_box = vis.BoundingBox(
@@ -96,5 +127,3 @@ class TestDifferentShapes:
             bounding_box=bounding_box,
         )
         visualizer.run_visualization()
-
-

@@ -121,7 +121,7 @@ class VectorField:
             raise IndexError("The provided data has an incompatible shape.")
         if np.isnan(self.position).any() or np.isnan(self.direction).any():
             raise ValueError("The provided data contains NaNs.")
-            
+
         new_mesh = True
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
