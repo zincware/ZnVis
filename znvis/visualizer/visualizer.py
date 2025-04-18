@@ -140,7 +140,6 @@ class Visualizer:
             self.keyframe_camera = keyframe_camera
             self.keyframe_camera.view_matrices_path = self.output_folder
             self.keyframe_camera.number_of_frames = self.number_of_steps
-            self.keyframe_camera.initialize_keyframe_collection()
             self.do_view_matrices = True
         else:
             self.do_view_matrices = False
@@ -384,12 +383,11 @@ class Visualizer:
                 }
 
         view_matrix = vis.scene.camera.get_view_matrix()
-    
         # Create output folder
         self.output_folder.mkdir(parents=True, exist_ok=True)
         self.renderer.render_mesh_objects(
             mesh_dict,
-            view_matrix,            
+            view_matrix,
             save_dir=self.output_folder,
             save_name=f"frame_{self.counter}.png",
             resolution=self.renderer_resolution,

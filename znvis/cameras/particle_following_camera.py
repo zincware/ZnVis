@@ -18,25 +18,32 @@ If you use this module please cite us with:
 
 Summary
 -------
-Module for the BaseCamera parent class.
+Module for the ParticleFollowingCamera class.
 """
 
 import numpy as np
 
-from .camera import Camera
+from znvis.cameras.base_camera import BaseCamera
 
 
-class ParticleFollowingCamera(Camera):
+class ParticleFollowingCamera(BaseCamera):
     """
     A class to provide a camera that follows a given particle in a simulation.
-    The camera is positioned at a fixed distance from the particle and can look
-    in the direction of the particle's director. If no director is provided,
-    the camera will look in the direction of the particle.
+    Three possible cases are considered:
+    1. The camera follows the particle with a fixed distance vector.
+       Activated by passing a single vector of shape (3,) to the
+       camera_particle_vector parameter.
+    2. The camera follows the particle with a dynamic distance vector given by
+       the user. Activated by passing an array of shape (n_frames, 3) to the
+       camera_particle_vector parameter.
+    3. The camera follows the particle while always looking at the same direction
+       as the particle. Activated by passing the particle_directions parameter.
     """
 
     def __init__(
         self,
         particle_positions: np.ndarray,
+        particle_directions: np.ndarray = None,
         camera_particle_vector: np.ndarray = np.array([0, 0, 20]),
         camera_up_vector: np.ndarray = np.array([0, 1, 0]),
     ) -> None:
@@ -46,19 +53,36 @@ class ParticleFollowingCamera(Camera):
         ----------
         particle_positions : np.ndarray shape=(n_frames, 3)
                 The positions of the particles in the simulation.
-        camera_particle_vector : np.ndarray shape=(3,)
-                The distance vector between the camera and the particle.
-        camera_up_vector : np.ndarray shape=(3,)
-                The up vector of the camera.
+        particle_directions : np.ndarray shape=(n_frames, 3), optional
+                The directions of the particles in the simulation.
+                If None, the resulting camera will use the camera_particle_vector
+                as an orientation.
+                This will supercede the camera_particle_vector input.
+        camera_particle_vector : np.ndarray shape=(3,) or (n_frames, 3)
+                The distance vector(s) between the camera and the particle.
+                If the camera should follow the particle, this vector's length
+                is used to determine the distance from the particle.
+                If the camera particle vector is (n_frames, 3), the camera will
+                follow the particle dynamically with the given distance vector.
+                If the camera particle vector is (3,), the camera will follow
+                the particle with the given distance vector for all frames.
+        camera_up_vector : np.ndarray shape=(3,) or (n_frames, 3)
+                The up vector(s) of the camera.
                 This vector defines the orientation of the camera.
                 It should be a unit vector.
                 The camera will be rotated around the particle to look at it.
                 Default is [0,1,0], which is the y-axis.
 
         """
+
         self.particle_positions = particle_positions
+        if particle_directions is not None:
+            self.particle_directions = particle_directions
+        else:
+            self.particle_directions = None
+
         self.camera_particle_vector = camera_particle_vector
-        self.camera_up_vector = camera_up_vector
+        self.camera_up_vector = camera_up_vector / np.linalg.norm(camera_up_vector)
         self.view_matrix = self.get_view_matrix(0)
 
     def get_view_matrix(self, frame_index=None):
@@ -76,9 +100,20 @@ class ParticleFollowingCamera(Camera):
         view_matrix: np.ndarray
             The view matrix for the given frame index.
         """
-        center = self.particle_positions[frame_index]
-        eye = center + self.camera_particle_vector
+
         up = self.camera_up_vector
+        center = self.particle_positions[frame_index]
+
+        if self.particle_directions is None and self.camera_particle_vector.ndim == 1:
+            eye = center + self.camera_particle_vector
+        elif self.particle_directions is None and self.camera_particle_vector.ndim == 2:
+            eye = center + self.camera_particle_vector[frame_index]
+        else:
+            distance_from_particle = np.linalg.norm(self.camera_particle_vector)
+            eye = (
+                center - self.particle_directions[frame_index] * distance_from_particle
+            )
+
         view_matrix = self.look_at(center, eye, up)
         self.view_matrix = view_matrix
         return view_matrix

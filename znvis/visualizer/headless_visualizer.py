@@ -24,6 +24,7 @@ Main visualizer class.
 import os
 
 import znvis.cameras
+import znvis.cameras.base_camera
 
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 
@@ -68,7 +69,7 @@ class Headless_Visualizer:
         renderer_spp: int = 64,
         renderer: Mitsuba = Mitsuba(),
         do_create_video: bool = True,
-        camera: znvis.cameras.Camera = None,
+        camera: znvis.cameras.BaseCamera = None,
     ):
         """
         Constructor for the visualizer.

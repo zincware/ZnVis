@@ -21,12 +21,12 @@ Summary
 Package for the ZnVis Cameras.
 """
 
-from .base_trajectory import BaseTrajectory
-from .circular_trajectory import CircularTrajectory
-from .zooming_trajectory import ZoomingTrajectory
+from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
+from znvis.cameras.trajectories.circular_trajectory import CircularTrajectory
+from znvis.cameras.trajectories.zooming_trajectory import ZoomingTrajectory
 
 __all__ = [
-    "BaseTrajectory",
-    "ZoomingTrajectory",
-    "CircularTrajectory",
+    BaseTrajectory.__name__,
+    CircularTrajectory.__name__,
+    ZoomingTrajectory.__name__,
 ]

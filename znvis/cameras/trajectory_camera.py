@@ -18,16 +18,16 @@ If you use this module please cite us with:
 
 Summary
 -------
-Module for the BaseCamera parent class.
+Module for the TrajectoryCamera class.
 """
 
 import numpy as np
 
-from .camera import Camera
-from .trajectories.base_trajectory import BaseTrajectory
+from znvis.cameras.base_camera import BaseCamera
+from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
 
 
-class TrajectoryCamera(Camera):
+class TrajectoryCamera(BaseCamera):
     """
     A class to produce camera trajectories.
     """

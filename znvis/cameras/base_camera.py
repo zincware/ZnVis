@@ -24,7 +24,7 @@ Module for the BaseCamera parent class.
 import numpy as np
 
 
-class Camera:
+class BaseCamera:
     def __init__(
         self,
         center: np.ndarray = None,
@@ -33,7 +33,8 @@ class Camera:
         view_matrix: np.ndarray = None,
     ) -> None:
         """
-        Parent class for the cameras.
+        This is a base class for cameras. The specific implementation of how
+        the camera is initialized should be provided in a child class.
 
         Parameters
         ----------
@@ -57,16 +58,7 @@ class Camera:
         -------
         None
         """
-        if view_matrix is not None:
-            self.view_matrix = view_matrix
-
-        elif all(v is not None for v in (center, eye, up)):
-            self.view_matrix = self.look_at(center, eye, up)
-
-        else:
-            raise ValueError(
-                "Either a view_matrix or center, eye and up must be provided."
-            )
+        raise NotImplementedError("This method should be implemented in a child class.")
 
     @staticmethod
     def get_view_matrix_from_particle_positions(
@@ -94,7 +86,7 @@ class Camera:
         eye = center + np.array([0, 0, max_distance])
         up = np.array([0, 1, 0])
 
-        return Camera.look_at(center, eye, up)
+        return BaseCamera.look_at(center, eye, up)
 
     @staticmethod
     def get_view_matrix_from_box_size(box_size: np.ndarray) -> np.ndarray:
@@ -118,7 +110,7 @@ class Camera:
         max_distance = np.max(box_size) * 1.1
         eye = center + np.array([0, 0, max_distance])
         up = np.array([0, 1, 0])
-        return Camera.look_at(center, eye, up)
+        return BaseCamera.look_at(center, eye, up)
 
     @staticmethod
     def get_minimal_view_matrix(
@@ -154,10 +146,10 @@ class Camera:
         camera_distance = max(dist_x, dist_y) + dz / 2
 
         eye = center + np.array([0, 0, camera_distance])
-        return Camera.look_at(center, eye, up)
+        return BaseCamera.look_at(center, eye, up)
 
     @staticmethod
-    def look_at(center, eye, up):
+    def look_at(center: np.ndarray, eye: np.ndarray, up: np.ndarray) -> np.ndarray:
         """
         Calculates a view matrix out of the center,
         eye and up vectors adapted to open3D conventions.

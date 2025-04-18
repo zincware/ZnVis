@@ -22,15 +22,8 @@ Summary
 init file for the main ZnVis package.
 """
 
-from znvis import rendering
+from znvis import cameras, rendering
 from znvis.bounding_objects.bounding_box import BoundingBox
-from znvis.cameras.camera import Camera
-from znvis.cameras.keyframe_camera import KeyframeCamera
-from znvis.cameras.particle_following_camera import ParticleFollowingCamera
-from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
-from znvis.cameras.trajectories.circular_trajectory import CircularTrajectory
-from znvis.cameras.trajectories.zooming_trajectory import ZoomingTrajectory
-from znvis.cameras.trajectory_camera import TrajectoryCamera
 from znvis.material.material import Material
 from znvis.mesh.arrow import Arrow
 from znvis.mesh.box import Box
@@ -67,11 +60,5 @@ __all__ = [
     BoundingBox.__name__,
     Material.__name__,
     rendering.__name__,
-    Camera.__name__,
-    KeyframeCamera.__name__,
-    TrajectoryCamera.__name__,
-    ParticleFollowingCamera.__name__,
-    BaseTrajectory.__name__,
-    ZoomingTrajectory.__name__,
-    CircularTrajectory.__name__,
+    cameras.__name__,
 ]

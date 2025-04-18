@@ -6,10 +6,10 @@ import unittest
 
 import numpy as np
 
-from znvis.cameras import Camera
+from znvis.cameras.static_camera import StaticCamera
 
 
-class CameraTester(unittest.TestCase):
+class StaticCameraTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -30,8 +30,8 @@ class CameraTester(unittest.TestCase):
             ]
         )
 
-        cls.look_at_camera = Camera(center=cls.center, eye=cls.eye, up=cls.up)
-        cls.view_matrix_camera = Camera(view_matrix=cls.view_matrix)
+        cls.look_at_camera = StaticCamera(center=cls.center, eye=cls.eye, up=cls.up)
+        cls.view_matrix_camera = StaticCamera(view_matrix=cls.view_matrix)
 
     def test_look_at(self):
         """
@@ -62,9 +62,9 @@ class CameraTester(unittest.TestCase):
         Test if the camera is correctly initialized with a false parameter.
         """
         with self.assertRaises(ValueError):
-            Camera(center=None, eye=None, up=None)
+            StaticCamera(center=None, eye=None, up=None)
         with self.assertRaises(ValueError):
-            Camera(view_matrix=None)
+            StaticCamera(view_matrix=None)
 
     def test_get_view_matrix_from_particle_positions(self):
         """

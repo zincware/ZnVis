@@ -18,20 +18,30 @@ If you use this module please cite us with:
 
 Summary
 -------
-Module for the BaseCamera parent class.
+Module for the KeyframeCamera class.
 """
 
 import pathlib
 
 import numpy as np
 
-from .camera import Camera
+from znvis.cameras.base_camera import BaseCamera
 
 
-class KeyframeCamera(Camera):
+class KeyframeCamera(BaseCamera):
     """
     A class to produce an smooth camera trajectory based on manually
     picked frames and camera settings pairs.
+    This is done by interpolating the view matrices of the manually
+    picked frames. At the moment, only linear interpolation with
+    a smoothing via SVD is currently implemented.
+    This can lead to unexpected results if the camera
+    positions are chosen too far apart. Be aware of this
+    and pick the camera positions accordingly. Especially take
+    care if you want to zoom in or out. However, this way you have
+    total control over the camera trajectory and can create
+    very nice custom animations.
+
     """
 
     def __init__(self, view_matrices_path: pathlib.Path = None) -> None:
@@ -44,16 +54,9 @@ class KeyframeCamera(Camera):
                 The path to the view matrices.
         """
         self.view_matrices_path = view_matrices_path
+        self.view_matrices_dictionary = {}
         if self.view_matrices_path is not None:
             self.load_view_matrices()
-
-    def initialize_keyframe_collection(self) -> None:
-        """
-        Initialize the keyframe collection.
-        This function is called in the visualizer.py to initialize the
-        keyframe collection.
-        """
-        self.view_matrices_dictionary = {}
 
     def add_view_matrix(self, frame_index: int, view_matrix: np.ndarray) -> None:
         """
@@ -214,6 +217,7 @@ class KeyframeCamera(Camera):
         # aka a view matrix for each frame
         assert interpolated_view_matrices.shape[0] == frame_indexes[-1] + 1
         self.interpolated_view_matrices = interpolated_view_matrices
+
         return interpolated_view_matrices
 
     def export_interpolated_view_matrices(

@@ -23,7 +23,7 @@ Module for the circular camera trajectory.
 
 import numpy as np
 
-from .base_trajectory import BaseTrajectory
+from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
 
 
 class CircularTrajectory(BaseTrajectory):

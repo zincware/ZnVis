@@ -23,7 +23,7 @@ Module for the zoom-in camera trajectory.
 
 import numpy as np
 
-from .base_trajectory import BaseTrajectory
+from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
 
 
 class ZoomingTrajectory(BaseTrajectory):
@@ -42,7 +42,7 @@ class ZoomingTrajectory(BaseTrajectory):
         frames_while_zooming: float = 1.0,
     ):
         """
-        Initialize the Zooming Trajectory object.
+        Initialize the ZoomingCamera object.
 
         Parameters
         ----------

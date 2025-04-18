@@ -21,14 +21,18 @@ Summary
 Package for the ZnVis Cameras.
 """
 
-from .camera import Camera
-from .keyframe_camera import KeyframeCamera
-from .particle_following_camera import ParticleFollowingCamera
-from .trajectory_camera import TrajectoryCamera
+from znvis.cameras import trajectories
+from znvis.cameras.base_camera import BaseCamera
+from znvis.cameras.keyframe_camera import KeyframeCamera
+from znvis.cameras.particle_following_camera import ParticleFollowingCamera
+from znvis.cameras.static_camera import StaticCamera
+from znvis.cameras.trajectory_camera import TrajectoryCamera
 
 __all__ = [
-    "Camera",
-    "KeyframeCamera",
-    "TrajectoryCamera",
-    "ParticleFollowingCamera",
+    BaseCamera.__name__,
+    KeyframeCamera.__name__,
+    StaticCamera.__name__,
+    ParticleFollowingCamera.__name__,
+    TrajectoryCamera.__name__,
+    trajectories.__name__,
 ]
