@@ -30,7 +30,7 @@ from znvis import Material
 from znvis.mesh.icosahedron import Icosahedron
 
 
-class TestMobius(unittest.TestCase):
+class TestIcosahedron(unittest.TestCase):
     """
     A test class for the Icosahedron class.
     """
@@ -42,7 +42,7 @@ class TestMobius(unittest.TestCase):
 
         Returns
         -------
-        Sets up a mobius loop instance for testing
+        Sets up an icosahedron instance for testing
         """
         cls.material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
         cls.icosahedron = Icosahedron(

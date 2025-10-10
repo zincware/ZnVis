@@ -58,7 +58,7 @@ class TestCustomMesh(unittest.TestCase):
 
     def test_instantiation(self):
         """
-        Test the instantiation of a CostumMesh.
+        Test the instantiation of a CustomMesh.
 
         Returns
         -------
