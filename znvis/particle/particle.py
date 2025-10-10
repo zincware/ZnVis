@@ -129,7 +129,7 @@ class Particle:
                     self.director = self.director[np.newaxis, :, :]
 
         except IndexError:
-            raise IndexError("The provided data has an incompatible shape.")
+            raise IndexError("The provided data has an incompatible shape.") from None
 
         if np.isnan(self.position).any():
             raise ValueError("The provided data contains NaN values.")
