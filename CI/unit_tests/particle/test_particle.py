@@ -73,8 +73,14 @@ class TestParticle(unittest.TestCase):
 
         nan_name = "my_nan_particle"
 
-        cls.nan_name = Particle(
+        cls.nan_particle = Particle(
             name=nan_name, mesh=Sphere(), position=np.full_like(position, np.nan)
+        )
+
+        none_pos_name = "my_none_pos_particle"
+
+        cls.none_pos_particle = Particle(
+            name=none_pos_name, mesh=Sphere(), position=None
         )
 
     def test_initialization(self):
@@ -168,8 +174,23 @@ class TestParticle(unittest.TestCase):
         # Attempt to build the mesh dict
 
         with self.assertRaises((ValueError)) as context:
-            self.nan_name.construct_mesh_list()
+            self.nan_particle.construct_mesh_list()
         # Check if error message is correct
         self.assertEqual(
             str(context.exception), "The provided data contains NaN values."
         )
+
+    def test_construct_none_pos_mesh_dict(self):
+        """
+        Test the construct_mesh_dict method for a particle with position=None.
+
+        Returns
+        -------
+        Tests whether the dict was created properly.
+        """
+        # Attempt to build the mesh dict
+
+        with self.assertRaises((ValueError)) as context:
+            self.none_pos_particle.construct_mesh_list()
+        # Check if error message is correct
+        self.assertEqual(str(context.exception), "Position data cannot be None.")

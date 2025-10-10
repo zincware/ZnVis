@@ -86,6 +86,20 @@ class TestVectorField(unittest.TestCase):
             mesh=Arrow(scale=10, material=cls.material),
             direction=np.full_like(directors, np.nan),
         )
+        none_pos_name = "my_none_pos_vector_field"
+        cls.none_pos_vector_field = VectorField(
+            name=none_pos_name,
+            position=None,
+            mesh=Arrow(scale=10, material=cls.material),
+            direction=directors,
+        )
+        none_dir_name = "my_none_dir_vector_field"
+        cls.none_dir_vector_field = VectorField(
+            name=none_dir_name,
+            position=position,
+            mesh=Arrow(scale=10, material=cls.material),
+            direction=None,
+        )
 
     def test_initialization(self):
         """
@@ -191,7 +205,7 @@ class TestVectorField(unittest.TestCase):
 
     def test_construct_nan_mesh_dict(self):
         """
-        Test the construct_mesh_dict method for an empty mesh.
+        Test the construct_mesh_dict method for a mesh containing nans.
 
         Returns
         -------
@@ -203,3 +217,33 @@ class TestVectorField(unittest.TestCase):
             self.nan_vector_field.construct_mesh_list()
         # Check if error message is correct
         self.assertEqual(str(context.exception), "The provided data contains NaNs.")
+
+    def test_construct_none_pos_mesh_dict(self):
+        """
+        Test the construct_mesh_dict method for a mesh with position=None.
+
+        Returns
+        -------
+        Tests whether the dict was created properly.
+        """
+        # Attempt to build the mesh dict
+
+        with self.assertRaises(ValueError) as context:
+            self.none_pos_vector_field.construct_mesh_list()
+        # Check if error message is correct
+        self.assertEqual(str(context.exception), "Position data cannot be None.")
+
+    def test_construct_none_dir_mesh_dict(self):
+        """
+        Test the construct_mesh_dict method for a mesh with directors=None.
+
+        Returns
+        -------
+        Tests whether the dict was created properly.
+        """
+        # Attempt to build the mesh dict
+
+        with self.assertRaises(ValueError) as context:
+            self.none_dir_vector_field.construct_mesh_list()
+        # Check if error message is correct
+        self.assertEqual(str(context.exception), "Director data cannot be None.")

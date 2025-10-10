@@ -113,6 +113,10 @@ class Particle:
         Updates the class attributes mesh_list
         """
         self.mesh_list = []
+
+        if self.position is None:
+            raise ValueError("Position data cannot be None.")
+
         try:
             if not self.static:
                 n_particles = int(self.position.shape[1])
