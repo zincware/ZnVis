@@ -31,7 +31,7 @@ from znvis.mesh.sphere import Sphere
 
 class TestSphere(unittest.TestCase):
     """
-    A test class for the Particle class.
+    A test class for the Sphere class.
     """
 
     @classmethod

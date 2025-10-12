@@ -31,7 +31,7 @@ from znvis.mesh.mesh import Mesh
 
 class TestMesh(unittest.TestCase):
     """
-    A test class for the Particle class.
+    A test class for the Mesh class.
     """
 
     def test_instantiation(self):
@@ -45,3 +45,11 @@ class TestMesh(unittest.TestCase):
         material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
         mesh = Mesh(material=material)
         np.testing.assert_array_equal(mesh.material, material)
+
+    def test_create_mesh_not_implemented(self):
+        """
+        Test that calling create_mesh on the base Mesh class raises NotImplementedError.
+        """
+        mesh = Mesh()
+        with self.assertRaises(NotImplementedError):
+            mesh.create_mesh()

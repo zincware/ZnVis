@@ -107,6 +107,12 @@ class VectorField:
         Updates the class attributes mesh_list
         """
         self.mesh_list = []
+
+        if self.position is None:
+            raise ValueError("Position data cannot be None.")
+        if self.direction is None:
+            raise ValueError("Director data cannot be None.")
+
         try:
             if not self.static:
                 n_particles = int(self.position.shape[1])
@@ -117,8 +123,10 @@ class VectorField:
                 self.position = self.position[np.newaxis, :, :]
                 self.direction = self.direction[np.newaxis, :, :]
 
-        except ValueError:
-            raise ValueError("There is no data for this vector field.")
+        except IndexError:
+            raise IndexError("The provided data has an incompatible shape.") from None
+        if np.isnan(self.position).any() or np.isnan(self.direction).any():
+            raise ValueError("The provided data contains NaNs.")
 
         new_mesh = True
 

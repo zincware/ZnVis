@@ -113,6 +113,10 @@ class Particle:
         Updates the class attributes mesh_list
         """
         self.mesh_list = []
+
+        if self.position is None:
+            raise ValueError("Position data cannot be None.")
+
         try:
             if not self.static:
                 n_particles = int(self.position.shape[1])
@@ -124,8 +128,11 @@ class Particle:
                 if self.director is not None:
                     self.director = self.director[np.newaxis, :, :]
 
-        except ValueError:
-            raise ValueError("There is no data for these particles.")
+        except IndexError:
+            raise IndexError("The provided data has an incompatible shape.") from None
+
+        if np.isnan(self.position).any():
+            raise ValueError("The provided data contains NaN values.")
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             for j in range(n_particles):
