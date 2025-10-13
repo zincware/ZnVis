@@ -28,8 +28,14 @@ class ParticleFollowingCameraTester(unittest.TestCase):
         """
         Test the initialization of the KeyframeCamera class.
         """
-        np.allclose(self.particle_camera.camera_particle_vector, np.array([0, 0, 20]))
-        np.allclose(self.particle_camera.camera_up_vector, np.array([0, 1, 0]))
+        self.assertTrue(
+            np.allclose(
+                self.particle_camera.camera_particle_vector, np.array([0, 0, 20])
+            )
+        )
+        self.assertTrue(
+            np.allclose(self.particle_camera.camera_up_vector, np.array([0, 1, 0]))
+        )
         self.assertEqual(self.particle_camera.particle_positions.shape, (2, 3))
         self.assertEqual(self.particle_camera.view_matrix.shape, (4, 4))
 
@@ -41,4 +47,4 @@ class ParticleFollowingCameraTester(unittest.TestCase):
         expected_view_matrix = np.array(
             [[1, 0, 0, -1], [0, 1, 0, -2], [0, 0, 1, -20], [0, 0, 0, 1]]
         )
-        np.allclose(view_matrix, expected_view_matrix)
+        np.testing.assert_allclose(view_matrix, expected_view_matrix)

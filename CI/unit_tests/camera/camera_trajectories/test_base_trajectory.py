@@ -33,12 +33,13 @@ class BaseTrajectoryTester(unittest.TestCase):
         view_matrix = np.array(
             [[1, 0, 0, -1], [0, 1, 0, -2], [0, 0, 1, -3], [0, 0, 0, 1]]
         )
-        _, eye, up = self.camera_trajectory.get_center_eye_up_from_view_matrix(
+        center, eye, up = self.camera_trajectory.get_center_eye_up_from_view_matrix(
             view_matrix
         )
 
         expected_eye = np.array([1, 2, 3])
         expected_up = np.array([0, 1, 0])
-        # np.allclose(center, expected_center)
-        np.allclose(eye, expected_eye)
-        np.allclose(up, expected_up)
+        expected_center = np.array([1, 2, 2])
+        self.assertTrue(np.allclose(eye, expected_eye))
+        self.assertTrue(np.allclose(up, expected_up))
+        self.assertTrue(np.allclose(center, expected_center))

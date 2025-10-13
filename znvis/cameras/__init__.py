@@ -34,5 +34,5 @@ __all__ = [
     StaticCamera.__name__,
     ParticleFollowingCamera.__name__,
     TrajectoryCamera.__name__,
-    trajectories.__name__,
+    "trajectories",
 ]

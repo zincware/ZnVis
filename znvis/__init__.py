@@ -59,6 +59,6 @@ __all__ = [
     CustomMesh.__name__,
     BoundingBox.__name__,
     Material.__name__,
-    rendering.__name__,
-    cameras.__name__,
+    "rendering",
+    "cameras",
 ]
