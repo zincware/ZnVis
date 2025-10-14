@@ -234,7 +234,6 @@ class KeyframeCamera(BaseCamera):
                 'containing "interpolated_view_matrices.npy".'
             )
         self.interpolated_view_matrices = np.load(path, allow_pickle=True)
-        print(len(self.interpolated_view_matrices))
         if len(self.interpolated_view_matrices) < 2:
             raise ValueError(
                 "The loaded view matrix dictionary has not enough entries. "
@@ -259,7 +258,9 @@ class KeyframeCamera(BaseCamera):
         interpolated_view_matrices : np.ndarray shape=(n_frames, 4, 4)
                 The interpolated view matrices
         """
-        frame_indexes, view_matrices = zip(*view_matrices_dictionary.items())
+        frame_indexes, view_matrices = zip(
+            *view_matrices_dictionary.items(), strict=False
+        )
 
         interpolated_view_matrices = []
         # Catch the case where the first view matrix is not at frame 0.
@@ -276,7 +277,7 @@ class KeyframeCamera(BaseCamera):
             matrix_2 = view_matrices[i]
 
             # Perform a linear interpolation between the two view matrices
-            for j in range(interpolation_steps):
+            for j in range(1, interpolation_steps + 1):
                 new_matrix = matrix_1 + j * (matrix_2 - matrix_1) / interpolation_steps
 
                 new_matrix = self._apply_svd_smoothing(new_matrix)

@@ -162,7 +162,7 @@ class StaticCameraTester(unittest.TestCase):
             ]
         )
 
-        center, eye, up = self.look_at_camera.get_center_eye_up_from_view_matrix(
+        _center, eye, up = self.look_at_camera.get_center_eye_up_from_view_matrix(
             view_matrix
         )
         expected_eye = np.array([1.0, 2.0, 3.0])

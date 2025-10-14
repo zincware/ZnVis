@@ -26,20 +26,18 @@ import os
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 
 import pathlib
-import re
-import shutil
 import threading
 import time
 import typing
 
-import cv2
 import open3d as o3d
 import open3d.visualization.gui as gui
-from rich.progress import Progress, track
+from rich.progress import Progress
 
 import znvis
 from znvis.cameras import KeyframeCamera
 from znvis.rendering import Mitsuba
+from znvis.video import VideoManager
 
 
 class Visualizer:
@@ -69,6 +67,7 @@ class Visualizer:
         keep_frames: bool = True,
         bounding_box: znvis.BoundingBox = None,
         video_format: str = "mp4",
+        video_title: str = "ZnVis-Video",
         renderer_resolution: list = [4096, 2160],
         renderer_spp: int = 64,
         renderer: Mitsuba = Mitsuba(),
@@ -91,7 +90,9 @@ class Visualizer:
                 If True, the visualizer will keep all frames
                 after combining them into a video.
         video_format : str
-                The format of the video to be generated.
+                The format of the video to be generated. Default is mp4.
+        video_title : str
+                The name of the video file
         renderer_resolution : list
                 List containing the resolution of the rendered videos and screenshots
         renderer_spp : int
@@ -121,16 +122,26 @@ class Visualizer:
                 self.number_of_steps = 1
             else:
                 self.number_of_steps = min(len_list)
+        else:
+            self.number_of_steps = number_of_steps
 
         self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"
         self.video_format = video_format
+        self.video_title = video_title
         self.renderer_resolution = renderer_resolution
         self.renderer_spp = renderer_spp
         self.keep_frames = keep_frames
         self.renderer = renderer
         self.play_speed = 1
         self.do_rewind = False
+
+        # Initialize video manager
+        self.video_manager = VideoManager(
+            output_folder=self.output_folder, frame_rate=self.frame_rate
+        )
+        # Validate video format
+        self.video_format = self.video_manager.validate_video_format(video_format)
 
         # Camera Handling
         if keyframe_camera is not None:
@@ -274,35 +285,23 @@ class Visualizer:
 
     def _create_movie(self):
         """
-        Concatenate images into a movie.
+        Concatenate images into a movie using VideoManager.
 
-        This needs to be a seperate method so that the
+        This needs to be a separate method so that the
         image storing thread can run to completion before
         this one is called. (GIL stuff)
         """
-        images = [f.as_posix() for f in self.frame_folder.glob("*.png")]
-
-        # Sort images by number
-        images = sorted(images, key=lambda s: int(re.search(r"\d+", s).group()))
-
-        single_frame = cv2.imread(images[0])
-        height, width, layers = single_frame.shape
-
-        video = cv2.VideoWriter(
-            (self.output_folder / f"ZnVis-Video.{self.video_format}").as_posix(),
-            0,
-            self.frame_rate,
-            (width, height),
-        )
-        for image in track(images, description="Exporting Video..."):
-            video.write(cv2.imread(image))
-
-        cv2.destroyAllWindows()
-        video.release()
-
-        # Delete temporary directory if not storing run files
-        if not self.keep_frames:
-            shutil.rmtree(self.frame_folder, ignore_errors=False)
+        try:
+            self.video_manager.create_video_from_frames(
+                frame_folder=self.frame_folder,
+                video_name=self.video_title,
+                video_format=self.video_format,
+                keep_frames=self.keep_frames,
+                frame_pattern="*.png",
+            )
+        except RuntimeError as e:
+            print(f"Error creating video: {e}")
+            raise
 
     def _export_scene(self, vis):
         """

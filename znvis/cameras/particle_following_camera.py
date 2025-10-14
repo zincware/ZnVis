@@ -44,8 +44,8 @@ class ParticleFollowingCamera(BaseCamera):
         self,
         particle_positions: np.ndarray,
         particle_directions: np.ndarray = None,
-        camera_particle_vector: np.ndarray = np.array([0, 0, 20]),
-        camera_up_vector: np.ndarray = np.array([0, 1, 0]),
+        camera_particle_vector=None,
+        camera_up_vector=None,
     ) -> None:
         """
         Initialize the ParticleFollowingCamera object.
@@ -76,6 +76,10 @@ class ParticleFollowingCamera(BaseCamera):
         """
 
         self.particle_positions = particle_positions
+        if camera_particle_vector is None:
+            camera_particle_vector = np.array([0, 0, 20])
+        if camera_up_vector is None:
+            camera_up_vector = np.array([0, 1, 0])
         if particle_directions is not None:
             self.particle_directions = particle_directions
         else:
@@ -92,8 +96,8 @@ class ParticleFollowingCamera(BaseCamera):
         the particle position and looks at the particle.
         Parameters
         ----------
-        frame_index : int, optional
-            The index of the frame for which to get the view matrix, by default None.
+        frame_index : int,
+            The index of the frame for which to get the view matrix.
 
         Returns
         -------
@@ -106,10 +110,10 @@ class ParticleFollowingCamera(BaseCamera):
             if getattr(self.camera_up_vector, "ndim", 1) == 2
             else self.camera_up_vector
         )
-        up_norm = np.linalg.norm(self.camera_up_vector)
+        up_norm = np.linalg.norm(up_vec)
         if up_norm == 0.0:
             raise ValueError(
-                f'"camera_up_vector" must be non-zero. '
+                '"camera_up_vector" must be non-zero. '
                 f"Error occured for frame index {frame_index}."
             )
         up = up_vec / up_norm

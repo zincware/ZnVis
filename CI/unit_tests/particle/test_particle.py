@@ -115,7 +115,7 @@ class TestParticle(unittest.TestCase):
         self.assertEqual(type(self.particle.mesh), Sphere)
         self.assertEqual(self.particle.name, "my_particle")
         self.assertEqual(len(self.particle.position), 10)
-        np.testing.assert_array_equal(self.particle.position[0].shape, (2, 3))
+        self.assertEqual(self.particle.position[0].shape, (2, 3))
 
     def test_construct_mesh_list(self):
         """

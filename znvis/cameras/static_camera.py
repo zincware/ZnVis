@@ -35,7 +35,7 @@ class StaticCamera(BaseCamera):
         view_matrix: np.ndarray = None,
     ) -> None:
         """
-        Parent class for the cameras.
+        Static camera with a fixed view matrix.
 
         Parameters
         ----------

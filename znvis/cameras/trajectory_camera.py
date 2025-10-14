@@ -39,8 +39,6 @@ class TrajectoryCamera(BaseCamera):
         ----------
         trajectory : BaseCameraTrajectory
             The camera trajectory object.
-        total_frames : int
-            The total number of frames in the trajectory.
         """
         self.trajectory = trajectory
         self.view_matrix = self.get_view_matrix(0)

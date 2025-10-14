@@ -114,7 +114,7 @@ class BaseCamera:
 
     @staticmethod
     def get_minimal_view_matrix(
-        box_size: np.ndarray, renderer_resolution: np.ndarray = np.array([4, 3])
+        box_size: np.ndarray, renderer_resolution=None
     ) -> np.ndarray:
         """
         Calculates a minimal view matrix for the camera based on the box size.
@@ -132,6 +132,10 @@ class BaseCamera:
         """
         # Default value in Open3D
         fov = 60
+        if renderer_resolution is None:
+            renderer_resolution = np.array([4, 3])
+        else:
+            renderer_resolution = np.asarray(renderer_resolution)
         aspect_ratio = renderer_resolution[0] / renderer_resolution[1]
         dx, dy, dz = box_size
         center = np.array([dx / 2, dy / 2, 0])

@@ -14,13 +14,13 @@ class BaseTrajectoryTester(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """
-        Prepare an instance of the InterpolationCamera class for testing
+        Prepare an instance of the BaseTrajectory class for testing
         """
         cls.camera_trajectory = BaseTrajectory(total_frames=10)
 
     def test_initialization(self):
         """
-        Test the initialization of the KeyframeCamera class.
+        Test the initialization of the BaseTrajectory class.
         """
         self.assertEqual(self.camera_trajectory.total_frames, 10)
         with self.assertRaises(NotImplementedError):

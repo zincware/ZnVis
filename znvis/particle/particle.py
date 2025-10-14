@@ -174,6 +174,8 @@ class Particle:
                     )
 
         # Check data for consistency
+        if self.position is None:
+            raise ValueError("Position data must be not None.")
         for i, position in enumerate(self.position):
             if np.isnan(position).any():
                 raise ValueError(

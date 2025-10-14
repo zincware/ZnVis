@@ -14,7 +14,7 @@ class ParticleFollowingCameraTester(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """
-        Prepare an instance of the InterpolationCamera class for testing
+        Prepare an instance of the ParticleFollowingCamera class for testing
         """
         particle_positions = np.array([[1, 2, 0], [1, 1, 0]])
 
@@ -26,7 +26,7 @@ class ParticleFollowingCameraTester(unittest.TestCase):
 
     def test_initialization(self):
         """
-        Test the initialization of the KeyframeCamera class.
+        Test the initialization of the ParticleFollowingCamera class.
         """
         self.assertTrue(
             np.allclose(
