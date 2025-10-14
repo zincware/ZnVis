@@ -97,8 +97,8 @@ class KeyframeCamera(BaseCamera):
         else:
             self.interactive_required = True
             print(
-                "Interactive Mode is assumed. You need to create a keyframe "
-                'dictionary using the "visualizer.py\'s" run_visualization method.'
+                "Interactive mode is enabled. Please create a keyframe "
+                "dictionary using the 'run_visualization' method in visualizer.py."
             )
 
     def add_view_matrix(self, frame_index: int, view_matrix: np.ndarray) -> None:

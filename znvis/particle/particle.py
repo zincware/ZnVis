@@ -122,13 +122,13 @@ class Particle:
         if isinstance(self.position, np.ndarray):
             if self.position.size == 0:
                 raise ValueError(
-                    "The provided position array is empty.",
-                    "Please provide a valid position array.",
+                    "The provided position array is empty."
+                    "Please provide a valid position array."
                 )
             if self.director is not None and self.director.size == 0:
                 self.director = None
                 print(
-                    "-------\nWARNING: The provided director array is empty.",
+                    "-------\nWARNING: The provided director array is empty."
                     "Setting to None.\n-------",
                 )
             # Static case differentiation
@@ -142,7 +142,7 @@ class Particle:
                 if self.position.ndim == 3:
                     print(
                         "-------\nWARNING: The provided position array has an ",
-                        "unexpected shape. Using the first entry as the static array.",
+                        "unexpected shape. Using the first entry as the static array."
                         "\n-------",
                     )
                     self.position = [self.position[0, :, :]]
@@ -153,8 +153,8 @@ class Particle:
                     if self.director.ndim == 3:
                         self.director = [self.director[0, :, :]]
                         print(
-                            "-------\nWARNING: The provided director array has an ",
-                            "unexpected shape. Using the first entry as the static ",
+                            "-------\nWARNING: The provided director array has an "
+                            "unexpected shape. Using the first entry as the static "
                             "array.\n-------",
                         )
                     elif self.director.ndim == 2:
@@ -162,21 +162,31 @@ class Particle:
         # List case
         else:
             n_time_steps = len(self.position)
+            # Normalize director to list form if provided as ndarray
+            if self.director is not None and isinstance(self.director, np.ndarray):
+                if self.director.ndim == 3 and self.director.shape[0] == n_time_steps:
+                    self.director = [self.director[i] for i in range(n_time_steps)]
+                elif self.director.ndim == 2 and n_time_steps == 1:
+                    self.director = [self.director]
+                else:
+                    raise ValueError(
+                        "Director shape does not match number of position frames."
+                    )
 
         # Check data for consistency
         for i, position in enumerate(self.position):
             if np.isnan(position).any():
                 raise ValueError(
-                    f"The provided position data contains NaN values at time step {i}."
+                    f"The provided position data contains at least one "
+                    f"NaN value at time step {i}."
                 )
-        if self.director:
+        if self.director is not None:
             for i, director in enumerate(self.director):
                 if director is not None and np.isnan(director).any():
                     raise ValueError(
-                        "The provided director data contains NaN ",
-                        f"values at time step {i}.",
+                        "The provided director data contains at least one "
+                        f"NaN value at time step {i}.",
                     )
-
         # Create the mesh
         for frame_index in track(
             range(n_time_steps), description=f"Building {self.name} Mesh"
@@ -194,6 +204,8 @@ class Particle:
                 meshes.append(mesh)
 
             # Combine all meshes into one
+            if not meshes:
+                raise ValueError(f"No particles found at time step {frame_index}.")
             combined_mesh = meshes[0]
             for m in meshes[1:]:
                 combined_mesh += m
