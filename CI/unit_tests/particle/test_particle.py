@@ -198,10 +198,18 @@ class TestParticle(unittest.TestCase):
         """
         with self.assertRaises((ValueError)) as context:
             self.nan_particle.construct_mesh_list()
-        self.assertIn("The provided position data contains NaN", str(context.exception))
+        self.assertIn(
+            "The provided position data contains at least one "
+            "NaN value at time step 0.",
+            str(context.exception),
+        )
 
         self.nan_particle.position = np.random.uniform(-5, 5, (2, 2, 3))
         self.nan_particle.director = np.full((2, 2, 3), np.nan)
         with self.assertRaises((ValueError)) as context:
             self.nan_particle.construct_mesh_list()
-        self.assertIn("The provided director data contains NaN", str(context.exception))
+        self.assertIn(
+            "The provided director data contains at least one "
+            "NaN value at time step 0.",
+            str(context.exception),
+        )
