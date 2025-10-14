@@ -32,7 +32,7 @@ class TrajectoryCamera(BaseCamera):
     A class to produce camera trajectories.
     """
 
-    def __init__(self, trajectory: BaseTrajectory, total_frames: int):
+    def __init__(self, trajectory: BaseTrajectory):
         """
         Initializes the TrajectoryCamera object.
         Parameters
@@ -43,10 +43,9 @@ class TrajectoryCamera(BaseCamera):
             The total number of frames in the trajectory.
         """
         self.trajectory = trajectory
-        self.total_frames = total_frames
         self.view_matrix = self.get_view_matrix(0)
 
-    def get_view_matrix(self, frame_index: int = None) -> np.ndarray:
+    def get_view_matrix(self, frame_index: int) -> np.ndarray:
         center, eye, up = self.trajectory.get_center_eye_up(frame_index)
         self.view_matrix = self.look_at(center, eye, up)
         return self.view_matrix
