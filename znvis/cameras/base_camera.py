@@ -187,7 +187,7 @@ class BaseCamera:
 
         return view_matrix
 
-    def get_view_matrix(self, frame_index: int = None) -> np.ndarray:
+    def get_view_matrix(self, frame_index: int) -> np.ndarray:
         """
         Get the current view matrix of the camera.
 
@@ -254,3 +254,25 @@ class BaseCamera:
         up = inv_rotation @ np.array([0, 1, 0])
 
         return center, eye, up
+
+    def verify_camera_setup_for_rendering(self):
+        """
+        Ensures the camera is ready for rendering and has a valid view matrix.
+        If no view matrix is set, assigns a default view matrix.
+        Returns True if the camera is ready, False otherwise.
+        """
+        if (
+            self.view_matrix is not None
+            and isinstance(self.view_matrix, np.ndarray)
+            and self.view_matrix.shape == (4, 4)
+        ):
+            return True
+        else:
+            print(
+                "Couldn't find a valid view matrix in the camera object. "
+                "Using default."
+            )
+            self.view_matrix = np.array(
+                [[1, 0, 0, -100], [0, 1, 0, -90], [0, 0, 1, -230], [0, 0, 0, 1]]
+            )
+            return False

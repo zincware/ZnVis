@@ -27,7 +27,8 @@ class KeyframeCameraTester(unittest.TestCase):
         )
 
         cls.keyframe_camera = KeyframeCamera(
-            view_matrices_path=path_to_interpolated_view_matrices
+            view_matrices_path=path_to_interpolated_view_matrices,
+            import_view_matrices=True,
         )
 
     def test_interpolate_view_matrices(self):
@@ -61,7 +62,7 @@ class KeyframeCameraTester(unittest.TestCase):
                 ]
             ),
         }
-        interpolated_view_matrices = self.keyframe_camera.interpolate_view_matrices(
+        interpolated_view_matrices = self.keyframe_camera._interpolate_view_matrices(
             view_matrices_dict
         )
 

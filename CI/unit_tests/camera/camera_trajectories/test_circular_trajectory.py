@@ -21,10 +21,11 @@ class CircularTrajectoryTester(unittest.TestCase):
             center=np.array([0, 0, 0]),
             radius=5,
             frames_per_rotation=10,
-            angle_range=(0, 2 * np.pi),
+            start_angle=0,
+            rotation_angle=2 * np.pi,
             loop=False,
             ping_pong=False,
-            axis="y",
+            rotation_axis="y",
             clockwise=True,
             smoothing=True,
         )
@@ -33,10 +34,11 @@ class CircularTrajectoryTester(unittest.TestCase):
             center=np.array([0, 0, 0]),
             radius=5,
             frames_per_rotation=10,
-            angle_range=(0, 2 * np.pi),
+            start_angle=0,
+            rotation_angle=2 * np.pi,
             loop=False,
             ping_pong=False,
-            axis="y",
+            rotation_axis="y",
             clockwise=True,
             smoothing=False,
         )
@@ -45,10 +47,11 @@ class CircularTrajectoryTester(unittest.TestCase):
             center=np.array([0, 0, 0]),
             radius=5,
             frames_per_rotation=10,
-            angle_range=(0, 2 * np.pi),
+            start_angle=0,
+            rotation_angle=2 * np.pi,
             loop=False,
             ping_pong=False,
-            axis="y",
+            rotation_axis="y",
             clockwise=False,
             smoothing=True,
         )
@@ -58,10 +61,11 @@ class CircularTrajectoryTester(unittest.TestCase):
             center=np.array([0, 0, 0]),
             radius=5,
             frames_per_rotation=10,
-            angle_range=(0, 2 * np.pi),
+            start_angle=0,
+            rotation_angle=2 * np.pi,
             loop=False,
             ping_pong=False,
-            axis="x",
+            rotation_axis="x",
             clockwise=True,
             smoothing=True,
         )
@@ -76,12 +80,13 @@ class CircularTrajectoryTester(unittest.TestCase):
         )
         self.assertTrue(np.array_equal(self.camera_trajectory.radius, 5))
         self.assertTrue(np.array_equal(self.camera_trajectory.frames_per_rotation, 10))
+        self.assertTrue(np.array_equal(self.camera_trajectory.start_angle, 0))
         self.assertTrue(
-            np.array_equal(self.camera_trajectory.angle_range, (0, 2 * np.pi))
+            np.array_equal(self.camera_trajectory.rotation_angle, 2 * np.pi)
         )
         self.assertTrue(np.array_equal(self.camera_trajectory.loop, False))
         self.assertTrue(np.array_equal(self.camera_trajectory.ping_pong, False))
-        self.assertTrue(np.array_equal(self.camera_trajectory.axis, "y"))
+        self.assertTrue(np.array_equal(self.camera_trajectory.rotation_axis, "y"))
         self.assertTrue(np.array_equal(self.camera_trajectory.clockwise, True))
         self.assertTrue(np.array_equal(self.camera_trajectory.smoothing, True))
 
@@ -91,10 +96,11 @@ class CircularTrajectoryTester(unittest.TestCase):
             center=np.array([0, 0, 0]),
             radius=5,
             frames_per_rotation=0,
-            angle_range=(0, 2 * np.pi),
+            start_angle=0,
+            rotation_angle=2 * np.pi,
             loop=False,
             ping_pong=False,
-            axis="x",
+            rotation_axis="x",
             clockwise=True,
             smoothing=True,
         )
@@ -107,10 +113,11 @@ class CircularTrajectoryTester(unittest.TestCase):
                 center=np.array([0, 0, 0]),
                 radius=5,
                 frames_per_rotation=10,
-                angle_range=(0, 2 * np.pi),
+                start_angle=0,
+                rotation_angle=2 * np.pi,
                 loop=False,
                 ping_pong=False,
-                axis="a",
+                rotation_axis="a",
                 clockwise=True,
                 smoothing=True,
             )
@@ -122,10 +129,11 @@ class CircularTrajectoryTester(unittest.TestCase):
                 center=np.array([0, 0, 0]),
                 radius=5,
                 frames_per_rotation=-4,
-                angle_range=(0, 2 * np.pi),
+                start_angle=0,
+                rotation_angle=2 * np.pi,
                 loop=False,
                 ping_pong=False,
-                axis="x",
+                rotation_axis="x",
                 clockwise=True,
                 smoothing=True,
             )
@@ -203,20 +211,20 @@ class CircularTrajectoryTester(unittest.TestCase):
         center, eye, up = self.not_clockwise_camera_trajectory.get_center_eye_up(0)
         print(center, eye, up)
         assert np.allclose(center, self.not_clockwise_camera_trajectory.center)
-        assert np.allclose(eye, np.array([5, 0, 0]))
+        assert np.allclose(eye, np.array([0, 0, 5]))
         assert np.allclose(up, np.array([0, 1, 0]))
 
     def test_other_planes(self):
         """
         Test the get_center_eye_up method for other planes
         """
-        self.camera_trajectory_axis_check.axis = "x"
+        self.camera_trajectory_axis_check.rotation_axis = "x"
         up_x = np.array([1, 0, 0])
         up_y = np.array([0, 1, 0])
         up_z = np.array([0, 0, 1])
 
         for axis in ["x", "y", "z"]:
-            self.camera_trajectory_axis_check.axis = axis
+            self.camera_trajectory_axis_check.rotation_axis = axis
             _, _, up = self.camera_trajectory_axis_check.get_center_eye_up(0)
             if axis == "x":
                 assert np.allclose(up, up_x)

@@ -22,7 +22,7 @@ class ZoomingTrajectoryTester(unittest.TestCase):
             initial_eye=np.array([0, 0, 10]),
             zoom_distance=5,
             up=np.array([0, 1, 0]),
-            frames_while_zooming=1.0,
+            zoom_fraction=1.0,
         )
 
         cls.camera_trajectory_None = ZoomingTrajectory(
@@ -31,7 +31,7 @@ class ZoomingTrajectoryTester(unittest.TestCase):
             initial_eye=np.array([0, 0, 10]),
             zoom_distance=5,
             up=np.array([0, 1, 0]),
-            frames_while_zooming=None,
+            zoom_fraction=None,
         )
 
     def test_initialization(self):
@@ -47,7 +47,7 @@ class ZoomingTrajectoryTester(unittest.TestCase):
         )
         self.assertTrue(np.array_equal(self.camera_trajectory.zoom_distance, 5))
         self.assertTrue(np.array_equal(self.camera_trajectory.up, np.array([0, 1, 0])))
-        self.assertEqual(self.camera_trajectory.frames_while_zooming, 1.0)
+        self.assertEqual(self.camera_trajectory.zoom_fraction, 1.0)
 
         with self.assertRaises(ValueError):
             ZoomingTrajectory(
@@ -56,7 +56,7 @@ class ZoomingTrajectoryTester(unittest.TestCase):
                 initial_eye=np.array([0, 0, 10]),
                 zoom_distance=5,
                 up=np.array([0, 1, 0]),
-                frames_while_zooming=1.0,
+                zoom_fraction=1.0,
             )
 
     def test_get_center_eye_up(self):

@@ -39,10 +39,11 @@ class CircularTrajectory(BaseTrajectory):
         center: np.ndarray,
         radius: float,
         frames_per_rotation: int,
-        angle_range: tuple = (0, 2 * np.pi),
+        start_angle: float = 0.0,
+        rotation_angle: float = 2 * np.pi,
         loop: bool = False,
         ping_pong: bool = False,
-        axis: str = "y",
+        rotation_axis: str = "y",
         clockwise: bool = True,
         smoothing: bool = True,
     ) -> None:
@@ -51,20 +52,23 @@ class CircularTrajectory(BaseTrajectory):
         Parameters
         ----------
         total_frames : int
-            The number of frames in the trajectory.
+            The number of frames in which the trajectory should be recorded.
         center: np.ndarray
             The center of the circular trajectory.
         radius: float
             The radius of the circular trajectory.
         frames_per_rotation: int
             The number of frames per full rotation.
-        angle_range: tuple (float, float)
-            The range of angles for the trajectory, by default (0, 2 * np.pi).
+        start_angle: float
+            Rotation around given axis, where the trajectory will start.
+            Default is 0.
+        rotation_angle: float
+            How far should the rotation go? Default is 2 * np.pi
         loop: bool, optional
             Whether to loop the trajectory, by default False.
         ping_pong: bool, optional
             Whether to ping pong the trajectory, by default False.
-        axis: str
+        rotation_axis: str
             The axis around which the camera rotates. Options are 'x', 'y', or 'z'.
         clockwise: bool, optional
             Whether the rotation of the camera is clockwise, by default True.
@@ -75,10 +79,11 @@ class CircularTrajectory(BaseTrajectory):
         self.total_frames = total_frames
         self.center = center
         self.radius = radius
-        self.angle_range = angle_range
+        self.start_angle = start_angle
+        self.rotation_angle = rotation_angle
         self.loop = loop
         self.ping_pong = ping_pong
-        self.axis = axis
+        self.rotation_axis = rotation_axis
         self.clockwise = clockwise
         self.smoothing = smoothing
 
@@ -91,8 +96,8 @@ class CircularTrajectory(BaseTrajectory):
         else:
             self.frames_per_rotation = frames_per_rotation
 
-        if self.axis not in ["x", "y", "z"]:
-            raise ValueError("Axis must be one of 'x', 'y', or 'z'.")
+        if self.rotation_axis not in ["x", "y", "z"]:
+            raise ValueError("Rotation axis must be one of 'x', 'y', or 'z'.")
         if self.frames_per_rotation < 1:
             raise ValueError("The number of frames per rotation must be at least 1.")
 
@@ -139,7 +144,7 @@ class CircularTrajectory(BaseTrajectory):
                 frame_index = 0
                 return frame_index
 
-    def get_center_eye_up(self, frame_index: int = None) -> tuple:
+    def get_center_eye_up(self, frame_index: int) -> tuple:
         """
         Provides the view matrix for the given frame index.
 
@@ -157,34 +162,30 @@ class CircularTrajectory(BaseTrajectory):
         frame_index = self.get_loop_and_ping_pong_frame_index(frame_index)
         progress = frame_index / (self.frames_per_rotation - 1)
 
-        start_theta = self.angle_range[0]
-        end_theta = self.angle_range[1]
         if self.smoothing:
             progress = 0.5 - 0.5 * np.cos(np.pi * progress)
 
-        theta = start_theta + (end_theta - start_theta) * frame_index / (
-            self.frames_per_rotation - 1
-        )
+        if self.clockwise:
+            theta = self.start_angle + self.rotation_angle * progress
+        else:
+            theta = self.start_angle - self.rotation_angle * progress
 
-        if not self.clockwise:
-            theta = -theta
-
-        if self.axis == "z":
+        if self.rotation_axis == "z":
             eye = np.array(
                 [self.radius * np.sin(theta), self.radius * np.cos(theta), 0]
             )
             up = np.array([0, 0, 1])
-        elif self.axis == "y":
+        elif self.rotation_axis == "y":
             eye = np.array(
-                [self.radius * np.sin(theta), 0, self.radius * np.cos(theta)]
+                [self.radius * np.sin(-theta), 0, self.radius * np.cos(theta)]
             )
             up = np.array([0, 1, 0])
-        elif self.axis == "x":
-            eye = np.array([0, self.radius * np.sin(theta), np.cos(theta)])
+        elif self.rotation_axis == "x":
+            eye = np.array(
+                [0, self.radius * np.sin(theta), self.radius * np.cos(theta)]
+            )
             up = np.array([1, 0, 0])
 
-        if not self.clockwise:
-            eye = eye[::-1]
         eye += self.center
 
         return self.center, eye, up

@@ -24,13 +24,12 @@ class TrajectoryCameraTester(unittest.TestCase):
             radius=1,
             frames_per_rotation=10,
         )
-        cls.rotating_camera = TrajectoryCamera(cls.circular_trajectory, total_frames=10)
+        cls.rotating_camera = TrajectoryCamera(cls.circular_trajectory)
 
     def test_initialization(self):
         """
         Test the initialization of the KeyframeCamera class.
         """
-        self.assertEqual(self.rotating_camera.total_frames, 10)
         self.assertEqual(
             self.rotating_camera.trajectory is self.circular_trajectory, True
         )

@@ -122,7 +122,8 @@ class StaticCameraTester(unittest.TestCase):
         """
         Test the get_view_matrix method.
         """
-        view_matrix = self.look_at_camera.get_view_matrix()
+        view_matrix_frame0 = self.look_at_camera.get_view_matrix(frame_index=0)
+        view_matrix_frame1 = self.look_at_camera.get_view_matrix(frame_index=1)
         expected_view_matrix = np.array(
             [
                 [9.96880973e-01, -0.00000000e00, 7.89197437e-02, -1.18628836e02],
@@ -131,7 +132,8 @@ class StaticCameraTester(unittest.TestCase):
                 [0.00000000e00, 0.00000000e00, 0.00000000e00, 1.00000000e00],
             ]
         )
-        self.assertTrue(np.allclose(view_matrix, expected_view_matrix))
+        self.assertTrue(np.allclose(view_matrix_frame0, expected_view_matrix))
+        self.assertTrue(np.allclose(view_matrix_frame1, expected_view_matrix))
 
     def test_set_view_matrix(self):
         """

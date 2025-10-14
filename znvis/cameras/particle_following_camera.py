@@ -82,13 +82,13 @@ class ParticleFollowingCamera(BaseCamera):
             self.particle_directions = None
 
         self.camera_particle_vector = camera_particle_vector
-        self.camera_up_vector = camera_up_vector / np.linalg.norm(camera_up_vector)
+        self.camera_up_vector = camera_up_vector
         self.view_matrix = self.get_view_matrix(0)
 
-    def get_view_matrix(self, frame_index=None):
+    def get_view_matrix(self, frame_index: int):
         """
         Provides the view matrix for the given frame index, where
-        the amera is shifted by the camera_particle_vector from
+        the camera is shifted by the camera_particle_vector from
         the particle position and looks at the particle.
         Parameters
         ----------
@@ -100,16 +100,40 @@ class ParticleFollowingCamera(BaseCamera):
         view_matrix: np.ndarray
             The view matrix for the given frame index.
         """
+        # can support (3,) shape and (n_frames, 3)
+        up_vec = (
+            self.camera_up_vector[frame_index]
+            if getattr(self.camera_up_vector, "ndim", 1) == 2
+            else self.camera_up_vector
+        )
+        up_norm = np.linalg.norm(self.camera_up_vector)
+        if up_norm == 0.0:
+            raise ValueError(
+                f'"camera_up_vector" must be non-zero. '
+                f"Error occured for frame index {frame_index}."
+            )
+        up = up_vec / up_norm
 
-        up = self.camera_up_vector
         center = self.particle_positions[frame_index]
 
-        if self.particle_directions is None and self.camera_particle_vector.ndim == 1:
-            eye = center + self.camera_particle_vector
-        elif self.particle_directions is None and self.camera_particle_vector.ndim == 2:
-            eye = center + self.camera_particle_vector[frame_index]
+        if self.particle_directions is None:
+            if self.camera_particle_vector.ndim == 1:
+                eye = center + self.camera_particle_vector
+            elif self.camera_particle_vector.ndim == 2:
+                eye = center + self.camera_particle_vector[frame_index]
+            else:
+                raise ValueError(
+                    '"camera_particle_vector" must be shape (3,) or (n_frames, 3).'
+                )
         else:
-            distance_from_particle = np.linalg.norm(self.camera_particle_vector)
+            camera_particle_vector = (
+                self.camera_particle_vector[frame_index]
+                if self.camera_particle_vector.ndim == 2
+                else self.camera_particle_vector
+            )
+            distance_from_particle = float(np.linalg.norm(camera_particle_vector))
+            if distance_from_particle == 0:
+                distance_from_particle = 1e-8  # avoid eye == center
             eye = (
                 center - self.particle_directions[frame_index] * distance_from_particle
             )

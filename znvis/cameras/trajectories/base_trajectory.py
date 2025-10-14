@@ -32,11 +32,11 @@ class BaseTrajectory:
         Parameters
         ----------
         total_frames : int
-            The total number of frames in the trajectory.
+            The number of frames in which the trajectory should be recorded.
         """
         self.total_frames = total_frames
 
-    def get_center_eye_up(self, frame_index: int = None) -> tuple:
+    def get_center_eye_up(self, frame_index: int) -> tuple:
         """
         Provides the view matrix for the given frame index.
         """

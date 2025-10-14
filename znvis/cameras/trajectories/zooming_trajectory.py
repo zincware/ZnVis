@@ -38,8 +38,8 @@ class ZoomingTrajectory(BaseTrajectory):
         center: np.ndarray,
         initial_eye: np.ndarray,
         zoom_distance: float,
-        up: np.ndarray = np.array([0, 1, 0]),
-        frames_while_zooming: float = 1.0,
+        up: np.ndarray = None,
+        zoom_fraction: float = 1.0,
     ):
         """
         Initialize the ZoomingCamera object.
@@ -47,7 +47,7 @@ class ZoomingTrajectory(BaseTrajectory):
         Parameters
         ----------
         total_frames : int
-            The total number of frames in the trajectory.
+            The number of frames in which the trajectory should be recorded.
         center : np.ndarray
             The center of the camera zoom.
         initial_eye : np.ndarray
@@ -56,26 +56,28 @@ class ZoomingTrajectory(BaseTrajectory):
             The distance travelled in the zoom process from
             the initial eye towards the center.
         up : np.ndarray
-            The eye vector of the camera. Defines where up is.
-        frames_while_zooming : float
-            The percentage of the total frames that the camera
+            The eye vector of the camera. Defines where up is. Gets set to
+            [0, 1, 0] if None is passed.
+        zoom_fraction : float
+            The fraction of the total frames that the camera
             will spend zooming in or out. By default 1.0.
         """
         self.total_frames = total_frames
         self.center = np.array(center)
         self.initial_eye = np.array(initial_eye)
         self.zoom_distance = zoom_distance
-        self.up = np.array(up)
+        self.up = np.array([0, 1, 0]) if up is None else np.array(up)
         direction = self.center - self.initial_eye
-        self.direction = direction / np.linalg.norm(direction)
+        direction_norm = np.linalg.norm(direction)
+        if direction_norm == 0:
+            raise ValueError("center and initial_eye must not be identical")
+        self.direction = direction / direction_norm
 
         self.end_eye = self.initial_eye + self.direction * self.zoom_distance
 
-        if frames_while_zooming is not None:
-            self.frames_while_zooming = frames_while_zooming
-            self.number_of_zoom_frames = int(
-                self.frames_while_zooming * self.total_frames
-            )
+        if zoom_fraction is not None:
+            self.zoom_fraction = zoom_fraction
+            self.number_of_zoom_frames = int(self.zoom_fraction * self.total_frames)
             if self.number_of_zoom_frames < 1:
                 raise ValueError(
                     "The number of frames while zooming must be at least 1."
@@ -83,10 +85,11 @@ class ZoomingTrajectory(BaseTrajectory):
         else:
             self.number_of_zoom_frames = self.total_frames
 
-        self.step_size = (
-            np.linalg.norm(self.initial_eye - self.end_eye) / self.number_of_zoom_frames
-        )
-        assert self.step_size != 0, "The step size must not be zero."
+        distance = np.linalg.norm(self.initial_eye - self.end_eye)
+        denom = max(1, self.number_of_zoom_frames - 1)
+        self.step_size = distance / denom
+        if denom > 1 and self.step_size == 0:
+            raise ValueError('"zoom_distance" too small for the number of frames.')
 
     def get_center_eye_up(self, frame_index: int) -> tuple:
         """
