@@ -134,22 +134,29 @@ class Visualizer:
 
         # Camera Handling
         if keyframe_camera is not None:
+            if not isinstance(keyframe_camera, KeyframeCamera):
+                raise TypeError("You can only use a KeyframeCamera in the Visualizer")
+            self.keyframe_camera = keyframe_camera
             if not self.output_folder.exists():
                 self.output_folder.mkdir(parents=True, exist_ok=True)
 
-            self.keyframe_camera = keyframe_camera
-            self.keyframe_camera.view_matrices_path = self.output_folder
+            if self.keyframe_camera.view_matrices_path is None:
+                print(
+                    "Setting the visualizer output folder as "
+                    "output folder of the KeyframeCamera.\n"
+                )
+                self.keyframe_camera.view_matrices_path = self.output_folder
+
             self.keyframe_camera.number_of_frames = self.number_of_steps
-            self.do_view_matrices = True
+            self.activate_view_matrix_interface = True
         else:
-            self.do_view_matrices = False
+            self.activate_view_matrix_interface = False
 
         self.obj_folder = self.output_folder / "obj_files"
 
         # Added later during run
         self.app = None
         self.vis = None
-
         self.counter = 0
 
     def _initialize_app(self):
@@ -180,8 +187,9 @@ class Visualizer:
         self.vis.add_action("Screenshot", self._take_screenshot)
         self.vis.add_action("Export Video", self._export_video)
         self.vis.add_action("Export Mesh Trajectory", self._export_mesh_trajectory)
+        self.vis.add_action("Print current frame", self._output_current_counter)
 
-        if self.do_view_matrices:
+        if self.activate_view_matrix_interface:
             # Add actions to the visualizer for the keyframe camera.
             # The lambdas are necessary, as vis.add_action does not allow
             # passing arguments to the function.
@@ -794,6 +802,12 @@ class Visualizer:
             self.play_speed = 1 / 8
         else:
             self.play_speed = 1
+
+    def _output_current_counter(self, visualizer=None):
+        """
+        Output the current counter value.
+        """
+        print(self.counter)
 
     def run_visualization(self):
         """

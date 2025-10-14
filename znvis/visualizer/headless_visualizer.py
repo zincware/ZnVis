@@ -111,24 +111,8 @@ class Headless_Visualizer:
 
         # Set the camera
         self.camera = camera
-
         if self.camera is not None:
-            self.camera = camera
-            if isinstance(camera, znvis.cameras.KeyframeCamera):
-                print("Loading the interpolated camera view matrices.")
-                self.camera.load_view_matrices()
-            else:
-                if self.camera.view_matrix is not None:
-                    self.view_matrix = self.camera.view_matrix
-                else:
-                    print(
-                        "Couldn't find a view matrix in the camera object."
-                        " Using default."
-                    )
-                    self.view_matrix = np.array(
-                        [[1, 0, 0, -100], [0, 1, 0, -90], [0, 0, 1, -230], [0, 0, 0, 1]]
-                    )
-
+            self.camera.verify_camera_setup_for_rendering()
         else:
             print(
                 "No camera provided, using a default view matrix.",
@@ -149,6 +133,8 @@ class Headless_Visualizer:
                 self.number_of_steps = 1
             else:
                 self.number_of_steps = min(len_list)
+        else:
+            self.number_of_steps = number_of_steps
 
         self.output_folder = pathlib.Path(output_folder).resolve()
         self.frame_folder = self.output_folder / "video_frames"

@@ -22,6 +22,7 @@ Module for the KeyframeCamera class.
 """
 
 import pathlib
+from typing import Optional
 
 import numpy as np
 
@@ -33,7 +34,7 @@ class KeyframeCamera(BaseCamera):
     A class to produce an smooth camera trajectory based on manually
     picked frames and camera settings pairs.
     This is done by interpolating the view matrices of the manually
-    picked frames. At the moment, only linear interpolation with
+    picked frames (keyframes). At the moment, only linear interpolation with
     a smoothing via SVD is currently implemented.
     This can lead to unexpected results if the camera
     positions are chosen too far apart. Be aware of this
@@ -44,19 +45,61 @@ class KeyframeCamera(BaseCamera):
 
     """
 
-    def __init__(self, view_matrices_path: pathlib.Path = None) -> None:
+    def __init__(
+        self,
+        view_matrices_path: pathlib.Path = None,
+        number_of_frames: Optional[int] = None,
+        import_view_matrices: bool = False,
+    ) -> None:
         """
         Initialize the Keyframe Camera object.
 
         Parameters
         ----------
-        view_matrices_path : pathlib.Path
-                The path to the view matrices.
+        view_matrices_path : pathlib.Path, optional
+                Path to the directory where view matrices are stored
+                or will be exported.
+                Required if `import_view_matrices` is True.
+        number_of_frames : int, optional
+                The total number of frames. If None, must be set before interpolation.
+        import_view_matrices : bool, optional
+                Decide whether to import interpolated view matrix
+                dictionary for rendering or not.
+                If True, this will load the view_matrix from the given view_matrix_path.
+                The non-interactive mode is assumed.
+                Requires a not None view_matrices_path.
+                If False, it is necessary to create a view_matrices dictionary manually
+                using the functionalities of the visualizer.py.
         """
-        self.view_matrices_path = view_matrices_path
+        self.view_matrices_path = (
+            pathlib.Path(view_matrices_path) if view_matrices_path is not None else None
+        )
+        self.import_view_matrices = import_view_matrices
         self.view_matrices_dictionary = {}
-        if self.view_matrices_path is not None:
-            self.load_view_matrices()
+        self.interpolated_view_matrices = None
+        self.number_of_frames = number_of_frames
+        self.sent_overwrite_warning = False
+
+        if self.import_view_matrices and self.view_matrices_path is None:
+            raise ValueError(
+                "A view_matrices_path is required when import_view_matrices=True. "
+                "Please provide a directory path where interpolated view matrices "
+                "will be saved."
+            )
+        elif self.import_view_matrices and self.view_matrices_path is not None:
+            self.interactive_required = False
+            if self.view_matrices_path.exists():
+                self.load_view_matrices()
+            else:
+                raise FileNotFoundError(
+                    f"View matrices path '{self.view_matrices_path}' does not exist."
+                )
+        else:
+            self.interactive_required = True
+            print(
+                "Interactive Mode is assumed. You need to create a keyframe "
+                'dictionary using the "visualizer.py\'s" run_visualization method.'
+            )
 
     def add_view_matrix(self, frame_index: int, view_matrix: np.ndarray) -> None:
         """
@@ -66,6 +109,11 @@ class KeyframeCamera(BaseCamera):
         view matrix dictionary.
         """
         self.view_matrices_dictionary[frame_index] = view_matrix.copy()
+        print(f"Added view matrix for frame {frame_index}")
+        print(
+            f"Storing view matrices for frames "
+            f"{list(self.view_matrices_dictionary.keys())}\n"
+        )
 
     def reset_view_matrix_progress(self) -> None:
         """
@@ -82,15 +130,22 @@ class KeyframeCamera(BaseCamera):
         This function is called in the visualizer.py to remove the
         current view matrix from the view matrix dictionary.
         """
-        print(self.view_matrices_dictionary.keys())
         if frame_index in self.view_matrices_dictionary.keys():
 
             self.view_matrices_dictionary.pop(frame_index)
             print(f"Removed view matrix for frame {frame_index}")
+            print(
+                f"Still stored view matrices for frames "
+                f"{list(self.view_matrices_dictionary.keys())}\n"
+            )
         else:
             print(f"No view matrix found for frame {frame_index}")
+            print(
+                f"Stored view matrices for frames "
+                f"{list(self.view_matrices_dictionary.keys())}\n"
+            )
 
-    def sort_dictionary(self) -> None:
+    def _sort_dictionary(self) -> None:
         """
         Create the view matrix dictionary.
         This function is called in the visualizer.py to create the
@@ -99,9 +154,9 @@ class KeyframeCamera(BaseCamera):
         min_key = min(self.view_matrices_dictionary.keys())
         if min_key != 0:
             print(
-                "No view matrix found for the first frame."
-                "Adding the first saved view matrix of the trajectory",
-                " as entry for frame 0.",
+                "No view matrix found for the first frame. "
+                "Adding the first saved view matrix of the trajectory "
+                "as entry for frame 0."
             )
             self.view_matrices_dictionary[0] = self.view_matrices_dictionary[min_key]
 
@@ -111,9 +166,9 @@ class KeyframeCamera(BaseCamera):
         )
         if self.number_of_frames - 1 not in self.view_matrices_dictionary:
             print(
-                "No view matrix found for the last frame."
-                "Adding the last saved view matrix of the trajectory",
-                f" as entry for frame {self.number_of_frames - 1}.",
+                "No view matrix found for the last frame. "
+                "Adding the last saved view matrix of the trajectory "
+                f"as entry for frame {self.number_of_frames - 1}."
             )
             max_key = max(self.view_matrices_dictionary.keys())
             self.view_matrices_dictionary[self.number_of_frames - 1] = (
@@ -139,19 +194,22 @@ class KeyframeCamera(BaseCamera):
         interpolated_view_matrices : np.ndarray shape=(n_frames, 4, 4)
                 The interpolated view matrices
         """
+        if self.number_of_frames is None:
+            raise ValueError(
+                "No number of frames was assigned to the keyframe camera. "
+                "Consider passing it to your KeyframeCamera manually."
+            )
+
         if len(self.view_matrices_dictionary) == 0:
             print("No view matrices found. Please add view matrices first.")
         else:
-            if not self.view_matrices_path.exists():
-                self.view_matrices_path.mkdir(parents=True, exist_ok=True)
-
-            sorted_view_matrices_dictionnary = self.sort_dictionary()
-            interpolated_view_matrices_dictionnary = self.interpolate_view_matrices(
-                sorted_view_matrices_dictionnary
+            sorted_view_matrices_dictionary = self._sort_dictionary()
+            interpolated_view_matrices = self._interpolate_view_matrices(
+                sorted_view_matrices_dictionary
             )
-            self.export_interpolated_view_matrices(
-                interpolated_view_matrices_dictionnary
-            )
+            self.interpolated_view_matrices = interpolated_view_matrices
+            self._export_interpolated_view_matrices()
+        return interpolated_view_matrices
 
     def load_view_matrices(self) -> dict:
         """
@@ -167,11 +225,23 @@ class KeyframeCamera(BaseCamera):
                 A dictionary containing the view matrices of the manually
                 picked
         """
-        self.view_matrices_dictionary = np.load(
-            self.view_matrices_path, allow_pickle=True
-        )
+        path = self.view_matrices_path
+        if path.is_dir():
+            path = path / "interpolated_view_matrices.npy"
+        elif not str(path).endswith(".npy"):
+            raise ValueError(
+                "Provided path must be a .npy file or a directory "
+                'containing "interpolated_view_matrices.npy".'
+            )
+        self.interpolated_view_matrices = np.load(path, allow_pickle=True)
+        print(len(self.interpolated_view_matrices))
+        if len(self.interpolated_view_matrices) < 2:
+            raise ValueError(
+                "The loaded view matrix dictionary has not enough entries. "
+                "Consider creating a new one."
+            )
 
-    def interpolate_view_matrices(self, view_matrices_dictionary: dict) -> dict:
+    def _interpolate_view_matrices(self, view_matrices_dictionary: dict) -> dict:
         """
         Interpolates the view matrices in the given dictionary.
         The dictionary is expected to have the first key 0 and last
@@ -220,23 +290,33 @@ class KeyframeCamera(BaseCamera):
 
         return interpolated_view_matrices
 
-    def export_interpolated_view_matrices(
-        self, interpolated_view_matrices_dictionnary: dict
-    ) -> None:
+    def _export_interpolated_view_matrices(self) -> None:
         """
         Exports the interpolated view matrices to the specified path.
-        This would not be necessary if the visualizer could be run twice
-        from the same script. Then the Keyframe Camera could just be passed to
-        the renderer. However, Open3D makes this quite difficult so here we choose
-        this approach.
+        This allows to reuse a keyframe set again.
         """
+        export_path = (
+            self.view_matrices_path
+            if str(self.view_matrices_path).endswith(".npy")
+            else self.view_matrices_path / "interpolated_view_matrices.npy"
+        )
+        if export_path.exists() and not self.sent_overwrite_warning:
+            print(
+                f"Warning: There already exists an interpolated_view_matrices.npy "
+                f"file at {export_path}. "
+                f"If you want to overwrite it, press interpolation again."
+            )
+            self.sent_overwrite_warning = True
+        else:
+            msg = (
+                "Overwrote existing dictionary."
+                if export_path.exists()
+                else "Interpolated view matrices saved"
+            )
+            np.save(export_path, self.interpolated_view_matrices)
+            print(f"{msg} to {export_path}")
 
-        export_path = self.view_matrices_path / "interpolated_view_matrices.npy"
-        np.save(export_path, interpolated_view_matrices_dictionnary)
-        print(f"Interpolated view matrices saved to {export_path}")
-        self.export_path = export_path
-
-    def get_view_matrix(self, frame_index: int = None) -> np.ndarray:
+    def get_view_matrix(self, frame_index: int) -> np.ndarray:
         """
         Get the correct view matrix for the camera for a given frame index.
 
@@ -250,7 +330,7 @@ class KeyframeCamera(BaseCamera):
         view_matrix : np.ndarray shape=(4, 4)
                 The view matrix of the camera.
         """
-        current_view_matrix = self.view_matrices_dictionary[frame_index]
+        current_view_matrix = self.interpolated_view_matrices[frame_index]
 
         return current_view_matrix
 
@@ -276,6 +356,26 @@ class KeyframeCamera(BaseCamera):
         u, _, vh = np.linalg.svd(rotation_scaling, full_matrices=False)
         rotation_matrix = np.dot(u, vh)
 
-        # upate the View-Matrix
+        # update the View-Matrix
         view_matrix[:3, :3] = rotation_matrix
         return view_matrix
+
+    def verify_camera_setup_for_rendering(self):
+        """
+        Verifies if everything is ready for rendering.
+        """
+        if self.interactive_required:
+            if (
+                self.interpolated_view_matrices is None
+                or len(self.interpolated_view_matrices) != self.number_of_frames
+            ):
+                raise ValueError(
+                    'Seems like you did not use the "Interpolate '
+                    'and export view matrices" button in the interactive visualizer. '
+                    'Please restart or set the "import_view_matrices" '
+                    "bool to True and provide a corresponding path.",
+                )
+            else:
+                return True
+        else:
+            return True
