@@ -70,7 +70,7 @@ class StaticCamera(BaseCamera):
                 "Either a view_matrix or center, eye and up must be provided."
             )
 
-    def get_view_matrix(self, _frame_index: int) -> np.ndarray:
+    def get_view_matrix(self, frame_index: int) -> np.ndarray:
         """
         Get the current view matrix of the camera.
 
