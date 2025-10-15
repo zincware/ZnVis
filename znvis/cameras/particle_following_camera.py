@@ -89,7 +89,7 @@ class ParticleFollowingCamera(BaseCamera):
         self.camera_up_vector = camera_up_vector
         self.view_matrix = self.get_view_matrix(0)
 
-    def get_view_matrix(self, frame_index: int):
+    def get_view_matrix(self, frame_index: int) -> np.ndarray:
         """
         Provides the view matrix for the given frame index, where
         the camera is shifted by the camera_particle_vector from

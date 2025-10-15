@@ -24,7 +24,6 @@ Main visualizer class.
 import os
 
 import znvis.cameras
-import znvis.cameras.base_camera
 
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 
@@ -36,11 +35,12 @@ import numpy as np
 from rich.progress import Progress
 
 import znvis
+from znvis import cameras
 from znvis.rendering import Mitsuba
-from znvis.video import VideoManager
+from znvis.visualizer.base_visualizer import BaseVisualizer
 
 
-class Headless_Visualizer:
+class Headless_Visualizer(BaseVisualizer):
     """
     Main class to perform visualization.
 
@@ -59,16 +59,16 @@ class Headless_Visualizer:
         vector_field: typing.List[znvis.VectorField] | None = None,
         output_folder: typing.Union[str, pathlib.Path] = "./",
         frame_rate: int = 24,
-        number_of_steps: int = None,
+        number_of_steps: int | None = None,
         keep_frames: bool = True,
         bounding_box: znvis.BoundingBox | None = None,
         video_format: str = "mp4",
         video_title: str = "ZnVis-Video",
         renderer_resolution: typing.Sequence[int] | None = None,
         renderer_spp: int = 64,
-        renderer: Mitsuba | None = Mitsuba(),
+        renderer: Mitsuba | None = None,
         do_create_video: bool = True,
-        camera: znvis.cameras.BaseCamera = None,
+        camera: cameras.BaseCamera | None = None,
     ):
         """
         Constructor for the visualizer.
@@ -91,24 +91,41 @@ class Headless_Visualizer:
                 If True, the visualizer will keep all frames
                 after combining them into a video.
         video_format : str
-                The format of the video to be generated.
+                The format of the video to be generated. Default is mp4.
         video_title : str
                 The name of the video file.
         renderer_resolution : list
                 List containing the resolution of the rendered videos and screenshots
         renderer_spp : int
                 Samples per pixel for the rendered videos and screenshots.
+        renderer : Mitsuba
+                The renderer engine to use for rendering.
         do_create_video: bool
                 If True, the visualizer will create a video from the frames.
         camera : znvis.cameras.Camera object
                 Camera object to use for the visualization. If None, a default camera
                 will be used.
         """
-        self.particles = particles
-        self.vector_field = vector_field
-        self.frame_rate = frame_rate
-        self.bounding_box = bounding_box() if bounding_box else None
+        # Call parent constructor
+        super().__init__(
+            particles=particles,
+            vector_field=vector_field,
+            output_folder=output_folder,
+            frame_rate=frame_rate,
+            number_of_steps=number_of_steps,
+            keep_frames=keep_frames,
+            bounding_box=bounding_box,
+            video_format=video_format,
+            video_title=video_title,
+            renderer_resolution=renderer_resolution,
+            renderer_spp=renderer_spp,
+            renderer=renderer,
+        )
+
+        # Headless-specific attributes
         self.do_create_video = do_create_video
+        self.app = None
+        self.vis = None
 
         # Set the camera
         self.camera = camera
@@ -116,82 +133,13 @@ class Headless_Visualizer:
             self.camera.verify_camera_setup_for_rendering()
         else:
             print(
-                "No camera provided, using a default view matrix.",
-                "Consider using the respective camera class methods to set the ",
-                "view matrix based on your particle positions or box size.",
+                "No camera provided, using a default view matrix."
+                "Consider using the StaticCamera class to set the "
+                "view matrix based on your particle positions or box size."
             )
             self.view_matrix = np.array(
                 [[1, 0, 0, -100], [0, 1, 0, -90], [0, 0, 1, -230], [0, 0, 0, 1]]
             )
-
-        if number_of_steps is None:
-            len_list = []
-            for particle in particles:
-                if not particle.static:
-                    len_list.append(len(particle.position))
-
-            if len_list == []:
-                self.number_of_steps = 1
-            else:
-                self.number_of_steps = min(len_list)
-        else:
-            self.number_of_steps = number_of_steps
-
-        self.output_folder = pathlib.Path(output_folder).resolve()
-        self.frame_folder = self.output_folder / "video_frames"
-        self.renderer_resolution = (
-            list(renderer_resolution)
-            if renderer_resolution is not None
-            else [4096, 2160]
-        )
-        self.renderer_spp = renderer_spp
-        self.keep_frames = keep_frames
-        self.renderer = renderer if renderer is not None else Mitsuba()
-
-        # Initialize video manager
-        self.video_manager = VideoManager(
-            output_folder=self.output_folder, frame_rate=self.frame_rate
-        )
-        # Validate video format
-        self.video_format = self.video_manager.validate_video_format(video_format)
-        self.video_title = video_title
-        self.app = None
-        self.vis = None
-        self.counter = 0
-
-    def _create_movie(self):
-        """
-        Concatenate images into a movie using VideoManager.
-
-        This needs to be a separate method so that the
-        image storing thread can run to completion before
-        this one is called. (GIL stuff)
-        """
-        try:
-            self.video_manager.create_video_from_frames(
-                frame_folder=self.frame_folder,
-                video_name=self.video_title,
-                video_format=self.video_format,
-                keep_frames=self.keep_frames,
-                frame_pattern="*.png",
-            )
-        except RuntimeError as e:
-            print(f"Error creating video: {e}")
-            raise
-
-    def _initialize_particles(self):
-        """
-        Initialize the particles in the simulation.
-
-        This method will construct the particle dictionaries in each Particle class.
-        """
-        # Build the mesh dict for each particle
-        for item in self.particles:
-            item.construct_mesh_list()
-
-    def _initialize_vector_field(self):
-        for item in self.vector_field:
-            item.construct_mesh_list()
 
     def _record_trajectory(self):
         """
@@ -211,38 +159,7 @@ class Headless_Visualizer:
             """
             Function to be called on thread to save image.
             """
-            mesh_dict = {}
-
-            if self.vector_field is not None:
-                for item in self.vector_field:
-                    if item.static:
-                        mesh_dict[item.name] = {
-                            "mesh": item.mesh_list[0],
-                            "bsdf": item.mesh.material.mitsuba_bsdf,
-                            "material": item.mesh.o3d_material,
-                        }
-                    else:
-                        mesh_dict[item.name] = {
-                            "mesh": item.mesh_list[self.counter],
-                            "bsdf": item.mesh.material.mitsuba_bsdf,
-                            "material": item.mesh.o3d_material,
-                        }
-
-            for item in self.particles:
-                if item.static:
-                    mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[0],
-                        "bsdf": item.mesh.material.mitsuba_bsdf,
-                        "material": item.mesh.o3d_material,
-                    }
-                else:
-                    mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[self.counter],
-                        "bsdf": item.mesh.material.mitsuba_bsdf,
-                        "material": item.mesh.o3d_material,
-                    }
-            self.output_folder.mkdir(parents=True, exist_ok=True)
-            self.frame_folder.mkdir(parents=True, exist_ok=True)
+            mesh_dict = self.get_mesh_dict()
             # Check if the camera should be used for deciding on the view matrix
             if self.camera is not None:
                 self.view_matrix = self.camera.get_view_matrix(self.counter)
@@ -274,28 +191,6 @@ class Headless_Visualizer:
         if self.do_create_video:
             self._create_movie()
 
-    def _update_particles(self, visualizer=None, step: int = None):
-        """
-        Update the positions of the particles.
-
-        Parameters
-        ----------
-        step : int
-                Step to update to.
-
-        Returns
-        -------
-        Updates the positions of the particles in the box.
-        """
-        if visualizer is None:
-            visualizer = self.vis
-        if step is None:
-            if self.counter == self.number_of_steps - 1:
-                self.counter = 0
-            else:
-                self.counter += 1
-            step = self.counter
-
     def render_visualization(self):
         """
         Run the visualization.
@@ -304,6 +199,7 @@ class Headless_Visualizer:
         -------
         Launches the visualization.
         """
+        self.frame_folder.mkdir(parents=True, exist_ok=True)
         self._initialize_particles()
         if self.vector_field is not None:
             self._initialize_vector_field()

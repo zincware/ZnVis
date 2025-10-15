@@ -14,7 +14,7 @@ class StaticCameraTester(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """
-        Prepare an instance of the Camera class for testing.
+        Prepare an instance of the StaticCamera class for testing.
         """
 
         cls.center = np.array([119, 175, 0])

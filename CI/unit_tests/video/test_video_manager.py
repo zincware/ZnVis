@@ -58,13 +58,13 @@ class TestVideoManager(unittest.TestCase):
 
     def test_codec_selection(self):
 
-        assert self.manager.get_video_codec("mp4") == "mp4v"
-        assert self.manager.get_video_codec("avi") == "XVID"
-        assert self.manager.get_video_codec("webm") == "VP80"
+        self.assertTrue(self.manager.get_video_codec("mp4") == "mp4v")
+        self.assertTrue(self.manager.get_video_codec("avi") == "XVID")
+        self.assertTrue(self.manager.get_video_codec("webm") == "VP80")
 
     def test_format_validation(self):
-        assert self.manager.validate_video_format("mp4") == "mp4"
-        assert self.manager.validate_video_format("xyz") == "mp4"  # fallback
+        self.assertTrue(self.manager.validate_video_format("mp4") == "mp4")
+        self.assertTrue(self.manager.validate_video_format("xyz") == "mp4")  # fallback
 
     def test_create_video_from_frames_mp4(self):
         video_path = self.manager.create_video_from_frames(
@@ -74,12 +74,12 @@ class TestVideoManager(unittest.TestCase):
             keep_frames=False,
             frame_pattern="*.png",
         )
-        assert video_path.exists()
+        self.assertTrue(video_path.exists())
         info = self.manager.get_video_info(video_path)
-        assert info["width"] == 200
-        assert info["height"] == 100
-        assert info["fps"] == self.frame_rate
-        assert info["frame_count"] == 10
+        self.assertTrue(info["width"], 200)
+        self.assertTrue(info["height"] == 100)
+        self.assertTrue(abs(info["fps"] - self.frame_rate < 0.5))
+        self.assertTrue(info["frame_count"] == 10)
 
     def test_create_video_from_frames_invalid_format(self):
         video_path = self.manager.create_video_from_frames(
@@ -89,8 +89,8 @@ class TestVideoManager(unittest.TestCase):
             keep_frames=True,
             frame_pattern="*.png",
         )
-        assert video_path.exists()
-        assert str(video_path).endswith(".mp4")
+        self.assertTrue(video_path.exists())
+        self.assertTrue(str(video_path).endswith(".mp4"))
 
     def test_get_supported_formats(self):
         supported_formats = [

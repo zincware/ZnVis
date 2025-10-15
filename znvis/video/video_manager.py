@@ -23,7 +23,6 @@ Video management utilities for ZnVis.
 
 import pathlib
 import re
-import shutil
 from typing import List, Union
 
 import cv2
@@ -185,7 +184,9 @@ class VideoManager:
         # Read first frame to get dimensions
         first_image_path = images[0].as_posix()
         single_frame = cv2.imread(first_image_path)
-        height, width, _layers = single_frame.shape
+        if single_frame is None:
+            raise RuntimeError(f"Could not read first frame: {first_image_path}")
+        height, width = single_frame.shape[:2]
 
         # Validate format and get codec
         video_format = self.validate_video_format(video_format)
@@ -208,6 +209,11 @@ class VideoManager:
             self.frame_rate,
             (width, height),
         )
+        if not video.isOpened():
+            raise RuntimeError(
+                f"Failed to initialize VideoWriter for '{output_path}' "
+                f"with codec '{codec} at {width}x{height}@{self.frame_rate}fps."
+            )
 
         # Write frames to video
         try:
@@ -229,9 +235,18 @@ class VideoManager:
 
         # Clean up frames if requested
         if not keep_frames:
-            shutil.rmtree(frame_folder, ignore_errors=False)
-            print(f"Temporary frames deleted: {frame_folder}")
-
+            for img in images:
+                try:
+                    pathlib.Path(img).unlink(missing_ok=True)
+                except Exception as e:
+                    print(f"Warning: Failed to delete frame {img}: {e}")
+            # Remove folder if empty
+            try:
+                frame_folder.rmdir()
+            except OSError:
+                # Directory not empty or cannot be removed; ignore
+                pass
+            print(f"Temporary frames deleted in: {frame_folder}")
         return output_path
 
     def get_video_info(self, video_path: Union[str, pathlib.Path]) -> dict:
@@ -254,15 +269,18 @@ class VideoManager:
             raise FileNotFoundError(f"Video file not found: {video_path}")
 
         cap = cv2.VideoCapture(video_path.as_posix())
-
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        duration = (frame_count / fps) if fps > 1e-6 else None
         try:
             info = {
-                "width": int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-                "height": int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-                "fps": cap.get(cv2.CAP_PROP_FPS),
-                "frame_count": int(cap.get(cv2.CAP_PROP_FRAME_COUNT)),
-                "duration": int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                / cap.get(cv2.CAP_PROP_FPS),
+                "width": width,
+                "height": height,
+                "fps": fps,
+                "frame_count": frame_count,
+                "duration": duration,
             }
         finally:
             cap.release()

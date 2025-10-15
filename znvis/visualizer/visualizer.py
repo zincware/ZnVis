@@ -37,10 +37,10 @@ from rich.progress import Progress
 import znvis
 from znvis.cameras import KeyframeCamera
 from znvis.rendering import Mitsuba
-from znvis.video import VideoManager
+from znvis.visualizer.base_visualizer import BaseVisualizer
 
 
-class Visualizer:
+class Visualizer(BaseVisualizer):
     """
     Main class to perform visualization.
 
@@ -60,17 +60,17 @@ class Visualizer:
     def __init__(
         self,
         particles: typing.List[znvis.Particle],
-        vector_field: typing.List[znvis.VectorField] = None,
+        vector_field: typing.List[znvis.VectorField] | None = None,
         output_folder: typing.Union[str, pathlib.Path] = "./",
         frame_rate: int = 24,
-        number_of_steps: int = None,
+        number_of_steps: int | None = None,
         keep_frames: bool = True,
-        bounding_box: znvis.BoundingBox = None,
+        bounding_box: znvis.BoundingBox | None = None,
         video_format: str = "mp4",
         video_title: str = "ZnVis-Video",
-        renderer_resolution: list = [4096, 2160],
+        renderer_resolution: typing.Sequence[int] | None = None,
         renderer_spp: int = 64,
-        renderer: Mitsuba = Mitsuba(),
+        renderer: Mitsuba | None = None,
         keyframe_camera: KeyframeCamera = None,
     ):
         """
@@ -80,6 +80,10 @@ class Visualizer:
         ----------
         particles : list[znvis.Particle]
                 List of particles to add to the visualizer.
+        vector_field : list[znvis.VectorField]
+                List of vector fields to add to the visualizer.
+        output_folder: typing.Union[str, pathlib.Path]
+                Path to the output folder where the video and frames will be saved.
         frame_rate : int
                 Frame rate for the visualizer measured in frames per second (fps)
         number_of_steps : int
@@ -92,7 +96,7 @@ class Visualizer:
         video_format : str
                 The format of the video to be generated. Default is mp4.
         video_title : str
-                The name of the video file
+                The name of the video file.
         renderer_resolution : list
                 List containing the resolution of the rendered videos and screenshots
         renderer_spp : int
@@ -103,53 +107,36 @@ class Visualizer:
                 The camera to use for interpolation
 
         """
-        self.particles = particles
-        self.vector_field = vector_field
-        self.frame_rate = frame_rate
-        self.bounding_box = bounding_box() if bounding_box else None
+        # Call parent constructor
+        super().__init__(
+            particles=particles,
+            vector_field=vector_field,
+            output_folder=output_folder,
+            frame_rate=frame_rate,
+            number_of_steps=number_of_steps,
+            keep_frames=keep_frames,
+            bounding_box=bounding_box,
+            video_format=video_format,
+            video_title=video_title,
+            renderer_resolution=renderer_resolution,
+            renderer_spp=renderer_spp,
+            renderer=renderer,
+        )
 
-        if number_of_steps is None:
-            len_list = []
-            for particle in particles:
-                if not particle.static:
-                    len_list.append(len(particle.position))
-            if vector_field is not None:
-                for vec_field in vector_field:
-                    if not vec_field.static:
-                        len_list.append(len(vec_field.position))
-
-            if len_list == []:
-                self.number_of_steps = 1
-            else:
-                self.number_of_steps = min(len_list)
-        else:
-            self.number_of_steps = number_of_steps
-
-        self.output_folder = pathlib.Path(output_folder).resolve()
-        self.frame_folder = self.output_folder / "video_frames"
-        self.video_format = video_format
-        self.video_title = video_title
-        self.renderer_resolution = renderer_resolution
-        self.renderer_spp = renderer_spp
-        self.keep_frames = keep_frames
-        self.renderer = renderer
+        # Visualizer-specific attributes
         self.play_speed = 1
         self.do_rewind = False
-
-        # Initialize video manager
-        self.video_manager = VideoManager(
-            output_folder=self.output_folder, frame_rate=self.frame_rate
-        )
-        # Validate video format
-        self.video_format = self.video_manager.validate_video_format(video_format)
+        self.obj_folder = self.output_folder / "obj_files"
+        self.scene_folder = self.output_folder / "scenes"
+        self.screenshot_folder = self.output_folder / "screenshots"
+        self.app = None
+        self.vis = None
 
         # Camera Handling
         if keyframe_camera is not None:
             if not isinstance(keyframe_camera, KeyframeCamera):
                 raise TypeError("You can only use a KeyframeCamera in the Visualizer")
             self.keyframe_camera = keyframe_camera
-            if not self.output_folder.exists():
-                self.output_folder.mkdir(parents=True, exist_ok=True)
 
             if self.keyframe_camera.view_matrices_path is None:
                 print(
@@ -162,13 +149,6 @@ class Visualizer:
             self.activate_view_matrix_interface = True
         else:
             self.activate_view_matrix_interface = False
-
-        self.obj_folder = self.output_folder / "obj_files"
-
-        # Added later during run
-        self.app = None
-        self.vis = None
-        self.counter = 0
 
     def _initialize_app(self):
         """
@@ -234,7 +214,7 @@ class Visualizer:
 
         Returns
         -------
-        Set self.interrupt = 1
+        Set self.interrupt = 0
         """
         self.interrupt = 0
 
@@ -283,31 +263,11 @@ class Visualizer:
         t = threading.Thread(target=self._record_mesh_trajectory)
         t.start()
 
-    def _create_movie(self):
-        """
-        Concatenate images into a movie using VideoManager.
-
-        This needs to be a separate method so that the
-        image storing thread can run to completion before
-        this one is called. (GIL stuff)
-        """
-        try:
-            self.video_manager.create_video_from_frames(
-                frame_folder=self.frame_folder,
-                video_name=self.video_title,
-                video_format=self.video_format,
-                keep_frames=self.keep_frames,
-                frame_pattern="*.png",
-            )
-        except RuntimeError as e:
-            print(f"Error creating video: {e}")
-            raise
-
     def _export_scene(self, vis):
         """
         Export the current visualization scene.
 
-        Parametersor texture in ("albedo", "normal", "ao", "metallic", "roughness"):
+        Parameters or texture in ("albedo", "normal", "ao", "metallic", "roughness"):
         ----------
         vis : Visualizer
                 The active visualizer.
@@ -335,8 +295,9 @@ class Visualizer:
             else:
                 mesh += item.mesh_list[self.counter]
 
+        self.scene_folder.mkdir(parents=True, exist_ok=True)
         o3d.io.write_triangle_mesh(
-            (self.output_folder / f"My_mesh_{self.counter}.obj").as_posix(), mesh
+            (self.scene_folder / f"My_mesh_{self.counter}.obj").as_posix(), mesh
         )
 
         # Restart live feed if it was running before the export.
@@ -391,11 +352,11 @@ class Visualizer:
 
         view_matrix = vis.scene.camera.get_view_matrix()
         # Create output folder
-        self.output_folder.mkdir(parents=True, exist_ok=True)
+        self.screenshot_folder.mkdir(parents=True, exist_ok=True)
         self.renderer.render_mesh_objects(
             mesh_dict,
             view_matrix,
-            save_dir=self.output_folder,
+            save_dir=self.screenshot_folder,
             save_name=f"frame_{self.counter}.png",
             resolution=self.renderer_resolution,
             samples_per_pixel=self.renderer_spp,
@@ -526,36 +487,7 @@ class Visualizer:
             """
             Function to be called on thread to save image.
             """
-            mesh_dict = {}
-
-            if self.vector_field is not None:
-                for item in self.vector_field:
-                    if item.static:
-                        mesh_dict[item.name] = {
-                            "mesh": item.mesh_list[0],
-                            "bsdf": item.mesh.material.mitsuba_bsdf,
-                            "material": item.mesh.o3d_material,
-                        }
-                    else:
-                        mesh_dict[item.name] = {
-                            "mesh": item.mesh_list[self.counter],
-                            "bsdf": item.mesh.material.mitsuba_bsdf,
-                            "material": item.mesh.o3d_material,
-                        }
-
-            for item in self.particles:
-                if item.static:
-                    mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[0],
-                        "bsdf": item.mesh.material.mitsuba_bsdf,
-                        "material": item.mesh.o3d_material,
-                    }
-                else:
-                    mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[self.counter],
-                        "bsdf": item.mesh.material.mitsuba_bsdf,
-                        "material": item.mesh.o3d_material,
-                    }
+            mesh_dict = self.get_mesh_dict()
 
             view_matrix = self.vis.scene.camera.get_view_matrix()
             self.renderer.render_mesh_objects(
@@ -759,8 +691,9 @@ class Visualizer:
 
         """
         if self.do_rewind is True:
-            self.do_rewind is False
             self.play_speed = 1
+
+        self.do_rewind = False
 
         if self.play_speed == 1:
             self.play_speed = 2

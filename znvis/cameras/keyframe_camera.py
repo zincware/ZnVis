@@ -47,7 +47,7 @@ class KeyframeCamera(BaseCamera):
 
     def __init__(
         self,
-        view_matrices_path: pathlib.Path = None,
+        view_matrices_path: pathlib.Path | None = None,
         number_of_frames: Optional[int] = None,
         import_view_matrices: bool = False,
     ) -> None:
@@ -202,6 +202,7 @@ class KeyframeCamera(BaseCamera):
 
         if len(self.view_matrices_dictionary) == 0:
             print("No view matrices found. Please add view matrices first.")
+            return None
         else:
             sorted_view_matrices_dictionary = self._sort_dictionary()
             interpolated_view_matrices = self._interpolate_view_matrices(
@@ -209,11 +210,12 @@ class KeyframeCamera(BaseCamera):
             )
             self.interpolated_view_matrices = interpolated_view_matrices
             self._export_interpolated_view_matrices()
-        return interpolated_view_matrices
+            return self.interpolated_view_matrices
 
-    def load_view_matrices(self) -> dict:
+    def load_view_matrices(self) -> None:
         """
-        Loads the view matrices from the given path.
+        Loads the view matrices from the given path and stores it
+        as instance attribute.
 
         Parameters
         ----------
@@ -221,9 +223,7 @@ class KeyframeCamera(BaseCamera):
 
         Returns
         -------
-        view_matrices_dictionary : dict
-                A dictionary containing the view matrices of the manually
-                picked
+        None
         """
         path = self.view_matrices_path
         if path.is_dir():
@@ -267,8 +267,7 @@ class KeyframeCamera(BaseCamera):
         if frame_indexes[0] != 0:
             start_frame = frame_indexes[0]
             start_matrix = view_matrices[0]
-            for i in range(start_frame):
-                interpolated_view_matrices.append(start_matrix)
+            interpolated_view_matrices.extend([start_matrix] * start_frame)
 
         interpolated_view_matrices.append(view_matrices[0])
         for i in range(1, len(view_matrices)):
@@ -296,6 +295,11 @@ class KeyframeCamera(BaseCamera):
         Exports the interpolated view matrices to the specified path.
         This allows to reuse a keyframe set again.
         """
+        if self.view_matrices_path is None:
+            raise ValueError(
+                "view_matrices_path must be set before exporting "
+                "interpolated view matrices."
+            )
         export_path = (
             self.view_matrices_path
             if str(self.view_matrices_path).endswith(".npy")

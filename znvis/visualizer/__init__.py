@@ -20,3 +20,9 @@ Summary
 -------
 Module for the visualizer class.
 """
+
+from .base_visualizer import BaseVisualizer
+from .headless_visualizer import Headless_Visualizer
+from .visualizer import Visualizer
+
+__all__ = ["BaseVisualizer", "Visualizer", "Headless_Visualizer"]

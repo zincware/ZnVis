@@ -37,7 +37,7 @@ class TrajectoryCamera(BaseCamera):
         Initializes the TrajectoryCamera object.
         Parameters
         ----------
-        trajectory : BaseCameraTrajectory
+        trajectory : BaseTrajectory
             The camera trajectory object.
         """
         self.trajectory = trajectory
