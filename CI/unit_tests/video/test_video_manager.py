@@ -78,7 +78,7 @@ class TestVideoManager(unittest.TestCase):
         info = self.manager.get_video_info(video_path)
         self.assertTrue(info["width"] == 200)
         self.assertTrue(info["height"] == 100)
-        self.assertTrue(abs(info["fps"] - self.frame_rate < 0.5))
+        self.assertTrue(abs(info["fps"] - self.frame_rate) < 0.5)
         self.assertTrue(info["frame_count"] == 10)
 
     def test_create_video_from_frames_invalid_format(self):

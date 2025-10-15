@@ -18,7 +18,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Run unit tests on the cylinder module.
+Run unit tests on the octahedron module.
 """
 
 import unittest
@@ -27,12 +27,12 @@ import numpy as np
 import open3d as o3d
 
 from znvis import Material
-from znvis.mesh.cylinder import Cylinder
+from znvis.mesh.octahedron import Octahedron
 
 
-class TestCylinder(unittest.TestCase):
+class TestOctahedron(unittest.TestCase):
     """
-    A test class for the Particle class.
+    A test class for the Octahedron class.
     """
 
     @classmethod
@@ -42,15 +42,12 @@ class TestCylinder(unittest.TestCase):
 
         Returns
         -------
-        Sets up a cylinder instance for testing
+        Sets up a octahedron instance for testing
         """
         cls.material = Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
-        cls.cylinder = Cylinder(
+        cls.octahedron = Octahedron(
             material=cls.material,
-            radius=10,
-            height=20,
-            split=6,
-            resolution=10,
+            radius=1.0,
         )
 
     def test_instantiation(self):
@@ -61,24 +58,21 @@ class TestCylinder(unittest.TestCase):
         -------
         Check that parameters are set correctly.
         """
-        self.assertEqual(self.cylinder.material, self.material)
-        self.assertEqual(self.cylinder.radius, 10)
-        self.assertEqual(self.cylinder.height, 20)
-        self.assertEqual(self.cylinder.split, 6)
-        self.assertEqual(self.cylinder.resolution, 10)
+        self.assertEqual(self.octahedron.material, self.material)
+        self.assertEqual(self.octahedron.radius, 1.0)
 
-    def test_build_cylinder(self):
+    def test_build_octahedron(self):
         """
-        Test the construction of a cylinder mesh.
+        Test the construction of a octahedron mesh.
 
         Returns
         -------
-        Test if a cylinder mesh is constructed correctly.
+        Test if a octahedron mesh is constructed correctly.
         """
-        cylinder = self.cylinder.instantiate_mesh(
+        octahedron = self.octahedron.instantiate_mesh(
             starting_position=np.array([1, 1, 1]),
             starting_orientation=np.array([1, 1, 1]),
         )
-        self.assertEqual(cylinder.has_vertex_normals(), True)
-        self.assertEqual(type(cylinder), o3d.geometry.TriangleMesh)
-        np.testing.assert_almost_equal(cylinder.get_center(), [1.0, 1.0, 1.0])
+        self.assertEqual(octahedron.has_vertex_normals(), True)
+        self.assertEqual(type(octahedron), o3d.geometry.TriangleMesh)
+        np.testing.assert_almost_equal(octahedron.get_center(), [1, 1, 1])
