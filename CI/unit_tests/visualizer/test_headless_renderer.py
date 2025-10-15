@@ -74,8 +74,6 @@ class TestHeadlessVisualizer(unittest.TestCase):
         pos = pos.reshape(-1, pos.shape[-1])
         static_directors = np.full_like(pos, np.array([0, 0, 1]))
 
-        # Erzeuge dynamisches Feld
-
         static_vector_field = VectorField(
             name="static_field",
             position=pos,
@@ -252,3 +250,16 @@ class TestHeadlessVisualizer(unittest.TestCase):
             file.unlink()
         for file in self.visualizer_empty.output_folder.glob("video_frames"):
             file.rmdir()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """
+        Clean up after all tests have run.
+        """
+        import shutil
+
+        project_root = Path(__file__).resolve().parents[2]
+        test_output_dir = project_root / "test_files" / "headless_visualizer"
+
+        if test_output_dir.exists():
+            shutil.rmtree(test_output_dir)
