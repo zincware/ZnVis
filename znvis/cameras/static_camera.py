@@ -59,10 +59,19 @@ class StaticCamera(BaseCamera):
         -------
         None
         """
+        if view_matrix is not None and any(v is not None for v in (center, eye, up)):
+            raise ValueError(
+                "Cannot specify both view_matrix and center/eye/up vectors."
+            )
         if view_matrix is not None:
+            if view_matrix.shape != (4, 4):
+                raise ValueError("view_matrix must have shape (4, 4).")
             self.view_matrix = view_matrix
 
         elif all(v is not None for v in (center, eye, up)):
+            for name, vec in [("center", center), ("eye", eye), ("up", up)]:
+                if not isinstance(vec, np.ndarray) or vec.shape != (3,):
+                    raise ValueError(f"{name} must be a numpy array with shape (3,).")
             self.view_matrix = self.look_at(center, eye, up)
 
         else:

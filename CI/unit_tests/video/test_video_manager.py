@@ -76,7 +76,7 @@ class TestVideoManager(unittest.TestCase):
         )
         self.assertTrue(video_path.exists())
         info = self.manager.get_video_info(video_path)
-        self.assertTrue(info["width"], 200)
+        self.assertTrue(info["width"] == 200)
         self.assertTrue(info["height"] == 100)
         self.assertTrue(abs(info["fps"] - self.frame_rate < 0.5))
         self.assertTrue(info["frame_count"] == 10)

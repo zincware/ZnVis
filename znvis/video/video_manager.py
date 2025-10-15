@@ -212,7 +212,7 @@ class VideoManager:
         if not video.isOpened():
             raise RuntimeError(
                 f"Failed to initialize VideoWriter for '{output_path}' "
-                f"with codec '{codec} at {width}x{height}@{self.frame_rate}fps."
+                f"with codec '{codec}' at {width}x{height}@{self.frame_rate}fps."
             )
 
         # Write frames to video
