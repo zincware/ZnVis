@@ -64,10 +64,10 @@ class Particle:
 
     name: str
     mesh: Mesh = None
-    position: np.ndarray = None
-    velocity: np.ndarray = None
-    force: np.ndarray = None
-    director: np.ndarray = None
+    position: typing.Union[np.ndarray, list] = None
+    velocity: typing.Union[np.ndarray, list] = None
+    force: typing.Union[np.ndarray, list] = None
+    director: typing.Union[np.ndarray, list] = None
     mesh_list: typing.List[Mesh] = None
     static: bool = False
     smoothing: bool = False
@@ -106,7 +106,11 @@ class Particle:
         Constructor the mesh list for the class.
 
         The mesh list is a list of mesh objects for each
-        time step in the parsed trajectory.
+        time step in the parsed trajectory. Position data can be either
+        a numpy array of shape (n_confs, n_particles, n_dims) for a fixed
+        particle count, or a list of arrays where each array has shape
+        (n_particles_i, n_dims) to support a variable number of particles
+        per time step.
 
         Returns
         -------
@@ -117,8 +121,12 @@ class Particle:
         if self.position is None:
             raise ValueError("Position data cannot be None.")
 
+        variable_particle_count = isinstance(self.position, list)
+
         try:
-            if not self.static:
+            if variable_particle_count:
+                n_time_steps = len(self.position)
+            elif not self.static:
                 n_particles = int(self.position.shape[1])
                 n_time_steps = int(self.position.shape[0])
             else:
@@ -127,28 +135,32 @@ class Particle:
                 self.position = self.position[np.newaxis, :, :]
                 if self.director is not None:
                     self.director = self.director[np.newaxis, :, :]
-
         except IndexError:
             raise IndexError("The provided data has an incompatible shape.") from None
 
-        if np.isnan(self.position).any():
-            raise ValueError("The provided data contains NaN values.")
+        if variable_particle_count:
+            for arr in self.position:
+                if np.isnan(arr).any():
+                    raise ValueError("The provided data contains NaN values.")
+        else:
+            if np.isnan(self.position).any():
+                raise ValueError("The provided data contains NaN values.")
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
-            for j in range(n_particles):
-                if j == 0:
-                    if self.director is not None:
-                        mesh = self._create_mesh(
-                            self.position[i][j], self.director[i][j], i, j
-                        )
-                    else:
-                        mesh = self._create_mesh(self.position[i][j], None, i, j)
+            n_particles_i = (
+                len(self.position[i])
+                if variable_particle_count
+                else n_particles
+            )
+            mesh = None
+            for j in range(n_particles_i):
+                director = (
+                    self.director[i][j] if self.director is not None else None
+                )
+                new_mesh = self._create_mesh(self.position[i][j], director, i, j)
+                if mesh is None:
+                    mesh = new_mesh
                 else:
-                    if self.director is not None:
-                        mesh += self._create_mesh(
-                            self.position[i][j], self.director[i][j], i, j
-                        )
-                    else:
-                        mesh += self._create_mesh(self.position[i][j], None, i, j)
+                    mesh += new_mesh
 
             self.mesh_list.append(mesh)

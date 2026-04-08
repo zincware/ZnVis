@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ZnVis"
+version = "2.0.4"
+description = "Visualization of particle trajectories."
+readme = "README.md"
+license = "EPL-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "zincwarecode", email = "tovey.samuel@gmail.com" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "open3d",
+    "numpy",
+    "rich",
+    "opencv-python",
+    "mitsuba",
+]
+
+[project.urls]
+Homepage = "https://github.com/zincware/ZnVis"
+Repository = "https://github.com/zincware/ZnVis"
+Documentation = "https://znvis.readthedocs.io"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "coverage",
+    "coveralls",
+    "black",
+    "isort",
+    "flake8",
+    "flake8-isort",
+    "pre-commit",
+]
+docs = [
+    "numpydoc",
+    "Sphinx>=4.3",
+    "sphinx_rtd_theme",
+    "sphinx-copybutton",
+    "sphinxcontrib-bibtex",
+    "pybtex",
+    "nbsphinx",
+    "nbsphinx-link",
+    "IPython",
+    "pandoc",
+]
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"

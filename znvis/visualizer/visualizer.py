@@ -258,7 +258,7 @@ class Visualizer:
         """
         Export the current visualization scene.
 
-        Parametersor texture in ("albedo", "normal", "ao", "metallic", "roughness"):
+        Parameters
         ----------
         vis : Visualizer
                 The active visualizer.
@@ -272,19 +272,15 @@ class Visualizer:
         created_mesh = False
         for i, item in enumerate(self.particles):
             if item.static:
-                if i == 0 and not created_mesh:
-                    mesh = item.mesh_list[0]
-                    created_mesh = True
-                elif i == 0 and created_mesh:
-                    mesh += item.mesh_list[0]
-                else:
-                    continue
+                timestep_mesh = item.mesh_list[0]
+            else:
+                timestep_mesh = item.mesh_list[self.counter]
 
-            if i == 0 and not created_mesh:
-                mesh = item.mesh_list[self.counter]
+            if not created_mesh:
+                mesh = timestep_mesh
                 created_mesh = True
             else:
-                mesh += item.mesh_list[self.counter]
+                mesh += timestep_mesh
 
         o3d.io.write_triangle_mesh(
             (self.output_folder / f"My_mesh_{self.counter}.obj").as_posix(), mesh
@@ -710,7 +706,7 @@ class Visualizer:
 
         """
         if self.do_rewind is True:
-            self.do_rewind is False
+            self.do_rewind = False
             self.play_speed = 1
 
         if self.play_speed == 1:

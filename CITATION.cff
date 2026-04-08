@@ -13,3 +13,6 @@ authors:
     affiliation: University of Stuttgart
     orcid: 'https://orcid.org/0000-0001-9537-8361'
 version: 2.0.4
+date-released: '2026-04-03'
+license: EPL-2.0
+repository-code: 'https://github.com/zincware/ZnVis'
