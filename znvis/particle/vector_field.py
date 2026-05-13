@@ -148,3 +148,50 @@ class VectorField:
             new_mesh = True
 
             self.mesh_list.append(mesh)
+
+    def get_mesh_for_frame(self, frame_index: int):
+        """
+        Build and return a combined mesh for a single frame.
+
+        This enables lazy rendering in headless mode without storing all
+        precomputed frame meshes at once.
+        """
+        if self.position is None:
+            raise ValueError("Position data cannot be None.")
+        if self.direction is None:
+            raise ValueError("Director data cannot be None.")
+
+        if self.static:
+            pos_frame = self.position[0] if self.position.ndim == 3 else self.position
+            dir_frame = (
+                self.direction[0] if self.direction.ndim == 3 else self.direction
+            )
+            time_index = 0
+        else:
+            pos_frame = self.position[frame_index]
+            dir_frame = self.direction[frame_index]
+            time_index = frame_index
+
+        n_particles = int(pos_frame.shape[0])
+        new_mesh = True
+        mesh = None
+        for particle_index in range(n_particles):
+            if np.max(np.abs(dir_frame[particle_index])) > 0:
+                current = self._create_mesh(
+                    pos_frame[particle_index],
+                    dir_frame[particle_index],
+                    time_index,
+                    particle_index,
+                )
+                if new_mesh:
+                    mesh = current
+                    new_mesh = False
+                else:
+                    mesh += current
+
+        if new_mesh:
+            if frame_index > 0:
+                return self.get_mesh_for_frame(frame_index - 1)
+            raise ValueError(f"No non-zero vectors found at time step {frame_index}.")
+
+        return mesh

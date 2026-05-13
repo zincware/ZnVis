@@ -213,3 +213,52 @@ class Particle:
                 combined_mesh += m
 
             self.mesh_list.append(combined_mesh)
+
+    def get_mesh_for_frame(self, frame_index: int):
+        """
+        Build and return a combined mesh for a single frame.
+
+        This enables lazy rendering in headless mode without storing the full
+        trajectory of meshes in memory.
+        """
+        if self.position is None:
+            raise ValueError("Position data must be not None.")
+
+        frame_pos = self.position
+        frame_dir = self.director
+
+        if isinstance(frame_pos, np.ndarray):
+            if self.static:
+                frame_pos = frame_pos[0, :, :] if frame_pos.ndim == 3 else frame_pos
+                if frame_dir is not None:
+                    frame_dir = (
+                        frame_dir[0, :, :]
+                        if isinstance(frame_dir, np.ndarray) and frame_dir.ndim == 3
+                        else frame_dir
+                    )
+            else:
+                frame_pos = frame_pos[frame_index]
+                if frame_dir is not None:
+                    frame_dir = frame_dir[frame_index]
+        else:
+            idx = 0 if self.static else frame_index
+            frame_pos = frame_pos[idx]
+            if frame_dir is not None:
+                frame_dir = frame_dir[idx]
+
+        n_particles = frame_pos.shape[0]
+        meshes = []
+        time_index = 0 if self.static else frame_index
+        for particle_index in range(n_particles):
+            pos = frame_pos[particle_index]
+            dir = frame_dir[particle_index] if frame_dir is not None else None
+            meshes.append(self._create_mesh(pos, dir, time_index, particle_index))
+
+        if not meshes:
+            raise ValueError(f"No particles found at time step {frame_index}.")
+
+        combined_mesh = meshes[0]
+        for m in meshes[1:]:
+            combined_mesh += m
+
+        return combined_mesh

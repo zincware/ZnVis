@@ -215,19 +215,32 @@ class BaseVisualizer:
         """
         Creates the mesh dict for a given scene.
         """
+        if counter is None:
+            counter = self.counter
+
         mesh_dict = {}
         if self.vector_field is not None:
             for item in self.vector_field:
-                idx = 0 if item.static else self.counter
+                idx = 0 if item.static else counter
+                mesh = (
+                    item.mesh_list[idx]
+                    if item.mesh_list is not None
+                    else item.get_mesh_for_frame(counter)
+                )
                 mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[idx],
+                    "mesh": mesh,
                     "bsdf": item.mesh.material.mitsuba_bsdf,
                     "material": item.mesh.o3d_material,
                 }
         for item in self.particles:
-            idx = 0 if item.static else self.counter
+            idx = 0 if item.static else counter
+            mesh = (
+                item.mesh_list[idx]
+                if item.mesh_list is not None
+                else item.get_mesh_for_frame(counter)
+            )
             mesh_dict[item.name] = {
-                "mesh": item.mesh_list[idx],
+                "mesh": mesh,
                 "bsdf": item.mesh.material.mitsuba_bsdf,
                 "material": item.mesh.o3d_material,
             }

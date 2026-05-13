@@ -200,7 +200,4 @@ class Headless_Visualizer(BaseVisualizer):
         Launches the visualization.
         """
         self.frame_folder.mkdir(parents=True, exist_ok=True)
-        self._initialize_particles()
-        if self.vector_field is not None:
-            self._initialize_vector_field()
         self._record_trajectory()

@@ -141,3 +141,7 @@ dmypy.json
 
 # macOS system files
 .DS_Store
+
+# image file
+*.png
+*.jpg
