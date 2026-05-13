@@ -22,7 +22,7 @@ Module for the visualizer class.
 """
 
 from .base_visualizer import BaseVisualizer
-from .headless_visualizer import Headless_Visualizer
+from .headless_visualizer import HeadlessVisualizer
 from .visualizer import Visualizer
 
-__all__ = ["BaseVisualizer", "Visualizer", "Headless_Visualizer"]
+__all__ = ["BaseVisualizer", "Visualizer", "HeadlessVisualizer"]

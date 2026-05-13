@@ -38,7 +38,7 @@ from znvis.mesh.tetrahedron import Tetrahedron
 from znvis.mesh.torus import Torus
 from znvis.particle.particle import Particle
 from znvis.particle.vector_field import VectorField
-from znvis.visualizer.headless_visualizer import Headless_Visualizer
+from znvis.visualizer.headless_visualizer import HeadlessVisualizer
 from znvis.visualizer.visualizer import Visualizer
 
 __all__ = [
@@ -54,7 +54,7 @@ __all__ = [
     MobiusLoop.__name__,
     VectorField.__name__,
     Visualizer.__name__,
-    Headless_Visualizer.__name__,
+    HeadlessVisualizer.__name__,
     Cylinder.__name__,
     CustomMesh.__name__,
     BoundingBox.__name__,

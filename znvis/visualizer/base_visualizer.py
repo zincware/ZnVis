@@ -23,10 +23,36 @@ Base visualizer class with shared functionality.
 
 import pathlib
 import typing
+from numbers import Integral
 
 import znvis
 from znvis.rendering import Mitsuba
 from znvis.video import VideoManager
+
+
+def build_mesh_dict_for_frame(
+    particles: typing.List[znvis.Particle],
+    vector_field: typing.List[znvis.VectorField] | None,
+    frame_index: int,
+) -> dict:
+    """
+    Build the renderer mesh dictionary for a specific frame.
+    """
+    mesh_dict = {}
+    items = (vector_field or []) + particles
+    for item in items:
+        idx = 0 if item.static else frame_index
+        mesh = (
+            item.mesh_list[idx]
+            if item.mesh_list is not None
+            else item.get_mesh_for_frame(frame_index)
+        )
+        mesh_dict[item.name] = {
+            "mesh": mesh,
+            "bsdf": item.mesh.material.mitsuba_bsdf,
+            "material": item.mesh.o3d_material,
+        }
+    return mesh_dict
 
 
 class BaseVisualizer:
@@ -34,7 +60,7 @@ class BaseVisualizer:
     Base class for visualizers containing shared functionality.
 
     This class provides common methods and initialization logic used by both
-    the interactive Visualizer and the Headless_Visualizer.
+    the interactive Visualizer and the HeadlessVisualizer.
 
     Attributes
     ----------
@@ -77,6 +103,8 @@ class BaseVisualizer:
         renderer_resolution: typing.Sequence[int] | None = None,
         renderer_spp: int = 64,
         renderer: Mitsuba | None = None,
+        parallel_render_workers: int = 2,
+        parallel_render_enabled: bool = False,
     ):
         """
         Initialize the base visualizer.
@@ -109,6 +137,10 @@ class BaseVisualizer:
                 Samples per pixel for the rendered videos and screenshots.
         renderer : Mitsuba, optional
                 The renderer engine to use for rendering.
+        parallel_render_workers : int, optional
+                Number of worker processes to use for headless parallel rendering.
+        parallel_render_enabled : bool, optional
+                If True, enables headless parallel rendering.
         """
         self.particles = particles
         self.vector_field = vector_field
@@ -138,6 +170,19 @@ class BaseVisualizer:
         )
         self.renderer_spp = renderer_spp
         self.renderer = renderer or Mitsuba()
+        if not isinstance(parallel_render_workers, Integral) or isinstance(
+            parallel_render_workers, bool
+        ):
+            raise ValueError(
+                "parallel_render_workers must be an integer (not a boolean) "
+                "greater than or equal to 1."
+            )
+        if parallel_render_workers < 1:
+            raise ValueError(
+                "parallel_render_workers must be greater than or equal to 1."
+            )
+        self.parallel_render_workers = int(parallel_render_workers)
+        self.parallel_render_enabled = parallel_render_enabled
 
         # Initialize video manager
         self.video_manager = VideoManager(
@@ -218,31 +263,8 @@ class BaseVisualizer:
         if counter is None:
             counter = self.counter
 
-        mesh_dict = {}
-        if self.vector_field is not None:
-            for item in self.vector_field:
-                idx = 0 if item.static else counter
-                mesh = (
-                    item.mesh_list[idx]
-                    if item.mesh_list is not None
-                    else item.get_mesh_for_frame(counter)
-                )
-                mesh_dict[item.name] = {
-                    "mesh": mesh,
-                    "bsdf": item.mesh.material.mitsuba_bsdf,
-                    "material": item.mesh.o3d_material,
-                }
-        for item in self.particles:
-            idx = 0 if item.static else counter
-            mesh = (
-                item.mesh_list[idx]
-                if item.mesh_list is not None
-                else item.get_mesh_for_frame(counter)
-            )
-            mesh_dict[item.name] = {
-                "mesh": mesh,
-                "bsdf": item.mesh.material.mitsuba_bsdf,
-                "material": item.mesh.o3d_material,
-            }
-
-        return mesh_dict
+        return build_mesh_dict_for_frame(
+            particles=self.particles,
+            vector_field=self.vector_field,
+            frame_index=counter,
+        )

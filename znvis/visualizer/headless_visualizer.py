@@ -23,12 +23,9 @@ Main visualizer class.
 
 import os
 
-import znvis.cameras
-
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 
 import pathlib
-import time
 import typing
 
 import numpy as np
@@ -37,10 +34,11 @@ from rich.progress import Progress
 import znvis
 from znvis import cameras
 from znvis.rendering import Mitsuba
-from znvis.visualizer.base_visualizer import BaseVisualizer
+from znvis.visualizer._parallel import render_frames_parallel
+from znvis.visualizer.base_visualizer import BaseVisualizer, build_mesh_dict_for_frame
 
 
-class Headless_Visualizer(BaseVisualizer):
+class HeadlessVisualizer(BaseVisualizer):
     """
     Main class to perform visualization.
 
@@ -69,6 +67,8 @@ class Headless_Visualizer(BaseVisualizer):
         renderer: Mitsuba | None = None,
         do_create_video: bool = True,
         camera: cameras.BaseCamera | None = None,
+        parallel_render_workers: int = 2,
+        parallel_render_enabled: bool = False,
     ):
         """
         Constructor for the visualizer.
@@ -105,6 +105,10 @@ class Headless_Visualizer(BaseVisualizer):
         camera : znvis.cameras.Camera object
                 Camera object to use for the visualization. If None, a default camera
                 will be used.
+        parallel_render_workers : int
+                Number of worker processes to use when parallel rendering is enabled.
+        parallel_render_enabled : bool
+                If True, render frames with a process pool.
         """
         # Call parent constructor
         super().__init__(
@@ -120,6 +124,8 @@ class Headless_Visualizer(BaseVisualizer):
             renderer_resolution=renderer_resolution,
             renderer_spp=renderer_spp,
             renderer=renderer,
+            parallel_render_workers=parallel_render_workers,
+            parallel_render_enabled=parallel_render_enabled,
         )
 
         # Headless-specific attributes
@@ -141,53 +147,63 @@ class Headless_Visualizer(BaseVisualizer):
                 [[1, 0, 0, -100], [0, 1, 0, -90], [0, 0, 1, -230], [0, 0, 0, 1]]
             )
 
+    def _render_frame(self, frame_index: int, renderer: Mitsuba | None = None):
+        """
+        Render a single frame by index.
+
+        Parameters
+        ----------
+        frame_index : int
+                Frame index to render.
+        renderer : Mitsuba, optional
+                Renderer instance to use. Defaults to the visualizer renderer.
+        """
+        mesh_dict = build_mesh_dict_for_frame(
+            particles=self.particles,
+            vector_field=self.vector_field,
+            frame_index=frame_index,
+        )
+        view_matrix = (
+            self.camera.get_view_matrix(frame_index)
+            if self.camera is not None
+            else self.view_matrix
+        )
+        (renderer or self.renderer).render_mesh_objects(
+            mesh_dict,
+            view_matrix,
+            save_dir=self.frame_folder,
+            save_name=f"frame_{frame_index:0>6}.png",
+            resolution=self.renderer_resolution,
+            samples_per_pixel=self.renderer_spp,
+        )
+
+    def _render_frames_serial(self):
+        """
+        Render all frames sequentially in the main process.
+        """
+        with Progress() as progress:
+            task = progress.add_task("Saving scenes...", total=self.number_of_steps)
+            for frame_index in range(self.number_of_steps):
+                self._render_frame(frame_index)
+                progress.update(task, advance=1)
+
+    def _render_frames_parallel(self):
+        """
+        Render all frames with a process pool.
+
+        Falls back to serial rendering if parallel worker startup fails.
+        """
+        render_frames_parallel(self, Progress)
+
     def _record_trajectory(self):
         """
         Record the trajectory.
         """
-        self.update_thread_finished = True
-        self.save_thread_finished = True
+        if self.parallel_render_enabled:
+            self._render_frames_parallel()
+        else:
+            self._render_frames_serial()
 
-        def update_callable():
-            """
-            Function to be called on thread to update positions.
-            """
-            self._update_particles()
-            self.update_thread_finished = True
-
-        def save_callable():
-            """
-            Function to be called on thread to save image.
-            """
-            mesh_dict = self.get_mesh_dict()
-            # Check if the camera should be used for deciding on the view matrix
-            if self.camera is not None:
-                self.view_matrix = self.camera.get_view_matrix(self.counter)
-            self.renderer.render_mesh_objects(
-                mesh_dict,
-                self.view_matrix,
-                save_dir=self.frame_folder,
-                save_name=f"frame_{self.counter:0>6}.png",
-                resolution=self.renderer_resolution,
-                samples_per_pixel=self.renderer_spp,
-            )
-            self.save_thread_finished = True
-
-        with Progress() as progress:
-            task = progress.add_task("Saving scenes...", total=self.number_of_steps)
-            while not progress.finished:
-                time.sleep(1 / self.frame_rate)
-
-                if self.save_thread_finished and self.update_thread_finished:
-                    self.save_thread_finished = False
-                    save_callable()
-                    progress.update(task, advance=1)
-
-                if self.update_thread_finished:
-                    self.update_thread_finished = False
-                    update_callable()
-
-        time.sleep(1)  # Ensure the last image is saved
         if self.do_create_video:
             self._create_movie()
 

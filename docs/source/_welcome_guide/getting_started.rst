@@ -22,4 +22,12 @@ Once complete, you will be able to start using the visualizer by importing it as
 
    import znvis
 
+If you use headless parallel rendering from a Python script, wrap your entrypoint
+with the standard multiprocessing guard to avoid recursive worker spawning:
+
+.. code-block:: python
+
+   if __name__ == "__main__":
+       main()
+
 With installation out of the way, head over to the example guides and start visualizing.

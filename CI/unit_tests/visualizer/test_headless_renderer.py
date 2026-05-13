@@ -25,6 +25,7 @@ Test the visualizer module.
 
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 
@@ -33,7 +34,7 @@ from znvis.mesh.arrow import Arrow
 from znvis.mesh.sphere import Sphere
 from znvis.particle.particle import Particle
 from znvis.particle.vector_field import VectorField
-from znvis.visualizer.headless_visualizer import Headless_Visualizer
+from znvis.visualizer.headless_visualizer import HeadlessVisualizer
 
 
 class TestHeadlessVisualizer(unittest.TestCase):
@@ -100,7 +101,7 @@ class TestHeadlessVisualizer(unittest.TestCase):
 
         save_path = project_root / "test_files" / "headless_visualizer" / "basic_test"
 
-        cls.visualizer = Headless_Visualizer(
+        cls.visualizer = HeadlessVisualizer(
             particles=[particle1, particle2],
             vector_field=[static_vector_field, dynamic_vector_field],
             frame_rate=10,
@@ -132,7 +133,7 @@ class TestHeadlessVisualizer(unittest.TestCase):
         save_path = (
             project_root / "test_files" / "headless_visualizer" / "delete_frames_test"
         )
-        cls.visualizer_delete_frames = Headless_Visualizer(
+        cls.visualizer_delete_frames = HeadlessVisualizer(
             particles=[particle1, particle2],
             vector_field=[static_vector_field, dynamic_vector_field],
             frame_rate=10,
@@ -148,7 +149,7 @@ class TestHeadlessVisualizer(unittest.TestCase):
         )
 
         save_path = project_root / "test_files" / "headless_visualizer" / "empty_test"
-        cls.visualizer_empty = Headless_Visualizer(
+        cls.visualizer_empty = HeadlessVisualizer(
             particles=[particle1],
             frame_rate=10,
             renderer_resolution=[192, 108],
@@ -180,6 +181,38 @@ class TestHeadlessVisualizer(unittest.TestCase):
         self.assertEqual(self.visualizer.video_format, "mp4")
         self.assertEqual(self.visualizer.renderer_spp, 64)
         self.assertEqual(self.visualizer.keep_frames, True)
+        self.assertEqual(self.visualizer.parallel_render_workers, 2)
+        self.assertFalse(self.visualizer.parallel_render_enabled)
+
+    def test_render_dispatch_uses_serial_by_default(self):
+        """
+        Test that serial rendering is used when parallel rendering is disabled.
+        """
+        with (
+            patch.object(self.visualizer, "_render_frames_serial") as serial_mock,
+            patch.object(self.visualizer, "_render_frames_parallel") as parallel_mock,
+        ):
+            self.visualizer.do_create_video = False
+            self.visualizer.parallel_render_enabled = False
+            self.visualizer._record_trajectory()
+
+        serial_mock.assert_called_once()
+        parallel_mock.assert_not_called()
+
+    def test_render_dispatch_uses_parallel_when_enabled(self):
+        """
+        Test that parallel rendering is used when explicitly enabled.
+        """
+        with (
+            patch.object(self.visualizer, "_render_frames_serial") as serial_mock,
+            patch.object(self.visualizer, "_render_frames_parallel") as parallel_mock,
+        ):
+            self.visualizer.do_create_video = False
+            self.visualizer.parallel_render_enabled = True
+            self.visualizer._record_trajectory()
+
+        parallel_mock.assert_called_once()
+        serial_mock.assert_not_called()
 
     def test_headless_rendering(self):
         """
