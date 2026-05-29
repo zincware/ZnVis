@@ -106,11 +106,12 @@ class HeadlessVisualizer(BaseVisualizer):
                 Camera object to use for the visualization. If None, a default camera
                 will be used.
         parallel_render_workers : int
-                Number of worker processes to use when parallel rendering is
-                enabled. If None, use one worker per visible GPU. Explicitly
-                using more workers than visible GPUs is experimental.
+                Number of worker processes to use when ``parallel_render`` is
+                enabled. If ``None``, ZnVis uses one worker per visible GPU.
         parallel_render : bool
-                If True, render frames with a process pool.
+                If ``True``, render frames through isolated worker subprocesses.
+                If no visible CUDA GPU is available, ZnVis warns and falls back
+                to serial rendering.
         """
         # Call parent constructor
         super().__init__(

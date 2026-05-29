@@ -41,7 +41,13 @@ def _visible_cuda_devices(visualizer) -> list[str]:
 
 
 def _build_worker_specs(visualizer) -> list[_WorkerSpec]:
-    """Assign CUDA workers to visible GPUs."""
+    """Assign CUDA workers to visible GPUs.
+
+    EXPERIMENTAL FEATURE
+    -----
+    When ``parallel_render_workers`` is larger than the number of visible
+    GPUs, workers are assigned round-robin across devices.
+    """
     total_workers = int(visualizer.parallel_render_workers)
     devices = _visible_cuda_devices(visualizer)
     if not devices:

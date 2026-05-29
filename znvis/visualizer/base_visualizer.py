@@ -171,10 +171,13 @@ class BaseVisualizer:
                 The renderer engine to use for rendering.
         parallel_render_workers : int, optional
                 Number of worker processes to use for headless parallel
-                rendering. If None, use one worker per visible GPU. Explicitly
-                using more workers than visible GPUs is experimental.
+                rendering. If ``None``, ZnVis uses one worker per visible GPU.
+                Only add more workers than visible GPUs if you exactly know what you're
+                doing. Only implemented as experimental feature!
         parallel_render : bool, optional
-                If True, enables headless parallel rendering.
+                If ``True``, enables headless parallel rendering. If no visible
+                CUDA GPU is available, ZnVis warns and falls back to serial
+                rendering.
         """
         self.particles = particles
         self.vector_field = vector_field
