@@ -21,6 +21,7 @@ Summary
 Base visualizer class with shared functionality.
 """
 
+import os
 import pathlib
 import typing
 from numbers import Integral
@@ -53,6 +54,37 @@ def build_mesh_dict_for_frame(
             "material": item.mesh.o3d_material,
         }
     return mesh_dict
+
+
+def _detect_available_gpu_devices() -> int:
+    """
+    Detect number of visible CUDA GPU devices.
+    """
+    cuda_visible_devices = os.getenv("CUDA_VISIBLE_DEVICES")
+    if cuda_visible_devices is not None:
+        devices = [d.strip() for d in cuda_visible_devices.split(",")]
+        devices = [d for d in devices if d and d != "-1"]
+        return len(devices)
+
+    try:
+        import drjit as dr
+
+        jit_backend = getattr(dr, "JitBackend", None)
+        has_backend = getattr(dr, "has_backend", None)
+        if (
+            jit_backend is not None
+            and has_backend is not None
+            and has_backend(jit_backend.CUDA)
+        ):
+            cuda_mod = getattr(dr, "cuda", None)
+            if cuda_mod is not None:
+                device_count_fn = getattr(cuda_mod, "device_count", None)
+                if callable(device_count_fn):
+                    return int(device_count_fn())
+    except Exception:
+        pass
+
+    return 0
 
 
 class BaseVisualizer:
@@ -103,8 +135,8 @@ class BaseVisualizer:
         renderer_resolution: typing.Sequence[int] | None = None,
         renderer_spp: int = 64,
         renderer: Mitsuba | None = None,
-        parallel_render_workers: int = 2,
-        parallel_render_enabled: bool = False,
+        parallel_render_workers: int | None = None,
+        parallel_render: bool = False,
     ):
         """
         Initialize the base visualizer.
@@ -138,8 +170,10 @@ class BaseVisualizer:
         renderer : Mitsuba, optional
                 The renderer engine to use for rendering.
         parallel_render_workers : int, optional
-                Number of worker processes to use for headless parallel rendering.
-        parallel_render_enabled : bool, optional
+                Number of worker processes to use for headless parallel
+                rendering. If None, use one worker per visible GPU. Explicitly
+                using more workers than visible GPUs is experimental.
+        parallel_render : bool, optional
                 If True, enables headless parallel rendering.
         """
         self.particles = particles
@@ -170,19 +204,22 @@ class BaseVisualizer:
         )
         self.renderer_spp = renderer_spp
         self.renderer = renderer or Mitsuba()
-        if not isinstance(parallel_render_workers, Integral) or isinstance(
+        self.available_gpu_devices = _detect_available_gpu_devices()
+        if parallel_render_workers is None:
+            parallel_render_workers = max(1, self.available_gpu_devices)
+        elif not isinstance(parallel_render_workers, Integral) or isinstance(
             parallel_render_workers, bool
         ):
             raise ValueError(
                 "parallel_render_workers must be an integer (not a boolean) "
-                "greater than or equal to 1."
+                "greater than or equal to 1, or None for automatic selection."
             )
         if parallel_render_workers < 1:
             raise ValueError(
                 "parallel_render_workers must be greater than or equal to 1."
             )
         self.parallel_render_workers = int(parallel_render_workers)
-        self.parallel_render_enabled = parallel_render_enabled
+        self.parallel_render = parallel_render
 
         # Initialize video manager
         self.video_manager = VideoManager(

@@ -34,7 +34,7 @@ from rich.progress import Progress
 import znvis
 from znvis import cameras
 from znvis.rendering import Mitsuba
-from znvis.visualizer._parallel import render_frames_parallel
+from znvis.visualizer._parallel_render import render_frames_parallel
 from znvis.visualizer.base_visualizer import BaseVisualizer, build_mesh_dict_for_frame
 
 
@@ -67,8 +67,8 @@ class HeadlessVisualizer(BaseVisualizer):
         renderer: Mitsuba | None = None,
         do_create_video: bool = True,
         camera: cameras.BaseCamera | None = None,
-        parallel_render_workers: int = 2,
-        parallel_render_enabled: bool = False,
+        parallel_render_workers: int | None = None,
+        parallel_render: bool = False,
     ):
         """
         Constructor for the visualizer.
@@ -106,8 +106,10 @@ class HeadlessVisualizer(BaseVisualizer):
                 Camera object to use for the visualization. If None, a default camera
                 will be used.
         parallel_render_workers : int
-                Number of worker processes to use when parallel rendering is enabled.
-        parallel_render_enabled : bool
+                Number of worker processes to use when parallel rendering is
+                enabled. If None, use one worker per visible GPU. Explicitly
+                using more workers than visible GPUs is experimental.
+        parallel_render : bool
                 If True, render frames with a process pool.
         """
         # Call parent constructor
@@ -125,7 +127,7 @@ class HeadlessVisualizer(BaseVisualizer):
             renderer_spp=renderer_spp,
             renderer=renderer,
             parallel_render_workers=parallel_render_workers,
-            parallel_render_enabled=parallel_render_enabled,
+            parallel_render=parallel_render,
         )
 
         # Headless-specific attributes
@@ -177,43 +179,141 @@ class HeadlessVisualizer(BaseVisualizer):
             samples_per_pixel=self.renderer_spp,
         )
 
-    def _render_frames_serial(self):
+    def _resolve_frame_indices(
+        self,
+        frame_indices: typing.Sequence[int] | None = None,
+        frame_range: tuple[int, int] | None = None,
+    ) -> list[int]:
         """
-        Render all frames sequentially in the main process.
+        Resolve the requested frame selection to global frame indices.
         """
+        if frame_indices is not None and frame_range is not None:
+            raise ValueError("Use only one of frame_indices or frame_range.")
+
+        # Default behavior: Render every frame in the trajectory.
+        if frame_indices is None and frame_range is None:
+            return list(range(self.number_of_steps))
+
+        if frame_indices is not None:
+            indices = list(frame_indices)
+        else:
+            if len(frame_range) != 2:
+                raise ValueError("frame_range must be a (start, stop) pair.")
+            start, stop = frame_range
+            if not isinstance(start, int) or not isinstance(stop, int):
+                raise ValueError("frame_range values must be integers.")
+            if start < 0 or stop < start or stop > self.number_of_steps:
+                raise ValueError(
+                    "frame_range must satisfy 0 <= start <= stop <= number_of_steps."
+                )
+            indices = list(range(start, stop))
+        for frame_index in indices:
+            if not isinstance(frame_index, int):
+                raise ValueError("frame_indices values must be integers.")
+            if frame_index < 0 or frame_index >= self.number_of_steps:
+                raise ValueError(
+                    "frame_indices values must satisfy "
+                    "0 <= frame_index < number_of_steps."
+                )
+        if len(set(indices)) != len(indices):
+            raise ValueError("frame_indices must not contain duplicate values.")
+        return indices
+
+    def _filter_existing_frame_indices(
+        self,
+        frame_indices: typing.Sequence[int],
+        skip_existing_frames: bool = True,
+    ) -> list[int]:
+        """
+        Remove frames that already exist on disk when skipping is requested.
+        """
+        if not skip_existing_frames:
+            return list(frame_indices)
+
+        return [
+            frame_index
+            for frame_index in frame_indices
+            if not (self.frame_folder / f"frame_{frame_index:0>6}.png").exists()
+        ]
+
+    def _render_frames_serial(self, frame_indices: typing.Sequence[int] | None = None):
+        """
+        Render selected frames sequentially in the main process.
+        """
+        selected_frame_indices = (
+            list(range(self.number_of_steps))
+            if frame_indices is None
+            else list(frame_indices)
+        )
         with Progress() as progress:
-            task = progress.add_task("Saving scenes...", total=self.number_of_steps)
-            for frame_index in range(self.number_of_steps):
+            task = progress.add_task(
+                "Saving scenes...", total=len(selected_frame_indices)
+            )
+            for frame_index in selected_frame_indices:
                 self._render_frame(frame_index)
                 progress.update(task, advance=1)
 
-    def _render_frames_parallel(self):
+    def _render_frames_parallel(
+        self, frame_indices: typing.Sequence[int] | None = None
+    ):
         """
-        Render all frames with a process pool.
+        Render selected frames with isolated worker subprocesses.
 
         Falls back to serial rendering if parallel worker startup fails.
         """
-        render_frames_parallel(self, Progress)
+        render_frames_parallel(self, Progress, frame_indices=frame_indices)
 
-    def _record_trajectory(self):
+    def _record_trajectory(self, frame_indices: typing.Sequence[int] | None = None):
         """
-        Record the trajectory.
+        Record the selected trajectory frames.
         """
-        if self.parallel_render_enabled:
-            self._render_frames_parallel()
+        if self.parallel_render:
+            self._render_frames_parallel(frame_indices=frame_indices)
         else:
-            self._render_frames_serial()
+            self._render_frames_serial(frame_indices=frame_indices)
 
         if self.do_create_video:
             self._create_movie()
 
-    def render_visualization(self):
+    def create_video_from_frames(self):
+        """
+        Create a video from already-rendered frames.
+        """
+        self._create_movie()
+
+    def render_visualization(
+        self,
+        frame_indices: typing.Sequence[int] | None = None,
+        frame_range: tuple[int, int] | None = None,
+        skip_existing_frames: bool = True,
+    ):
         """
         Run the visualization.
+
+        Parameters
+        ----------
+        frame_indices : sequence of int, optional
+                Explicit global frame indices to render, e.g. [0, 4, 8]. Use this
+                for custom or externally computed frame selections.
+        frame_range : tuple[int, int], optional
+                Contiguous half-open global frame range (start, stop), e.g.
+                (500, 1000) renders frames 500 through 999. Use this for simple
+                manual chunking across jobs or nodes.
+        skip_existing_frames : bool, optional
+                If True, existing frame_XXXXXX.png files are skipped. Set to False
+                to force re-rendering existing frames.
 
         Returns
         -------
         Launches the visualization.
         """
+        selected_frame_indices = self._resolve_frame_indices(
+            frame_indices=frame_indices,
+            frame_range=frame_range,
+        )
         self.frame_folder.mkdir(parents=True, exist_ok=True)
-        self._record_trajectory()
+        selected_frame_indices = self._filter_existing_frame_indices(
+            selected_frame_indices,
+            skip_existing_frames=skip_existing_frames,
+        )
+        self._record_trajectory(frame_indices=selected_frame_indices)

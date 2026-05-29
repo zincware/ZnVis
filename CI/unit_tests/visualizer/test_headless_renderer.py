@@ -181,8 +181,39 @@ class TestHeadlessVisualizer(unittest.TestCase):
         self.assertEqual(self.visualizer.video_format, "mp4")
         self.assertEqual(self.visualizer.renderer_spp, 64)
         self.assertEqual(self.visualizer.keep_frames, True)
-        self.assertEqual(self.visualizer.parallel_render_workers, 2)
-        self.assertFalse(self.visualizer.parallel_render_enabled)
+        self.assertFalse(self.visualizer.parallel_render)
+
+    def test_default_parallel_workers_use_visible_gpu_count(self):
+        """
+        Test that automatic worker count uses one worker per visible GPU.
+        """
+        with patch(
+            "znvis.visualizer.base_visualizer._detect_available_gpu_devices",
+            return_value=3,
+        ):
+            visualizer = HeadlessVisualizer(
+                particles=[self.visualizer.particles[0]],
+                renderer_resolution=[64, 64],
+                do_create_video=False,
+            )
+
+        self.assertEqual(visualizer.parallel_render_workers, 3)
+
+    def test_default_parallel_workers_fall_back_to_one_without_gpu(self):
+        """
+        Test that automatic worker count remains valid without visible GPUs.
+        """
+        with patch(
+            "znvis.visualizer.base_visualizer._detect_available_gpu_devices",
+            return_value=0,
+        ):
+            visualizer = HeadlessVisualizer(
+                particles=[self.visualizer.particles[0]],
+                renderer_resolution=[64, 64],
+                do_create_video=False,
+            )
+
+        self.assertEqual(visualizer.parallel_render_workers, 1)
 
     def test_render_dispatch_uses_serial_by_default(self):
         """
@@ -193,7 +224,7 @@ class TestHeadlessVisualizer(unittest.TestCase):
             patch.object(self.visualizer, "_render_frames_parallel") as parallel_mock,
         ):
             self.visualizer.do_create_video = False
-            self.visualizer.parallel_render_enabled = False
+            self.visualizer.parallel_render = False
             self.visualizer._record_trajectory()
 
         serial_mock.assert_called_once()
@@ -208,11 +239,98 @@ class TestHeadlessVisualizer(unittest.TestCase):
             patch.object(self.visualizer, "_render_frames_parallel") as parallel_mock,
         ):
             self.visualizer.do_create_video = False
-            self.visualizer.parallel_render_enabled = True
+            self.visualizer.parallel_render = True
             self.visualizer._record_trajectory()
 
         parallel_mock.assert_called_once()
         serial_mock.assert_not_called()
+
+    def test_render_visualization_frame_range_uses_global_indices(self):
+        """
+        Test that frame_range renders the selected global frame indices.
+        """
+        with (
+            patch.object(self.visualizer, "_render_frame") as render_frame_mock,
+            patch.object(self.visualizer, "_create_movie") as create_movie_mock,
+        ):
+            self.visualizer.do_create_video = False
+            self.visualizer.parallel_render = False
+            self.visualizer.render_visualization(
+                frame_range=(2, 5),
+                skip_existing_frames=False,
+            )
+
+        self.assertEqual(
+            [call.args[0] for call in render_frame_mock.call_args_list],
+            [2, 3, 4],
+        )
+        create_movie_mock.assert_not_called()
+
+    def test_render_visualization_rejects_multiple_frame_selectors(self):
+        """
+        Test that only one frame selection mode can be used at a time.
+        """
+        with self.assertRaises(ValueError):
+            self.visualizer.render_visualization(
+                frame_indices=[0, 1],
+                frame_range=(0, 2),
+            )
+
+    def test_render_visualization_skips_existing_frames(self):
+        """
+        Test that existing global frame files are not rendered again by default.
+        """
+        self.visualizer.frame_folder.mkdir(parents=True, exist_ok=True)
+        existing_frame = self.visualizer.frame_folder / "frame_000003.png"
+        existing_frame.touch()
+
+        with (
+            patch.object(self.visualizer, "_render_frame") as render_frame_mock,
+            patch.object(self.visualizer, "_create_movie") as create_movie_mock,
+        ):
+            self.visualizer.do_create_video = False
+            self.visualizer.parallel_render = False
+            self.visualizer.render_visualization(frame_range=(2, 5))
+
+        self.assertEqual(
+            [call.args[0] for call in render_frame_mock.call_args_list],
+            [2, 4],
+        )
+        create_movie_mock.assert_not_called()
+
+    def test_render_visualization_can_disable_skip_existing_frames(self):
+        """
+        Test that skip_existing_frames=False disables resumability filtering.
+        """
+        self.visualizer.frame_folder.mkdir(parents=True, exist_ok=True)
+        existing_frame = self.visualizer.frame_folder / "frame_000003.png"
+        existing_frame.touch()
+
+        with (
+            patch.object(self.visualizer, "_render_frame") as render_frame_mock,
+            patch.object(self.visualizer, "_create_movie") as create_movie_mock,
+        ):
+            self.visualizer.do_create_video = False
+            self.visualizer.parallel_render = False
+            self.visualizer.render_visualization(
+                frame_range=(2, 5),
+                skip_existing_frames=False,
+            )
+
+        self.assertEqual(
+            [call.args[0] for call in render_frame_mock.call_args_list],
+            [2, 3, 4],
+        )
+        create_movie_mock.assert_not_called()
+
+    def test_create_video_from_frames_calls_movie_creation(self):
+        """
+        Test the public video assembly wrapper.
+        """
+        with patch.object(self.visualizer, "_create_movie") as create_movie_mock:
+            self.visualizer.create_video_from_frames()
+
+        create_movie_mock.assert_called_once()
 
     def test_headless_rendering(self):
         """
