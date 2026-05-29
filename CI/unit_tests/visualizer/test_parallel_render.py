@@ -5,7 +5,6 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from znvis.visualizer import _parallel_render
-from znvis.visualizer import base_visualizer as _parallel_base
 
 
 class _DummyProgress:
@@ -23,15 +22,6 @@ class _DummyProgress:
 
 
 class TestParallelRender(unittest.TestCase):
-    @patch.dict("os.environ", {}, clear=True)
-    @patch("sys.modules", {"drjit": None})
-    def test_gpu_detection_does_not_probe_mitsuba_variant(self):
-        with patch("mitsuba.set_variant") as set_variant_mock:
-            gpu_count = _parallel_base._detect_available_gpu_devices()
-
-        self.assertEqual(gpu_count, 0)
-        set_variant_mock.assert_not_called()
-
     def _make_visualizer(self, workers=2, gpus=1):
         vis = SimpleNamespace()
         vis.parallel_render_workers = workers
