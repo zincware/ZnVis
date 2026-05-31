@@ -35,6 +35,22 @@ from znvis.testing.znvis_process import Process
 from znvis.visualizer.visualizer import Visualizer
 
 
+def initialize_app_in_process():
+    """
+    Initialize the visualizer app inside a separate process.
+
+    Returns
+    -------
+    None
+    """
+    name = "my_particle"
+    position = np.random.uniform(-5, 5, (10, 2, 3))
+    particle = Particle(name=name, position=position, mesh=Sphere())
+    visualizer = Visualizer([particle])
+    visualizer._initialize_app()
+    assert type(visualizer.vis) is o3d.visualization.O3DVisualizer
+
+
 class TestVisualizer(unittest.TestCase):
     """
     A test class for the Particle class.
@@ -69,7 +85,7 @@ class TestVisualizer(unittest.TestCase):
         -------
         Test that the app initializes properly.
         """
-        process = Process(target=self.initialize_app)
+        process = Process(target=initialize_app_in_process)
         process.start()
         time.sleep(1)
         process.terminate()
@@ -77,14 +93,3 @@ class TestVisualizer(unittest.TestCase):
             error, traceback = process.exception
             print(traceback)
         self.assertEqual(process.exception, None)
-
-    def initialize_app(self):
-        """
-        Test initializing the app.
-
-        Returns
-        -------
-
-        """
-        self.visualizer._initialize_app()
-        self.assertEqual(type(self.visualizer.vis), o3d.visualization.O3DVisualizer)
