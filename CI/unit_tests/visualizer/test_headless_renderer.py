@@ -87,7 +87,6 @@ class TestHeadlessVisualizer(unittest.TestCase):
         for i in range(dynamic_pos.shape[0]):
             dynamic_pos[i, :, :] = pos[np.newaxis, :] - np.array([10, 10, 0])
         dynamic_directors = np.zeros((n_frames, pos.shape[0], pos.shape[1]))
-        dynamic_directors[0, :, :] = static_directors[np.newaxis, :]
         dynamic_directors[0, :, :] = np.array([1, 1, 1]) / np.linalg.norm(
             np.array([1, 1, 1])
         )
