@@ -131,6 +131,7 @@ class Visualizer(BaseVisualizer):
         self.screenshot_folder = self.output_folder / "screenshots"
         self.app = None
         self.vis = None
+        self._headless_export_hint_shown = False
 
         # Camera Handling
         if keyframe_camera is not None:
@@ -218,6 +219,20 @@ class Visualizer(BaseVisualizer):
         """
         self.interrupt = 0
 
+    def _print_headless_export_hint_once(self):
+        """
+        Print the GUI export hint once per visualizer instance.
+        """
+        if not self._headless_export_hint_shown:
+            print(
+                "Info: GUI video export renders through the "
+                "interactive visualizer and may block the window. "
+                "For long or high-resolution renders, consider using "
+                "HeadlessVisualizer, which can render without the GUI "
+                "and supports parallel rendering."
+            )
+            self._headless_export_hint_shown = True
+
     def _export_video(self, vis):
         """
         Export a video of the simulation.
@@ -231,6 +246,7 @@ class Visualizer(BaseVisualizer):
         -------
         Saves a video locally.
         """
+        self._print_headless_export_hint_once()
         self.do_rewind = False
         self.interrupt = 0  # stop live feed if running.
 
