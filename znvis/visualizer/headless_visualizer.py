@@ -34,8 +34,11 @@ from rich.progress import Progress
 import znvis
 from znvis import cameras
 from znvis.rendering import Mitsuba
-from znvis.visualizer._parallel_render import render_frames_parallel
 from znvis.visualizer.base_visualizer import BaseVisualizer, build_mesh_dict_for_frame
+from znvis.visualizer.parallel.parallel_render_manager import (
+    make_spawn_safe_render_items,
+    render_frames_parallel,
+)
 
 
 class HeadlessVisualizer(BaseVisualizer):
@@ -258,11 +261,37 @@ class HeadlessVisualizer(BaseVisualizer):
         self, frame_indices: typing.Sequence[int] | None = None
     ):
         """
-        Render selected frames with isolated worker subprocesses.
+        Package up state data and pass it to the rendering module.
 
         Falls back to serial rendering if parallel worker startup fails.
         """
-        render_frames_parallel(self, Progress, frame_indices=frame_indices)
+        render_config = {
+            "number_of_steps": self.number_of_steps,
+            "parallel_render_workers": self.parallel_render_workers,
+            "available_gpu_devices": getattr(self, "available_gpu_devices", 0),
+            "worker_state": {
+                "particles": make_spawn_safe_render_items(self.particles),
+                "vector_field": (
+                    make_spawn_safe_render_items(self.vector_field)
+                    if self.vector_field
+                    else None
+                ),
+                "camera": self.camera,
+                "view_matrix": getattr(self, "view_matrix", None),
+                "frame_folder": self.frame_folder,
+                "renderer_resolution": self.renderer_resolution,
+                "renderer_spp": self.renderer_spp,
+            },
+        }
+        try:
+            # Call the pure rendering utility function
+            render_frames_parallel(render_config, Progress, frame_indices=frame_indices)
+        except Exception as e:
+            # Handle the serial fallback right here in the visualizer context!
+            print(
+                f"Parallel rendering failed ({e}). Falling back to serial rendering..."
+            )
+            self._render_frames_serial(frame_indices=frame_indices)
 
     def _record_trajectory(self, frame_indices: typing.Sequence[int] | None = None):
         """

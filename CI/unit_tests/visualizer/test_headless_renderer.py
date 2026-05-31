@@ -20,7 +20,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Test the visualizer module.
+Test the headless visualizer module.
 """
 
 import unittest
@@ -413,3 +413,24 @@ class TestHeadlessVisualizer(unittest.TestCase):
 
         if test_output_dir.exists():
             shutil.rmtree(test_output_dir)
+
+    @patch("znvis.visualizer.headless_visualizer.render_frames_parallel")
+    def test_headless_frames_parallel_packages_config_dictionary(
+        self, mock_render_parallel
+    ):
+        self.visualizer.parallel_render_workers = 4
+        self.visualizer.number_of_steps = 10
+        self.visualizer.available_gpu_devices = 2  # Ensure this attribute exists
+
+        # Trigger the frame rendering
+        self.visualizer._render_frames_parallel(frame_indices=[0, 1, 2])
+
+        # Verify it was called
+        mock_render_parallel.assert_called_once()
+
+        # STRICTOR ASSERTIONS: Verify the top-level dictionary contract explicitly
+        passed_config = mock_render_parallel.call_args.args[0]
+        self.assertEqual(passed_config["number_of_steps"], 10)
+        self.assertEqual(passed_config["parallel_render_workers"], 4)
+        self.assertEqual(passed_config["available_gpu_devices"], 2)
+        self.assertIn("worker_state", passed_config)

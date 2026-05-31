@@ -29,6 +29,7 @@ import pathlib
 import threading
 import time
 import typing
+from dataclasses import dataclass
 
 import open3d as o3d
 import open3d.visualization.gui as gui
@@ -38,6 +39,27 @@ import znvis
 from znvis.cameras import KeyframeCamera
 from znvis.rendering import Mitsuba
 from znvis.visualizer.base_visualizer import BaseVisualizer
+from znvis.visualizer.cache.mesh_cache_manager import MeshCacheManager
+from znvis.visualizer.cache.mesh_frame_cache import MeshFrameCache
+
+
+@dataclass
+class MeshCacheDebugStats:
+    """
+    Runtime counters for diagnosing lazy mesh cache behavior.
+    """
+
+    current_calls: int = 0
+    current_created: int = 0
+    current_build_seconds: float = 0.0
+    prefetch_calls: int = 0
+    prefetch_created: int = 0
+    prefetch_build_seconds: float = 0.0
+    prefetch_evictions: int = 0
+    skipped_prefetch: int = 0
+    update_calls: int = 0
+    update_seconds: float = 0.0
+    slow_updates: int = 0
 
 
 class Visualizer(BaseVisualizer):
@@ -72,6 +94,9 @@ class Visualizer(BaseVisualizer):
         renderer_spp: int = 64,
         renderer: Mitsuba | None = None,
         keyframe_camera: KeyframeCamera = None,
+        lazy_mesh_loading: bool = False,
+        mesh_cache_max_gb: float | None = None,
+        mesh_cache_future_fraction: float = 2 / 3,
     ):
         """
         Constructor for the visualizer.
@@ -105,6 +130,19 @@ class Visualizer(BaseVisualizer):
                 The renderer engine to use for rendering.
         keyframe_camera : KeyframeCamera
                 The camera to use for interpolation
+        lazy_mesh_loading : bool
+                Default: False
+                Decide whether eagerly preloading all meshes into memory before a
+                visualization starts or lazily load only a subset of frames into cache.
+        mesh_cache_max_gb : float | None
+                Default: None
+                Maximum estimated mesh memory in GiB to keep in the cache. Static meshes
+                stay cached and dynamic meshes are evicted to keep the total below
+                this limit when possible.
+        mesh_cache_future_fraction : float
+                Default: 2 / 3
+                Fraction of the rolling cache window to place in the current playback
+                direction. The rest is placed behind the current frame.
 
         """
         # Call parent constructor
@@ -131,7 +169,24 @@ class Visualizer(BaseVisualizer):
         self.screenshot_folder = self.output_folder / "screenshots"
         self.app = None
         self.vis = None
+        self.interrupt = 0
         self._headless_export_hint_shown = False
+        self.mesh_cache = None
+        self.mesh_cache_manager = None
+        self.lazy_mesh_loading = lazy_mesh_loading
+        self.mesh_cache_max_gb = mesh_cache_max_gb
+        self.mesh_cache_future_fraction = min(
+            1.0,
+            max(0.0, float(mesh_cache_future_fraction)),
+        )
+        self._trajectory_update_pending = False
+        self.mesh_cache_debug = os.getenv("ZNVIS_DEBUG_MESH_CACHE", "") not in (
+            "",
+            "0",
+            "false",
+            "False",
+        )
+        self._mesh_cache_debug_stats = MeshCacheDebugStats()
 
         # Camera Handling
         if keyframe_camera is not None:
@@ -207,7 +262,7 @@ class Visualizer(BaseVisualizer):
         # Add the visualizer to the app.
         self.app.add_window(self.vis)
 
-        self.interrupt: int = 0  # 0 = Not running, 1 = running
+        self.interrupt = 0  # 0 = Not running, 1 = running
 
     def _pause_run(self, vis):
         """
@@ -218,6 +273,12 @@ class Visualizer(BaseVisualizer):
         Set self.interrupt = 0
         """
         self.interrupt = 0
+        if self.lazy_mesh_loading:
+            self.mesh_cache_manager.submit_pause_refill(
+                self.counter,
+                self.do_rewind,
+                self._get_playback_frame_step(),
+            )
 
     def _print_headless_export_hint_once(self):
         """
@@ -298,18 +359,18 @@ class Visualizer(BaseVisualizer):
         for i, item in enumerate(self.particles):
             if item.static:
                 if i == 0 and not created_mesh:
-                    mesh = item.mesh_list[0]
+                    mesh = self._get_mesh_for_item(item, 0)
                     created_mesh = True
                 elif i == 0 and created_mesh:
-                    mesh += item.mesh_list[0]
+                    mesh += self._get_mesh_for_item(item, 0)
                 else:
                     continue
 
             if i == 0 and not created_mesh:
-                mesh = item.mesh_list[self.counter]
+                mesh = self._get_mesh_for_item(item, self.counter)
                 created_mesh = True
             else:
-                mesh += item.mesh_list[self.counter]
+                mesh += self._get_mesh_for_item(item, self.counter)
 
         self.scene_folder.mkdir(parents=True, exist_ok=True)
         o3d.io.write_triangle_mesh(
@@ -341,13 +402,13 @@ class Visualizer(BaseVisualizer):
             for item in self.vector_field:
                 if item.static:
                     mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[0],
+                        "mesh": self._get_mesh_for_item(item, 0),
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
                     }
                 else:
                     mesh_dict[item.name] = {
-                        "mesh": item.mesh_list[self.counter],
+                        "mesh": self._get_mesh_for_item(item, self.counter),
                         "bsdf": item.mesh.material.mitsuba_bsdf,
                         "material": item.mesh.o3d_material,
                     }
@@ -355,13 +416,13 @@ class Visualizer(BaseVisualizer):
         for item in self.particles:
             if item.static:
                 mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[0],
+                    "mesh": self._get_mesh_for_item(item, 0),
                     "bsdf": item.mesh.material.mitsuba_bsdf,
                     "material": item.mesh.o3d_material,
                 }
             else:
                 mesh_dict[item.name] = {
-                    "mesh": item.mesh_list[self.counter],
+                    "mesh": self._get_mesh_for_item(item, self.counter),
                     "bsdf": item.mesh.material.mitsuba_bsdf,
                     "material": item.mesh.o3d_material,
                 }
@@ -382,6 +443,74 @@ class Visualizer(BaseVisualizer):
         if old_state == 1:
             self._continuous_trajectory(vis)
 
+    def _get_mesh_for_item(self, item, frame_index):
+        """
+        Provides the mesh list for an item at a given frame.
+        """
+        idx = 0 if item.static else frame_index
+
+        if self.lazy_mesh_loading:
+            if self.mesh_cache_manager is None:
+                raise RuntimeError("Mesh cache is not initialized yet.")
+            return self.mesh_cache_manager.get(item, idx)
+
+        return item.mesh_list[idx]
+
+    def _get_mesh_cache_max_bytes(self):
+        if self.mesh_cache_max_gb is None:
+            return None
+        return int(self.mesh_cache_max_gb * 1024**3)
+
+    def _record_mesh_cache_result(self, source, item, frame_index, result) -> None:
+        """
+        Print cache miss and eviction diagnostics when debug logging is enabled.
+        """
+        stats = self._mesh_cache_debug_stats
+        if source == "current":
+            stats.current_calls += 1
+            if result.created:
+                stats.current_created += 1
+                stats.current_build_seconds += result.build_seconds
+        else:
+            stats.prefetch_calls += 1
+            if result.created:
+                stats.prefetch_created += 1
+                stats.prefetch_build_seconds += result.build_seconds
+            stats.prefetch_evictions += len(result.evicted_frames)
+
+        if result.created or result.evicted:
+            print(
+                "[mesh-cache] "
+                f"{source} frame={frame_index} item={item.name} "
+                f"created={result.created} "
+                f"build={result.build_seconds:.3f}s "
+                f"evicted={result.evicted_frames} "
+                f"bytes={self.mesh_cache.current_bytes / 1024**3:.2f}GiB"
+            )
+
+    def _initialize_mesh_cache(self):
+        if self.mesh_cache is None:
+            self.mesh_cache = MeshFrameCache(
+                max_bytes=self._get_mesh_cache_max_bytes(),
+            )
+        if self.mesh_cache_manager is None:
+            self.mesh_cache_manager = MeshCacheManager(
+                items=self.particles + (self.vector_field or []),
+                number_of_steps=self.number_of_steps,
+                cache=self.mesh_cache,
+                future_fraction=self.mesh_cache_future_fraction,
+                debug_callback=(
+                    self._record_mesh_cache_result if self.mesh_cache_debug else None
+                ),
+            )
+
+        self.mesh_cache_manager.initialize(
+            current_frame=self.counter,
+            do_rewind=self.do_rewind,
+            frame_step=self._get_playback_frame_step(),
+            start_worker=self.app is not None,
+        )
+
     def _initialize_particles(self):
         """
         Initialize the particles in the simulation.
@@ -389,15 +518,22 @@ class Visualizer(BaseVisualizer):
         This method will construct the particle dictionaries in each Particle class and
         then add the first location of each particle to the visualizer window.
         """
-        # Build the mesh dict for each particle and add them to the window.
-        for item in self.particles:
-            item.construct_mesh_list()
+
+        if self.lazy_mesh_loading:
+            self._initialize_mesh_cache()
+        else:
+            for item in self.particles:
+                item.construct_mesh_list()
 
         self._draw_particles(initial=True)
 
     def _initialize_vector_field(self):
-        for item in self.vector_field:
-            item.construct_mesh_list()
+        if self.lazy_mesh_loading:
+            self._initialize_mesh_cache()
+        else:
+            for item in self.vector_field:
+                item.construct_mesh_list()
+
         self._draw_vector_field(initial=True)
 
     def _draw_particles(self, visualizer=None, initial: bool = False):
@@ -422,23 +558,18 @@ class Visualizer(BaseVisualizer):
         if visualizer is None:
             visualizer = self.vis
 
-        # Add the particles to the visualizer.
-        if initial:
-            for i, item in enumerate(self.particles):
-                visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                )
+        if initial and self.bounding_box is not None:
+            visualizer.add_geometry("Box", self.bounding_box)
 
-            # check for bounding box
-            if self.bounding_box is not None:
-                visualizer.add_geometry("Box", self.bounding_box)
-        else:
-            for i, item in enumerate(self.particles):
+        for item in self.particles:
+            if not initial:
                 if not item.static:
                     visualizer.remove_geometry(item.name)
-                    visualizer.add_geometry(
-                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
-                    )
+                else:
+                    continue
+
+            mesh = self._get_mesh_for_item(item, self.counter)
+            visualizer.add_geometry(item.name, mesh, item.mesh.o3d_material)
 
     def _draw_vector_field(self, visualizer=None, initial: bool = False):
         """
@@ -460,14 +591,18 @@ class Visualizer(BaseVisualizer):
         if initial:
             for i, item in enumerate(self.vector_field):
                 visualizer.add_geometry(
-                    item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                    item.name,
+                    self._get_mesh_for_item(item, self.counter),
+                    item.mesh.o3d_material,
                 )
         else:
             for i, item in enumerate(self.vector_field):
                 if not item.static:
                     visualizer.remove_geometry(item.name)
                     visualizer.add_geometry(
-                        item.name, item.mesh_list[self.counter], item.mesh.o3d_material
+                        item.name,
+                        self._get_mesh_for_item(item, self.counter),
+                        item.mesh.o3d_material,
                     )
 
     def _continuous_trajectory(self, vis):
@@ -483,7 +618,30 @@ class Visualizer(BaseVisualizer):
         if self.interrupt == 1:
             self._pause_run(vis)
         else:
+            if self.lazy_mesh_loading:
+                self.mesh_cache_manager.cancel_pause_refill()
             threading.Thread(target=self._run_trajectory).start()
+
+    def get_mesh_dict(self, counter: int | None):
+        """
+        Creates the mesh dict for a given scene.
+        """
+        if counter is None:
+            counter = self.counter
+
+        if not self.lazy_mesh_loading:
+            return super().get_mesh_dict(counter)
+
+        mesh_dict = {}
+        items = (self.vector_field or []) + self.particles
+
+        for item in items:
+            mesh_dict[item.name] = {
+                "mesh": self._get_mesh_for_item(item, counter),
+                "bsdf": item.mesh.material.mitsuba_bsdf,
+                "material": item.mesh.o3d_material,
+            }
+        return mesh_dict
 
     def _record_trajectory(self):
         """
@@ -559,14 +717,14 @@ class Visualizer(BaseVisualizer):
             for i, item in enumerate(self.particles):
                 if item.static:
                     if i == 0:
-                        mesh = item.mesh_list[0]
+                        mesh = self._get_mesh_for_item(item, 0)
                     else:
-                        mesh += item.mesh_list[0]
+                        mesh += self._get_mesh_for_item(item, 0)
                 else:
                     if i == 0:
-                        mesh = item.mesh_list[self.counter]
+                        mesh = self._get_mesh_for_item(item, self.counter)
                     else:
-                        mesh += item.mesh_list[self.counter]
+                        mesh += self._get_mesh_for_item(item, self.counter)
 
             o3d.io.write_triangle_mesh(
                 (self.obj_folder / f"export_mesh_{self.counter}.ply").as_posix(), mesh
@@ -605,16 +763,40 @@ class Visualizer(BaseVisualizer):
         self.interrupt = 1  # set global run state.
         while self.counter < self.number_of_steps:
             time.sleep(1 / (self.frame_rate * self.play_speed))
-            o3d.visualization.gui.Application.instance.post_to_main_thread(
-                self.vis, self._update_particles
-            )
+            if not self._trajectory_update_pending:
+                self._trajectory_update_pending = True
+
+                def update_callable():
+                    try:
+                        self._update_particles(
+                            block_on_cache_miss=False,
+                            frame_step=self._get_playback_frame_step(),
+                        )
+                    finally:
+                        self._trajectory_update_pending = False
+
+                o3d.visualization.gui.Application.instance.post_to_main_thread(
+                    self.vis, update_callable
+                )
             # Break if interrupted.
             if self.interrupt == 0:
                 break
 
         self.interrupt = 0  # reset global state.
 
-    def _update_particles(self, visualizer=None, step: int = None):
+    def _get_playback_frame_step(self) -> int:
+        """
+        Return how many frames autoplay should advance per drawn update.
+        """
+        return max(1, int(self.play_speed))
+
+    def _update_particles(
+        self,
+        visualizer=None,
+        step: int = None,
+        block_on_cache_miss: bool = True,
+        frame_step: int = 1,
+    ):
         """
         Update the positions of the particles.
 
@@ -629,17 +811,29 @@ class Visualizer(BaseVisualizer):
         """
         if visualizer is None:
             visualizer = self.vis
+        start = time.perf_counter()
+        old_counter = self.counter
         if step is None:
-            if self.counter == self.number_of_steps - 1:
-                self.counter = 0
-            else:
-                self.counter += 1
+            frame_step = max(1, int(frame_step))
+            delta = -frame_step if self.do_rewind else frame_step
+            self.counter = (self.counter + delta) % self.number_of_steps
             step = self.counter
-        if self.do_rewind is True:
-            if self.counter <= 1:
-                self.counter = self.number_of_steps - 2
-            else:
-                self.counter -= 2
+
+        if self.lazy_mesh_loading:
+            if (
+                not block_on_cache_miss
+                and not self.mesh_cache_manager.has_meshes_for_frame(self.counter)
+            ):
+                prefetch_frame = self.counter
+                self.counter = old_counter
+                self.mesh_cache_manager.submit_prefetch(
+                    self.counter,
+                    self.do_rewind,
+                    self._get_playback_frame_step(),
+                    urgent_frame=prefetch_frame,
+                )
+                return False
+            self.mesh_cache_manager.ensure_current_frame(self.counter)
 
         self._draw_particles(visualizer=visualizer)  # draw the particles.
 
@@ -647,7 +841,17 @@ class Visualizer(BaseVisualizer):
         if self.vector_field is not None:
             self._draw_vector_field(visualizer=visualizer)
 
+        if self.lazy_mesh_loading:
+            self.mesh_cache_manager.submit_prefetch(
+                self.counter,
+                self.do_rewind,
+                self._get_playback_frame_step(),
+            )
+
         visualizer.post_redraw()  # re-draw the window.
+        if self.mesh_cache_debug:
+            self._record_update_timing(start)
+        return True
 
     def _update_particles_back(self, visualizer=None, step: int = None):
         """
@@ -670,11 +874,22 @@ class Visualizer(BaseVisualizer):
             else:
                 self.counter -= 1
             step = self.counter
+
+        if self.lazy_mesh_loading:
+            self.mesh_cache_manager.ensure_current_frame(self.counter)
+
         self._draw_particles(visualizer=visualizer)  # draw the particles.
 
         # draw the vector field if it exists.
         if self.vector_field is not None:
             self._draw_vector_field(visualizer=visualizer)
+
+        if self.lazy_mesh_loading:
+            self.mesh_cache_manager.submit_prefetch(
+                self.counter,
+                self.do_rewind,
+                self._get_playback_frame_step(),
+            )
 
         visualizer.post_redraw()  # re-draw the window.
 
@@ -693,11 +908,21 @@ class Visualizer(BaseVisualizer):
             visualizer = self.vis
         self.counter = 0
 
+        if self.lazy_mesh_loading:
+            self.mesh_cache_manager.ensure_current_frame(self.counter)
+
         self._draw_particles(visualizer=visualizer)  # draw the particles.
 
         # draw the vector field if it exists.
         if self.vector_field is not None:
             self._draw_vector_field(visualizer=visualizer)
+
+        if self.lazy_mesh_loading:
+            self.mesh_cache_manager.submit_prefetch(
+                self.counter,
+                self.do_rewind,
+                self._get_playback_frame_step(),
+            )
 
         visualizer.post_redraw()  # re-draw the window.
 
@@ -756,6 +981,55 @@ class Visualizer(BaseVisualizer):
         Output the current counter value.
         """
         print(self.counter)
+        if self.mesh_cache_debug:
+            self._print_mesh_cache_debug_summary()
+
+    def _shutdown_cache_manager(self):
+        """
+        Stop the background mesh cache manager.
+        """
+        if self.mesh_cache_debug:
+            self._print_mesh_cache_debug_summary()
+        if self.mesh_cache_manager is not None:
+            self.mesh_cache_manager.shutdown()
+
+    def _record_update_timing(self, start: float) -> None:
+        """
+        Print slow frame updates when mesh cache debug logging is enabled.
+        """
+        elapsed = time.perf_counter() - start
+        stats = self._mesh_cache_debug_stats
+        stats.update_calls += 1
+        stats.update_seconds += elapsed
+        if elapsed > 1 / max(1, self.frame_rate):
+            stats.slow_updates += 1
+            print(
+                "[mesh-cache] "
+                f"slow update frame={self.counter} "
+                f"elapsed={elapsed:.3f}s "
+                f"target={1 / max(1, self.frame_rate):.3f}s"
+            )
+
+    def _print_mesh_cache_debug_summary(self) -> None:
+        """
+        Print aggregated mesh cache diagnostics.
+        """
+        stats = self._mesh_cache_debug_stats
+        average_update = (
+            stats.update_seconds / stats.update_calls if stats.update_calls else 0.0
+        )
+        print(
+            "[mesh-cache] summary "
+            f"current={stats.current_created}/{stats.current_calls} misses "
+            f"({stats.current_build_seconds:.3f}s builds), "
+            f"prefetch={stats.prefetch_created}/{stats.prefetch_calls} misses "
+            f"({stats.prefetch_build_seconds:.3f}s builds), "
+            f"prefetch_evictions={stats.prefetch_evictions}, "
+            f"skipped_prefetch={stats.skipped_prefetch}, "
+            f"slow_updates={stats.slow_updates}/{stats.update_calls}, "
+            f"avg_update={average_update:.3f}s, "
+            f"cached_ranges={self.mesh_cache_manager.get_cached_frame_ranges()}"
+        )
 
     def run_visualization(self):
         """
@@ -771,4 +1045,7 @@ class Visualizer(BaseVisualizer):
             self._initialize_vector_field()
 
         self.vis.reset_camera_to_default()
-        self.app.run()
+        try:
+            self.app.run()
+        finally:
+            self._shutdown_cache_manager()

@@ -25,9 +25,9 @@ class _WorkerSpec:
     cuda_visible_device: str
 
 
-def _visible_cuda_devices(visualizer) -> list[str]:
+def _visible_cuda_devices(available_gpu_devices: int) -> list[str]:
     """Return CUDA device identifiers visible to the parent process."""
-    visible_gpus = int(getattr(visualizer, "available_gpu_devices", 0))
+    visible_gpus = int(available_gpu_devices)
     if visible_gpus <= 0:
         return []
 
@@ -40,7 +40,9 @@ def _visible_cuda_devices(visualizer) -> list[str]:
     return [str(device_id) for device_id in range(visible_gpus)]
 
 
-def _build_worker_specs(visualizer) -> list[_WorkerSpec]:
+def _build_worker_specs(
+    parallel_render_workers: int, available_gpu_devices: int
+) -> list[_WorkerSpec]:
     """Assign CUDA workers to visible GPUs.
 
     EXPERIMENTAL FEATURE
@@ -48,8 +50,8 @@ def _build_worker_specs(visualizer) -> list[_WorkerSpec]:
     When ``parallel_render_workers`` is larger than the number of visible
     GPUs, workers are assigned round-robin across devices.
     """
-    total_workers = int(visualizer.parallel_render_workers)
-    devices = _visible_cuda_devices(visualizer)
+    total_workers = int(parallel_render_workers)
+    devices = _visible_cuda_devices(available_gpu_devices)
     if not devices:
         raise RuntimeError("Parallel rendering requires at least one visible CUDA GPU.")
 
@@ -70,8 +72,10 @@ def _build_worker_specs(visualizer) -> list[_WorkerSpec]:
     ]
 
 
-def _make_spawn_safe_render_items(items):
+def make_spawn_safe_render_items(items):
     """Create lightweight copies for worker transfer by dropping mesh lists."""
+    if items is None:
+        return None
     safe_items = []
     for item in items:
         item_copy = copy(item)
@@ -153,7 +157,7 @@ def _start_worker_process(spec: _WorkerSpec, state_path: str):
         [
             sys.executable,
             "-m",
-            "znvis.visualizer._parallel_render_worker",
+            "znvis.visualizer.parallel.parallel_render_worker",
             state_path,
             str(spec.gpu_id),
         ],
@@ -178,16 +182,6 @@ def _stop_worker(worker: dict) -> None:
         return
     process.stdin.write("STOP\n")
     process.stdin.flush()
-
-
-def _render_serial(
-    visualizer, frame_indices, selected_frame_indices: list[int]
-) -> None:
-    """Run serial rendering preserving selected global frame indices."""
-    if frame_indices is None:
-        visualizer._render_frames_serial()
-    else:
-        visualizer._render_frames_serial(frame_indices=selected_frame_indices)
 
 
 def _wait_until_ready(selector, workers: list[dict]) -> None:
@@ -216,64 +210,52 @@ def _wait_until_ready(selector, workers: list[dict]) -> None:
             ready_workers += 1
 
 
-def render_frames_parallel(visualizer, progress_factory, frame_indices=None) -> None:
+def render_frames_parallel(
+    render_config: dict, progress_factory, frame_indices=None
+) -> None:
     """
     Render selected global frames with isolated CUDA worker subprocesses.
 
     Parameters
     ----------
-    visualizer : HeadlessVisualizer-like
-        Object providing render state, output paths, and serial fallback methods.
+    render_config : dict
+        Dictionary providing explicit config parameters and states.
     progress_factory : callable
         Context-manager factory that returns a progress object with ``add_task`` and
         ``update`` methods (e.g., ``rich.progress.Progress``).
     frame_indices : sequence[int] | None, optional
         Explicit global frame indices to render. If ``None``, all frames from
-        ``range(visualizer.number_of_steps)`` are scheduled.
+        ``range(number_of_steps)`` are scheduled.
     """
+    number_of_steps = render_config["number_of_steps"]
+    parallel_render_workers = render_config["parallel_render_workers"]
+    available_gpu_devices = render_config["available_gpu_devices"]
+    base_worker_state = render_config["worker_state"]
+
     selected_frame_indices = (
-        list(range(visualizer.number_of_steps))
-        if frame_indices is None
-        else list(frame_indices)
+        list(range(number_of_steps)) if frame_indices is None else list(frame_indices)
     )
     if not selected_frame_indices:
         return
 
     try:
-        worker_specs = _build_worker_specs(visualizer)
-    except RuntimeError as e:
-        warnings.warn(
-            "Parallel rendering requires a visible CUDA GPU; falling back to serial "
-            f"rendering with one worker. Caught RuntimeError: {e}",
-            UserWarning,
-            stacklevel=2,
+        worker_specs = _build_worker_specs(
+            parallel_render_workers, available_gpu_devices
         )
-        _render_serial(visualizer, frame_indices, selected_frame_indices)
-        return
+    except RuntimeError as e:
+        raise RuntimeError(f"Parallel rendering requirements failed: {e}")
 
-    if visualizer.parallel_render_workers == 1:
-        _render_serial(visualizer, frame_indices, selected_frame_indices)
-        return
+    if parallel_render_workers == 1:
+        raise ValueError(
+            "Parallel rendering invoked with only 1 worker worker configuration."
+        )
+
     if mp.current_process().name != "MainProcess":
         raise RuntimeError(
             "Parallel rendering must be started from the main process. "
             "Ensure your entry script only calls render code under "
             "if __name__ == '__main__'."
         )
-
-    base_worker_state = {
-        "particles": _make_spawn_safe_render_items(visualizer.particles),
-        "vector_field": (
-            _make_spawn_safe_render_items(visualizer.vector_field)
-            if visualizer.vector_field is not None
-            else None
-        ),
-        "camera": visualizer.camera,
-        "view_matrix": getattr(visualizer, "view_matrix", None),
-        "frame_folder": visualizer.frame_folder,
-        "renderer_resolution": visualizer.renderer_resolution,
-        "renderer_spp": visualizer.renderer_spp,
-    }
 
     workers: list[dict] = []
     selector = selectors.DefaultSelector()
@@ -353,11 +335,10 @@ def render_frames_parallel(visualizer, progress_factory, frame_indices=None) -> 
     except Exception:
         logger.exception(
             "Parallel rendering failed, likely due to worker initialization "
-            "or frame-state serialization. Falling back to serial rendering "
-            "for this run."
+            "or frame-state serialization."
         )
         _force_stop_processes(_worker_processes(workers))
-        _render_serial(visualizer, frame_indices, selected_frame_indices)
+        raise
     finally:
         if not interrupted:
             live_processes = [
