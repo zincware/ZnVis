@@ -3,12 +3,12 @@ Lazy mesh cache policy and background refill management.
 """
 
 import threading
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 
 from rich.progress import Progress
 
 from znvis.visualizer.cache.mesh_cache_policy import MeshCachePolicy, TargetWindow
-from znvis.visualizer.cache.mesh_frame_cache import MeshCacheResult, MeshFrameCache
+from znvis.visualizer.cache.mesh_frame_cache import MeshFrameCache
 
 
 class MeshCacheManager:
@@ -22,9 +22,6 @@ class MeshCacheManager:
         number_of_steps: int,
         cache: MeshFrameCache,
         future_fraction: float = 2 / 3,
-        debug_callback: (
-            Callable[[str, object, int, MeshCacheResult], None] | None
-        ) = None,
         chunk_size: int = 10,
     ):
         """
@@ -44,7 +41,6 @@ class MeshCacheManager:
         self.policy = MeshCachePolicy(future_fraction=future_fraction)
 
         self.chunk_size = chunk_size
-        self.debug_callback = debug_callback
 
         self.complete_frames: set[int] = set()
         self._map_lock = threading.Lock()
@@ -151,7 +147,6 @@ class MeshCacheManager:
 
         for item in self.static_items:
             result = self.cache.get_with_status(item, 0)
-            self.record_result("prefetch", item, 0, result)
             if result.created:
                 completed += 1
                 if progress is not None:
@@ -176,8 +171,6 @@ class MeshCacheManager:
                 if result.evicted_frames:
                     self.complete_frames.difference_update(result.evicted_frames)
 
-                self.record_result("prefetch", item, frame_index, result)
-
                 if result.created:
                     completed += 1
                     if progress is not None:
@@ -196,13 +189,6 @@ class MeshCacheManager:
 
         return completed, False
 
-    def record_result(self, source: str, item, frame_index: int, result) -> None:
-        """
-        Forward cache diagnostics to the owning visualizer when configured.
-        """
-        if self.debug_callback is not None:
-            self.debug_callback(source, item, frame_index, result)
-
     def ensure_current_frame(self, frame_index: int) -> None:
         """
         Synchronously ensure the display frame is cached.
@@ -216,7 +202,6 @@ class MeshCacheManager:
                     self.complete_frames.difference_update(result.evicted_frames)
             if not item.static and not result.stored:
                 frame_is_complete = False
-            self.record_result("current", item, idx, result)
 
         if frame_is_complete:
             with self._map_lock:

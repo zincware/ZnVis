@@ -29,7 +29,6 @@ import pathlib
 import threading
 import time
 import typing
-from dataclasses import dataclass
 
 import open3d as o3d
 import open3d.visualization.gui as gui
@@ -41,25 +40,6 @@ from znvis.rendering import Mitsuba
 from znvis.visualizer.base_visualizer import BaseVisualizer
 from znvis.visualizer.cache.mesh_cache_manager import MeshCacheManager
 from znvis.visualizer.cache.mesh_frame_cache import MeshFrameCache
-
-
-@dataclass
-class MeshCacheDebugStats:
-    """
-    Runtime counters for diagnosing lazy mesh cache behavior.
-    """
-
-    current_calls: int = 0
-    current_created: int = 0
-    current_build_seconds: float = 0.0
-    prefetch_calls: int = 0
-    prefetch_created: int = 0
-    prefetch_build_seconds: float = 0.0
-    prefetch_evictions: int = 0
-    skipped_prefetch: int = 0
-    update_calls: int = 0
-    update_seconds: float = 0.0
-    slow_updates: int = 0
 
 
 class Visualizer(BaseVisualizer):
@@ -180,13 +160,6 @@ class Visualizer(BaseVisualizer):
             max(0.0, float(mesh_cache_future_fraction)),
         )
         self._trajectory_update_pending = False
-        self.mesh_cache_debug = os.getenv("ZNVIS_DEBUG_MESH_CACHE", "") not in (
-            "",
-            "0",
-            "false",
-            "False",
-        )
-        self._mesh_cache_debug_stats = MeshCacheDebugStats()
 
         # Camera Handling
         if keyframe_camera is not None:
@@ -461,33 +434,6 @@ class Visualizer(BaseVisualizer):
             return None
         return int(self.mesh_cache_max_gb * 1024**3)
 
-    def _record_mesh_cache_result(self, source, item, frame_index, result) -> None:
-        """
-        Print cache miss and eviction diagnostics when debug logging is enabled.
-        """
-        stats = self._mesh_cache_debug_stats
-        if source == "current":
-            stats.current_calls += 1
-            if result.created:
-                stats.current_created += 1
-                stats.current_build_seconds += result.build_seconds
-        else:
-            stats.prefetch_calls += 1
-            if result.created:
-                stats.prefetch_created += 1
-                stats.prefetch_build_seconds += result.build_seconds
-            stats.prefetch_evictions += len(result.evicted_frames)
-
-        if result.created or result.evicted:
-            print(
-                "[mesh-cache] "
-                f"{source} frame={frame_index} item={item.name} "
-                f"created={result.created} "
-                f"build={result.build_seconds:.3f}s "
-                f"evicted={result.evicted_frames} "
-                f"bytes={self.mesh_cache.current_bytes / 1024**3:.2f}GiB"
-            )
-
     def _initialize_mesh_cache(self):
         if self.mesh_cache is None:
             self.mesh_cache = MeshFrameCache(
@@ -499,9 +445,6 @@ class Visualizer(BaseVisualizer):
                 number_of_steps=self.number_of_steps,
                 cache=self.mesh_cache,
                 future_fraction=self.mesh_cache_future_fraction,
-                debug_callback=(
-                    self._record_mesh_cache_result if self.mesh_cache_debug else None
-                ),
             )
 
         self.mesh_cache_manager.initialize(
@@ -811,7 +754,6 @@ class Visualizer(BaseVisualizer):
         """
         if visualizer is None:
             visualizer = self.vis
-        start = time.perf_counter()
         old_counter = self.counter
         if step is None:
             frame_step = max(1, int(frame_step))
@@ -849,8 +791,6 @@ class Visualizer(BaseVisualizer):
             )
 
         visualizer.post_redraw()  # re-draw the window.
-        if self.mesh_cache_debug:
-            self._record_update_timing(start)
         return True
 
     def _update_particles_back(self, visualizer=None, step: int = None):
@@ -981,55 +921,13 @@ class Visualizer(BaseVisualizer):
         Output the current counter value.
         """
         print(self.counter)
-        if self.mesh_cache_debug:
-            self._print_mesh_cache_debug_summary()
 
     def _shutdown_cache_manager(self):
         """
         Stop the background mesh cache manager.
         """
-        if self.mesh_cache_debug:
-            self._print_mesh_cache_debug_summary()
         if self.mesh_cache_manager is not None:
             self.mesh_cache_manager.shutdown()
-
-    def _record_update_timing(self, start: float) -> None:
-        """
-        Print slow frame updates when mesh cache debug logging is enabled.
-        """
-        elapsed = time.perf_counter() - start
-        stats = self._mesh_cache_debug_stats
-        stats.update_calls += 1
-        stats.update_seconds += elapsed
-        if elapsed > 1 / max(1, self.frame_rate):
-            stats.slow_updates += 1
-            print(
-                "[mesh-cache] "
-                f"slow update frame={self.counter} "
-                f"elapsed={elapsed:.3f}s "
-                f"target={1 / max(1, self.frame_rate):.3f}s"
-            )
-
-    def _print_mesh_cache_debug_summary(self) -> None:
-        """
-        Print aggregated mesh cache diagnostics.
-        """
-        stats = self._mesh_cache_debug_stats
-        average_update = (
-            stats.update_seconds / stats.update_calls if stats.update_calls else 0.0
-        )
-        print(
-            "[mesh-cache] summary "
-            f"current={stats.current_created}/{stats.current_calls} misses "
-            f"({stats.current_build_seconds:.3f}s builds), "
-            f"prefetch={stats.prefetch_created}/{stats.prefetch_calls} misses "
-            f"({stats.prefetch_build_seconds:.3f}s builds), "
-            f"prefetch_evictions={stats.prefetch_evictions}, "
-            f"skipped_prefetch={stats.skipped_prefetch}, "
-            f"slow_updates={stats.slow_updates}/{stats.update_calls}, "
-            f"avg_update={average_update:.3f}s, "
-            f"cached_ranges={self.mesh_cache_manager.get_cached_frame_ranges()}"
-        )
 
     def run_visualization(self):
         """
