@@ -11,7 +11,6 @@ from znvis.visualizer.parallel.parallel_render_manager import (
     _render_frame_parallel_worker,
 )
 
-
 _PROTOCOL_STREAM = None
 
 
