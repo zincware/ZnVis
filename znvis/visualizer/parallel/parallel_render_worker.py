@@ -12,9 +12,25 @@ from znvis.visualizer.parallel.parallel_render_manager import (
 )
 
 
+_PROTOCOL_STREAM = None
+
+
+def _isolate_protocol_stdout() -> None:
+    """Keep worker JSON on the stdout pipe and move noisy stdout to stderr."""
+    global _PROTOCOL_STREAM
+    if _PROTOCOL_STREAM is not None:
+        return
+
+    protocol_fd = os.dup(sys.stdout.fileno())
+    _PROTOCOL_STREAM = os.fdopen(protocol_fd, "w", buffering=1)
+    os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
+    sys.stdout = os.fdopen(sys.stdout.fileno(), "w", buffering=1, closefd=False)
+
+
 def _emit(payload: dict) -> None:
     """Emit one JSON message line to stdout for the parent scheduler."""
-    print(json.dumps(payload), flush=True)
+    stream = _PROTOCOL_STREAM if _PROTOCOL_STREAM is not None else sys.stdout
+    print(json.dumps(payload), file=stream, flush=True)
 
 
 def _worker_payload(
@@ -33,6 +49,8 @@ def _worker_payload(
 
 def main() -> int:
     """Run the worker message loop for one GPU-pinned subprocess."""
+    _isolate_protocol_stdout()
+
     state_path, gpu_id_arg = sys.argv[1:3]
     gpu_id = int(gpu_id_arg)
     cuda_visible_device = os.getenv("CUDA_VISIBLE_DEVICES", "")

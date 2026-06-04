@@ -184,6 +184,33 @@ def _stop_worker(worker: dict) -> None:
     process.stdin.flush()
 
 
+def _parse_worker_payload(line: str, phase: str) -> dict | None:
+    """Parse one worker protocol line, ignoring unrelated stdout noise."""
+    raw_line = line.strip()
+    if not raw_line:
+        return None
+
+    try:
+        payload = json.loads(raw_line)
+    except json.JSONDecodeError:
+        logger.warning(
+            "Ignoring non-JSON output from parallel render worker during %s: %s",
+            phase,
+            raw_line,
+        )
+        return None
+
+    if not isinstance(payload, dict) or "status" not in payload:
+        logger.warning(
+            "Ignoring malformed parallel render worker payload during %s: %s",
+            phase,
+            raw_line,
+        )
+        return None
+
+    return payload
+
+
 def _wait_until_ready(selector, workers: list[dict]) -> None:
     """Wait until all workers emit a ready status."""
     ready_workers = 0
@@ -202,7 +229,9 @@ def _wait_until_ready(selector, workers: list[dict]) -> None:
                 raise RuntimeError(
                     "A parallel render worker closed stdout before becoming ready."
                 )
-            payload = json.loads(line)
+            payload = _parse_worker_payload(line, "startup")
+            if payload is None:
+                continue
             if payload["status"] != "ready":
                 raise RuntimeError(
                     f"Unexpected parallel worker startup message: {payload}"
@@ -305,7 +334,9 @@ def render_frames_parallel(
                             selector.unregister(key.fileobj)
                             continue
 
-                        payload = json.loads(line)
+                        payload = _parse_worker_payload(line, "rendering")
+                        if payload is None:
+                            continue
                         if payload["status"] == "error":
                             raise RuntimeError(
                                 "Parallel render worker failed "
@@ -313,7 +344,6 @@ def render_frames_parallel(
                                 f"gpu_id={payload['gpu_id']} "
                                 f"frame={payload['frame']}:\n{payload['error']}"
                             )
-
                         completed_frames += 1
                         progress.update(task, advance=1)
 
