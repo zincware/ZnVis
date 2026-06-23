@@ -18,11 +18,15 @@ If you use this module please cite us with:
 
 Summary
 -------
-Module for the visualizer class.
+Package for the ZnVis Cameras.
 """
 
-from .base_visualizer import BaseVisualizer
-from .headless_visualizer import HeadlessVisualizer
-from .visualizer import Visualizer
+from znvis.camera_trajectories.base_trajectory import BaseTrajectory
+from znvis.camera_trajectories.circular_trajectory import CircularTrajectory
+from znvis.camera_trajectories.zooming_trajectory import ZoomingTrajectory
 
-__all__ = ["BaseVisualizer", "Visualizer", "HeadlessVisualizer"]
+__all__ = [
+    BaseTrajectory.__name__,
+    CircularTrajectory.__name__,
+    ZoomingTrajectory.__name__,
+]

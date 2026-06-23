@@ -46,42 +46,63 @@ class TestParticle(unittest.TestCase):
         cls.material = Material(colour=np.zeros((10, 10, 3)))
         name = "my_particle"
         position = np.random.uniform(-5, 5, (10, 2, 3))
-
+        director = np.random.uniform(-5, 5, (10, 2, 3))
         cls.particle = Particle(
             name=name,
             position=position,
+            director=director,
             mesh=Sphere(material=cls.material),
         )
 
         static_name = "my_static_particle"
         static_position = np.random.uniform(-5, 5, (2, 3))
-
+        static_director = np.random.uniform(-5, 5, (2, 3))
         cls.static_particle = Particle(
             name=static_name,
             position=static_position,
+            director=static_director,
             mesh=Sphere(),
             static=True,
             smoothing=True,
-            director=np.random.uniform(-5, 5, (2, 3)),
         )
 
         empty_name = "my_empty_particle"
-
         cls.empty_particle = Particle(
-            name=empty_name, mesh=Sphere(), position=np.array([])
+            name=empty_name, mesh=Sphere(), position=np.array([]), director=np.array([])
         )
 
         nan_name = "my_nan_particle"
-
+        nan_position = [np.full((2, 3), np.nan) for _ in range(10)]
         cls.nan_particle = Particle(
-            name=nan_name, mesh=Sphere(), position=np.full_like(position, np.nan)
+            name=nan_name,
+            mesh=Sphere(),
+            position=nan_position,
+            director=nan_position.copy(),
         )
 
-        none_pos_name = "my_none_pos_particle"
-
-        cls.none_pos_particle = Particle(
-            name=none_pos_name, mesh=Sphere(), position=None
+        configuration_warning_name = "my_static_mixing_particle"
+        configuration_warning_position = np.random.uniform(-5, 5, (1, 2, 3))
+        configuration_warning_director = np.random.uniform(-5, 5, (1, 2, 3))
+        cls.configuration_warning_particle = Particle(
+            name=configuration_warning_name,
+            position=configuration_warning_position,
+            director=configuration_warning_director,
+            mesh=Sphere(),
+            static=True,
+            smoothing=True,
         )
+
+    def test_configuration_warning(self):
+        """
+        Test the construct_mesh_list method for a static mesh.
+
+        Returns
+        -------
+        Tests whether the list was created properly.
+        """
+        self.configuration_warning_particle.construct_mesh_list()
+        assert self.configuration_warning_particle.position[0].shape == (2, 3)
+        assert self.configuration_warning_particle.director[0].shape == (2, 3)
 
     def test_initialization(self):
         """
@@ -93,21 +114,22 @@ class TestParticle(unittest.TestCase):
         """
         self.assertEqual(type(self.particle.mesh), Sphere)
         self.assertEqual(self.particle.name, "my_particle")
-        np.testing.assert_array_equal(self.particle.position.shape, (10, 2, 3))
+        self.assertEqual(len(self.particle.position), 10)
+        self.assertEqual(self.particle.position[0].shape, (2, 3))
 
-    def test_construct_mesh_dict(self):
+    def test_construct_mesh_list(self):
         """
-        Test the construct_mesh_dict method.
+        Test the construct_mesh_list method.
 
         Returns
         -------
-        Tests whether the dict was created properly.
+        Tests whether the list was created properly.
         """
-        # Build the mesh dict
+        # Build the mesh list
         self.particle.construct_mesh_list()
 
-        # Check that all time steps are in the dict.
-        self.assertEqual(len(self.particle.mesh_list), self.particle.position.shape[0])
+        # Check that all time steps are in the list.
+        self.assertEqual(len(self.particle.mesh_list), len(self.particle.position))
 
     def test_static_initialization(self):
         """
@@ -122,18 +144,21 @@ class TestParticle(unittest.TestCase):
         # NOTE
         # What behavior is needed here?
         # np.testing.assert_array_equal(self.static_particle.position.shape, (1, 2, 3))
-        self.assertEqual(self.static_particle.static, True)
-        self.assertEqual(self.static_particle.smoothing, True)
+        self.assertTrue(self.static_particle.static)
+        self.assertTrue(self.static_particle.smoothing)
 
-    def test_construct_static_mesh_dict(self):
-        # Build the mesh dict
-        np.testing.assert_array_equal(self.static_particle.position.shape, (2, 3))
+    def test_construct_static_mesh_list(self):
+        """
+        Test the construct_mesh_list method for a static mesh.
+
+        Returns
+        -------
+        Tests whether the list was created properly.
+        """
+        self.assertEqual(np.asarray(self.static_particle.position).shape, (2, 3))
         self.static_particle.construct_mesh_list()
-        np.testing.assert_array_equal(self.static_particle.position.shape, (1, 2, 3))
-        # Check that all time steps are in the dict.
-        self.assertEqual(
-            len(self.static_particle.mesh_list), self.static_particle.position.shape[0]
-        )
+
+        self.assertEqual(np.asarray(self.static_particle.position)[0].shape, (2, 3))
 
     def test_empty_initialization(self):
         """
@@ -146,51 +171,45 @@ class TestParticle(unittest.TestCase):
         self.assertEqual(type(self.empty_particle.mesh), Sphere)
         self.assertEqual(self.empty_particle.name, "my_empty_particle")
 
-    def test_construct_empty_mesh_dict(self):
+    def test_construct_empty_mesh_list(self):
         """
-        Test the construct_mesh_dict method for a static mesh.
+        Test the construct_mesh_list method for an empty mesh.
 
         Returns
         -------
-        Tests whether the dict was created properly.
+        Tests if the ValueError is thrown.
         """
-        # Attempt to build the mesh dict
-
-        with self.assertRaises((IndexError)) as context:
+        with self.assertRaises((ValueError)) as context:
             self.empty_particle.construct_mesh_list()
         # Check if error message is correct
-        self.assertEqual(
-            str(context.exception), "The provided data has an incompatible shape."
-        )
+        self.assertIn("The provided position array is empty.", str(context.exception))
 
-    def test_construct_nan_mesh_dict(self):
+        self.empty_particle.position = np.random.uniform(-5, 5, (2, 2, 3))
+        self.empty_particle.construct_mesh_list()
+        assert self.empty_particle.director is None
+
+    def test_construct_nan_mesh_list(self):
         """
-        Test the construct_mesh_dict method for a particle with nans in the trajectory.
+        Test the construct_mesh_list method for a particle with nans in the trajectory.
 
         Returns
         -------
-        Tests whether the dict was created properly.
+        Tests whether the list was created properly.
         """
-        # Attempt to build the mesh dict
-
         with self.assertRaises((ValueError)) as context:
             self.nan_particle.construct_mesh_list()
-        # Check if error message is correct
-        self.assertEqual(
-            str(context.exception), "The provided data contains NaN values."
+        self.assertIn(
+            "The provided position data contains at least one "
+            "NaN value at time step 0.",
+            str(context.exception),
         )
 
-    def test_construct_none_pos_mesh_dict(self):
-        """
-        Test the construct_mesh_dict method for a particle with position=None.
-
-        Returns
-        -------
-        Tests whether the dict was created properly.
-        """
-        # Attempt to build the mesh dict
-
+        self.nan_particle.position = np.random.uniform(-5, 5, (2, 2, 3))
+        self.nan_particle.director = np.full((2, 2, 3), np.nan)
         with self.assertRaises((ValueError)) as context:
-            self.none_pos_particle.construct_mesh_list()
-        # Check if error message is correct
-        self.assertEqual(str(context.exception), "Position data cannot be None.")
+            self.nan_particle.construct_mesh_list()
+        self.assertIn(
+            "The provided director data contains at least one "
+            "NaN value at time step 0.",
+            str(context.exception),
+        )

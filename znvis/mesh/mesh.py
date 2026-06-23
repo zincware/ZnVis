@@ -48,6 +48,12 @@ class Mesh:
         """
         Post init function to create materials.
         """
+        self._build_o3d_material()
+
+    def _build_o3d_material(self):
+        """
+        Build the Open3D material record from ZnVis material parameters.
+        """
         material = rendering.MaterialRecord()
         self.material.colour = np.array(self.material.colour)
         if self.material.colour.ndim != 3:
@@ -59,6 +65,21 @@ class Mesh:
         material.base_anisotropy = self.material.anisotropy
 
         self.o3d_material = material
+
+    def __getstate__(self):
+        """
+        Drop non-picklable Open3D material state for multiprocessing spawn.
+        """
+        state = self.__dict__.copy()
+        state.pop("o3d_material", None)
+        return state
+
+    def __setstate__(self, state):
+        """
+        Restore pickled state and rebuild Open3D material state.
+        """
+        self.__dict__.update(state)
+        self._build_o3d_material()
 
     def instantiate_mesh(
         self, starting_position: np.ndarray, starting_orientation: np.ndarray = None

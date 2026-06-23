@@ -22,7 +22,7 @@ Summary
 init file for the main ZnVis package.
 """
 
-from znvis import rendering
+from znvis import cameras, rendering
 from znvis.bounding_objects.bounding_box import BoundingBox
 from znvis.material.material import Material
 from znvis.mesh.arrow import Arrow
@@ -38,6 +38,7 @@ from znvis.mesh.tetrahedron import Tetrahedron
 from znvis.mesh.torus import Torus
 from znvis.particle.particle import Particle
 from znvis.particle.vector_field import VectorField
+from znvis.visualizer.headless_visualizer import HeadlessVisualizer
 from znvis.visualizer.visualizer import Visualizer
 
 __all__ = [
@@ -53,9 +54,11 @@ __all__ = [
     MobiusLoop.__name__,
     VectorField.__name__,
     Visualizer.__name__,
+    HeadlessVisualizer.__name__,
     Cylinder.__name__,
     CustomMesh.__name__,
     BoundingBox.__name__,
     Material.__name__,
-    rendering.__name__,
+    "rendering",
+    "cameras",
 ]

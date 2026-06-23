@@ -38,7 +38,7 @@ class TestDifferentShapes:
 
     def test_run(self):
         """
-        Run the simple spheres tutorial and ensure it does not throw
+        Run the different_shapes tutorial and ensure it does not throw
         exceptions.
 
         Returns

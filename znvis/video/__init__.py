@@ -15,14 +15,11 @@ web: https://zincwarecode.com/
 Citation
 --------
 If you use this module please cite us with:
-
 Summary
 -------
-Module for the visualizer class.
+Video utilities for ZnVis.
 """
 
-from .base_visualizer import BaseVisualizer
-from .headless_visualizer import HeadlessVisualizer
-from .visualizer import Visualizer
+from .video_manager import VideoManager
 
-__all__ = ["BaseVisualizer", "Visualizer", "HeadlessVisualizer"]
+__all__ = ["VideoManager"]
