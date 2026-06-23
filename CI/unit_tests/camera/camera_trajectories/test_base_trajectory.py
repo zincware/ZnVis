@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from znvis.cameras.trajectories import BaseTrajectory
+from znvis.camera_trajectories import BaseTrajectory
 
 
 class BaseTrajectoryTester(unittest.TestCase):

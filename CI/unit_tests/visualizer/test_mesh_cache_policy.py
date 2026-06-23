@@ -25,7 +25,7 @@ Tests for pure lazy mesh cache policy math.
 
 import unittest
 
-from znvis.visualizer.cache.mesh_cache_policy import MeshCachePolicy
+from znvis.mesh_cache.mesh_cache_policy import MeshCachePolicy
 
 
 class TestMeshCachePolicy(unittest.TestCase):

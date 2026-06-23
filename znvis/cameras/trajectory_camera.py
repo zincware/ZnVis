@@ -23,8 +23,8 @@ Module for the TrajectoryCamera class.
 
 import numpy as np
 
+from znvis.camera_trajectories.base_trajectory import BaseTrajectory
 from znvis.cameras.base_camera import BaseCamera
-from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
 
 
 class TrajectoryCamera(BaseCamera):

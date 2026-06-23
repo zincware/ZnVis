@@ -27,8 +27,8 @@ import unittest
 
 import numpy as np
 
-from znvis.visualizer.cache.mesh_cache_manager import MeshCacheManager
-from znvis.visualizer.cache.mesh_frame_cache import MeshFrameCache
+from znvis.mesh_cache.mesh_cache_manager import MeshCacheManager
+from znvis.mesh_cache.mesh_frame_cache import MeshFrameCache
 
 
 class DummyMesh:

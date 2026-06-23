@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from znvis.cameras.trajectories import CircularTrajectory
+from znvis.camera_trajectories import CircularTrajectory
 
 
 class CircularTrajectoryTester(unittest.TestCase):

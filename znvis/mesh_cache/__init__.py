@@ -18,11 +18,11 @@ If you use this module please cite us with:
 
 Summary
 -------
-Package for the ZnVis Cameras.
+Package for the Mesh-Cache
 """
 
-from znvis.visualizer.parallel.parallel_render_manager import render_frames_parallel
+from znvis.mesh_cache.mesh_cache_manager import MeshCacheManager
 
 __all__ = [
-    "render_frames_parallel",
+    MeshCacheManager.__name__,
 ]

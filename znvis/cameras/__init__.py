@@ -21,7 +21,6 @@ Summary
 Package for the ZnVis Cameras.
 """
 
-from znvis.cameras import trajectories
 from znvis.cameras.base_camera import BaseCamera
 from znvis.cameras.keyframe_camera import KeyframeCamera
 from znvis.cameras.particle_following_camera import ParticleFollowingCamera
@@ -34,5 +33,4 @@ __all__ = [
     StaticCamera.__name__,
     ParticleFollowingCamera.__name__,
     TrajectoryCamera.__name__,
-    "trajectories",
 ]

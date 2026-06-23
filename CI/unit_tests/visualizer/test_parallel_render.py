@@ -27,7 +27,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-import znvis.visualizer.parallel.parallel_render_manager as parallel_render_manager
+import znvis.parallel_render.parallel_render_manager as parallel_render_manager
 
 
 class _DummyProgress:
@@ -89,7 +89,7 @@ class TestParallelRender(unittest.TestCase):
                 config["parallel_render_workers"], config["available_gpu_devices"]
             )
 
-    @patch("znvis.visualizer.parallel.parallel_render_manager.subprocess.Popen")
+    @patch("znvis.parallel_render.parallel_render_manager.subprocess.Popen")
     def test_start_worker_process_pins_cuda_visible_device(self, popen_mock):
         spec = parallel_render_manager._WorkerSpec(gpu_id=1, cuda_visible_device="3")
 
@@ -114,7 +114,7 @@ class TestParallelRender(unittest.TestCase):
         ):
             parallel_render_manager.render_frames_parallel(config, _DummyProgress)
 
-    @patch("znvis.visualizer.parallel.parallel_render_manager.mp.current_process")
+    @patch("znvis.parallel_render.parallel_render_manager.mp.current_process")
     def test_non_main_process_raises(self, current_process_mock):
         config = self._make_render_config(workers=2, gpus=2)
         current_process_mock.return_value = SimpleNamespace(name="SpawnProcess-1")
@@ -122,8 +122,8 @@ class TestParallelRender(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             parallel_render_manager.render_frames_parallel(config, _DummyProgress)
 
-    @patch("znvis.visualizer.parallel.parallel_render_manager.mp.current_process")
-    @patch("znvis.visualizer.parallel.parallel_render_manager._start_worker_process")
+    @patch("znvis.parallel_render.parallel_render_manager.mp.current_process")
+    @patch("znvis.parallel_render.parallel_render_manager._start_worker_process")
     def test_worker_start_failure_bubbles_up_exception(
         self, start_worker_mock, current_process_mock
     ):
@@ -134,12 +134,10 @@ class TestParallelRender(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "boom"):
             parallel_render_manager.render_frames_parallel(config, _DummyProgress)
 
-    @patch(
-        "znvis.visualizer.parallel.parallel_render_manager.selectors.DefaultSelector"
-    )
-    @patch("znvis.visualizer.parallel.parallel_render_manager._force_stop_processes")
-    @patch("znvis.visualizer.parallel.parallel_render_manager.mp.current_process")
-    @patch("znvis.visualizer.parallel.parallel_render_manager._start_worker_process")
+    @patch("znvis.parallel_render.parallel_render_manager.selectors.DefaultSelector")
+    @patch("znvis.parallel_render.parallel_render_manager._force_stop_processes")
+    @patch("znvis.parallel_render.parallel_render_manager.mp.current_process")
+    @patch("znvis.parallel_render.parallel_render_manager._start_worker_process")
     def test_keyboard_interrupt_cleans_up_workers(
         self,
         start_worker_mock,

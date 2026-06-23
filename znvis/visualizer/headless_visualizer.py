@@ -33,12 +33,12 @@ from rich.progress import Progress
 
 import znvis
 from znvis import cameras
-from znvis.rendering import Mitsuba
-from znvis.visualizer.base_visualizer import BaseVisualizer, build_mesh_dict_for_frame
-from znvis.visualizer.parallel.parallel_render_manager import (
+from znvis.parallel_render.parallel_render_manager import (
     make_spawn_safe_render_items,
     render_frames_parallel,
 )
+from znvis.rendering import Mitsuba
+from znvis.visualizer.base_visualizer import BaseVisualizer, build_mesh_dict_for_frame
 
 
 class HeadlessVisualizer(BaseVisualizer):

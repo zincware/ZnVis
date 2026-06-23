@@ -27,7 +27,7 @@ import unittest
 
 import numpy as np
 
-from znvis.visualizer.cache.mesh_frame_cache import MeshFrameCache, estimate_mesh_nbytes
+from znvis.mesh_cache.mesh_frame_cache import MeshFrameCache, estimate_mesh_nbytes
 
 
 class DummyMesh:

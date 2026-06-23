@@ -18,11 +18,15 @@ If you use this module please cite us with:
 
 Summary
 -------
-Package for the Mesh-Cache
+Package for the ZnVis Cameras.
 """
 
-from znvis.visualizer.cache.mesh_cache_manager import MeshCacheManager
+from znvis.camera_trajectories.base_trajectory import BaseTrajectory
+from znvis.camera_trajectories.circular_trajectory import CircularTrajectory
+from znvis.camera_trajectories.zooming_trajectory import ZoomingTrajectory
 
 __all__ = [
-    MeshCacheManager.__name__,
+    BaseTrajectory.__name__,
+    CircularTrajectory.__name__,
+    ZoomingTrajectory.__name__,
 ]

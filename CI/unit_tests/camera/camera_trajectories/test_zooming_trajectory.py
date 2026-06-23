@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from znvis.cameras.trajectories import ZoomingTrajectory
+from znvis.camera_trajectories import ZoomingTrajectory
 
 
 class ZoomingTrajectoryTester(unittest.TestCase):

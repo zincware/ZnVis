@@ -21,12 +21,8 @@ Summary
 Package for the ZnVis Cameras.
 """
 
-from znvis.cameras.trajectories.base_trajectory import BaseTrajectory
-from znvis.cameras.trajectories.circular_trajectory import CircularTrajectory
-from znvis.cameras.trajectories.zooming_trajectory import ZoomingTrajectory
+from znvis.parallel_render.parallel_render_manager import render_frames_parallel
 
 __all__ = [
-    BaseTrajectory.__name__,
-    CircularTrajectory.__name__,
-    ZoomingTrajectory.__name__,
+    "render_frames_parallel",
 ]

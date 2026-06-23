@@ -36,10 +36,10 @@ from rich.progress import Progress
 
 import znvis
 from znvis.cameras import KeyframeCamera
+from znvis.mesh_cache.mesh_cache_manager import MeshCacheManager
+from znvis.mesh_cache.mesh_frame_cache import MeshFrameCache
 from znvis.rendering import Mitsuba
 from znvis.visualizer.base_visualizer import BaseVisualizer
-from znvis.visualizer.cache.mesh_cache_manager import MeshCacheManager
-from znvis.visualizer.cache.mesh_frame_cache import MeshFrameCache
 
 
 class Visualizer(BaseVisualizer):

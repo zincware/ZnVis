@@ -7,8 +7,8 @@ from collections.abc import Iterable
 
 from rich.progress import Progress
 
-from znvis.visualizer.cache.mesh_cache_policy import MeshCachePolicy, TargetWindow
-from znvis.visualizer.cache.mesh_frame_cache import MeshFrameCache
+from znvis.mesh_cache.mesh_cache_policy import MeshCachePolicy, TargetWindow
+from znvis.mesh_cache.mesh_frame_cache import MeshFrameCache
 
 
 class MeshCacheManager:
