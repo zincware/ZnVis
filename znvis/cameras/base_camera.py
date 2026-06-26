@@ -181,7 +181,7 @@ class BaseCamera:
 
         x = np.cross(up, z)
         x_norm = np.linalg.norm(x)
-        
+
         if x_norm < 1e-7:
             x = np.array([1.0, 0.0, 0.0])
         else:
