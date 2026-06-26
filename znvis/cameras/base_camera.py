@@ -173,10 +173,19 @@ class BaseCamera:
                 The view matrix of the camera.
         """
         z = eye - center
-        z = z / np.linalg.norm(z)
+        z_norm = np.linalg.norm(z)
+        if z_norm < 1e-7:
+            z = np.array([0.0, 0.0, 1.0])
+        else:
+            z = z / np.linalg.norm(z)
 
         x = np.cross(up, z)
-        x = x / np.linalg.norm(x)
+        x_norm = np.linalg.norm(x)
+        
+        if x_norm < 1e-7:
+            x = np.array([1.0, 0.0, 0.0])
+        else:
+            x = x / np.linalg.norm(x)
 
         y = np.cross(z, x)
 
