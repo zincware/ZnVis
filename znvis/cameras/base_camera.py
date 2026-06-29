@@ -174,19 +174,25 @@ class BaseCamera:
         """
         z = eye - center
         z_norm = np.linalg.norm(z)
-        if z_norm < 1e-7:
-            z = np.array([0.0, 0.0, 1.0])
-        else:
-            z = z / np.linalg.norm(z)
 
+        if z_norm < 1e-7:
+            raise ValueError("Eye and center points are too close or identical.")
+        z = z / z_norm
+
+        up_norm = np.linalg.norm(up)
+        if up_norm < 1e-7:
+            raise ValueError("The 'up' vector cannot be a zero vector.")
+        up = up / up_norm
         x = np.cross(up, z)
         x_norm = np.linalg.norm(x)
 
         if x_norm < 1e-7:
-            x = np.array([1.0, 0.0, 0.0])
-        else:
-            x = x / np.linalg.norm(x)
+            raise ValueError(
+                "The 'up' vector is parallel to the camera view direction. "
+                "Choose a different 'up' vector."
+            )
 
+        x = x / x_norm
         y = np.cross(z, x)
 
         view_matrix = np.array(
