@@ -21,7 +21,11 @@ Summary
 Module for the BaseCamera parent class.
 """
 
+import logging
+
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class BaseCamera:
@@ -176,21 +180,39 @@ class BaseCamera:
         z_norm = np.linalg.norm(z)
 
         if z_norm < 1e-7:
-            raise ValueError("Eye and center points are too close or identical.")
-        z = z / z_norm
+            logger.warning(
+                "Eye and center points are too close or identical. "
+                "Falling back to default z-direction [0, 0, 1]."
+            )
+            z = np.array([0.0, 0.0, 1.0])
+        else:
+            z = z / z_norm
 
         up_norm = np.linalg.norm(up)
         if up_norm < 1e-7:
-            raise ValueError("The 'up' vector cannot be a zero vector.")
-        up = up / up_norm
+            logger.warning(
+                "The 'up' vector is a zero vector. "
+                "Falling back to default [0, 1, 0]."
+            )
+            up = np.array([0.0, 1.0, 0.0])
+        else:
+            up = up / up_norm
         x = np.cross(up, z)
         x_norm = np.linalg.norm(x)
 
         if x_norm < 1e-7:
-            raise ValueError(
+            logger.warning(
                 "The 'up' vector is parallel to the camera view direction. "
-                "Choose a different 'up' vector."
+                "Falling back to an orthogonal axis."
             )
+            # Check if camera looks up the y direction
+            if abs(z[1]) > 0.9:
+                up = np.array([1.0, 0.0, 0.0])
+            else:
+                up = np.array([0.0, 1.0, 0.0])
+
+            x = np.cross(up, z)
+            x_norm = np.linalg.norm(x)
 
         x = x / x_norm
         y = np.cross(z, x)
