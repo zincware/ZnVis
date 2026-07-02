@@ -157,7 +157,7 @@ def _start_worker_process(spec: _WorkerSpec, state_path: str):
         [
             sys.executable,
             "-m",
-            "znvis.visualizer.parallel.parallel_render_worker",
+            "znvis.parallel_render.parallel_render_worker",
             state_path,
             str(spec.gpu_id),
         ],
