@@ -95,6 +95,8 @@ class TestParallelRender(unittest.TestCase):
 
         parallel_render_manager._start_worker_process(spec, "/tmp/state.pkl")
 
+        args = popen_mock.call_args.args[0]
+        self.assertEqual(args[2], "znvis.parallel_render.parallel_render_worker")
         env = popen_mock.call_args.kwargs["env"]
         self.assertEqual(env["CUDA_VISIBLE_DEVICES"], "3")
 
