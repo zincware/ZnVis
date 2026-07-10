@@ -57,7 +57,13 @@ class CustomMesh(Mesh):
         mesh = o3d.io.read_triangle_mesh(self.file)
         mesh.compute_vertex_normals()
         mesh.scale(self.scale, center=mesh.get_center())
-        mesh.translate(starting_position.astype(float))
+        starting_position = np.asarray(starting_position, dtype=float).reshape(-1)
+        if starting_position.size != 3:
+            raise ValueError(
+                "starting_position must describe exactly one 3D point, got "
+                f"shape {starting_position.shape}."
+            )
+        mesh.translate(starting_position)
         if starting_orientation is not None:
             matrix = rotation_matrix(self.base_direction, starting_orientation)
             mesh.rotate(matrix)

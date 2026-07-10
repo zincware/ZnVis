@@ -60,7 +60,13 @@ class Arrow(Mesh):
             mesh.rotate(matrix, center=(0, 0, 0))
 
         # Translate the arrow to the starting position and center the origin
-        mesh.translate(starting_position.astype(float))
+        starting_position = np.asarray(starting_position, dtype=float).reshape(-1)
+        if starting_position.size != 3:
+            raise ValueError(
+                "starting_position must describe exactly one 3D point, got "
+                f"shape {starting_position.shape}."
+            )
+        mesh.translate(starting_position)
 
         return mesh
 

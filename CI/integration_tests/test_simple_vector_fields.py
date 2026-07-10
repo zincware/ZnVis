@@ -110,6 +110,15 @@ class TestSimpleVectorFields:
             "Dynamic", mesh=dyn_mesh, position=dynamic_pos, direction=dynamic_directors
         )
 
+        position = np.array([[1.0, 2.0, 3.0]])
+        direction = np.array([[0.0, 0.0, 1.0]])
+        single_particle_field = vis.VectorField(
+            "single",
+            mesh=vis.Arrow(scale=1.0, material=Material()),
+            position=position,
+            direction=direction,
+        )
+
         # Create a bounding box
         bounding_box = vis.BoundingBox(
             center=np.array([0, 0, 0]),
@@ -123,6 +132,7 @@ class TestSimpleVectorFields:
             vector_field=[
                 static_field,
                 dynamic_field,
+                single_particle_field,
             ],
             frame_rate=20,
             bounding_box=bounding_box,

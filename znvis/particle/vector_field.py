@@ -115,10 +115,8 @@ class VectorField:
 
         try:
             if not self.static:
-                n_particles = int(self.position.shape[1])
                 n_time_steps = int(self.position.shape[0])
             else:
-                n_particles = int(self.position.shape[0])
                 n_time_steps = 1
                 self.position = self.position[np.newaxis, :, :]
                 self.direction = self.direction[np.newaxis, :, :]
@@ -131,19 +129,15 @@ class VectorField:
         new_mesh = True
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
-            for j in range(n_particles):
-                if (
-                    np.max(np.abs(self.direction[i][j])) > 0
-                ):  # ignore vectors with length zero
+            pos_frame = np.atleast_2d(self.position[i])
+            dir_frame = np.atleast_2d(self.direction[i])
+            for j in range(pos_frame.shape[0]):
+                if np.max(np.abs(dir_frame[j])) > 0:  # ignore vectors with length zero
                     if new_mesh is True:
-                        mesh = self._create_mesh(
-                            self.position[i][j], self.direction[i][j], i, j
-                        )
+                        mesh = self._create_mesh(pos_frame[j], dir_frame[j], i, j)
                         new_mesh = False
                     else:
-                        mesh += self._create_mesh(
-                            self.position[i][j], self.direction[i][j], i, j
-                        )
+                        mesh += self._create_mesh(pos_frame[j], dir_frame[j], i, j)
 
             new_mesh = True
 
@@ -172,6 +166,8 @@ class VectorField:
             dir_frame = self.direction[frame_index]
             time_index = frame_index
 
+        pos_frame = np.atleast_2d(pos_frame)
+        dir_frame = np.atleast_2d(dir_frame)
         n_particles = int(pos_frame.shape[0])
         new_mesh = True
         mesh = None
