@@ -112,6 +112,8 @@ class VectorField:
             raise ValueError("Position data cannot be None.")
         if self.direction is None:
             raise ValueError("Director data cannot be None.")
+        if self.position.size == 0 or self.direction.size == 0:
+            raise IndexError("The provided data has an incompatible shape.")
 
         try:
             if not self.static:
