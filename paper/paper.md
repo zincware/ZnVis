@@ -9,6 +9,15 @@ tags:
 authors:
   - name: Samuel Tovey
     orcid: 0000-0001-9537-8361
+    equal-contrib: true
+    corresponding: true
+    affiliation: 1
+  - name: Jannik Drotleff
+    equal-contrib: true
+    affiliation: 1
+  - name: Christoph Lohrmann
+    affiliation: 1
+  - name: David Zimmer
     affiliation: 1
 affiliations:
   - name: Institute for Computational Physics, University of Stuttgart, Germany
