@@ -39,7 +39,7 @@ class TestSimpleVectorFields:
 
     def test_run(self):
         """
-        Run the simple spheres tutorial and ensure it does not throw
+        Run the simple vector fields tutorial and ensure it does not throw
         exceptions.
 
         Returns

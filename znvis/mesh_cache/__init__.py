@@ -18,11 +18,11 @@ If you use this module please cite us with:
 
 Summary
 -------
-Module for the visualizer class.
+Package for the Mesh-Cache
 """
 
-from .base_visualizer import BaseVisualizer
-from .headless_visualizer import HeadlessVisualizer
-from .visualizer import Visualizer
+from znvis.mesh_cache.mesh_cache_manager import MeshCacheManager
 
-__all__ = ["BaseVisualizer", "Visualizer", "HeadlessVisualizer"]
+__all__ = [
+    MeshCacheManager.__name__,
+]

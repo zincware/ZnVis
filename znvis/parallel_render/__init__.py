@@ -18,11 +18,11 @@ If you use this module please cite us with:
 
 Summary
 -------
-Module for the visualizer class.
+Package for the ZnVis Cameras.
 """
 
-from .base_visualizer import BaseVisualizer
-from .headless_visualizer import HeadlessVisualizer
-from .visualizer import Visualizer
+from znvis.parallel_render.parallel_render_manager import render_frames_parallel
 
-__all__ = ["BaseVisualizer", "Visualizer", "HeadlessVisualizer"]
+__all__ = [
+    "render_frames_parallel",
+]

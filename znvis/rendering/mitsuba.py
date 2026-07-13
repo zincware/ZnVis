@@ -44,6 +44,8 @@ default_scene_dict = {
     "sensor": {
         "type": "perspective",
         "fov": 90,
+        "near_clip": 0.01,
+        "far_clip": 20000,
         "thefilm": {
             "type": "hdrfilm",
             "width": 4096,
