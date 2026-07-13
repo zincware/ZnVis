@@ -10,7 +10,6 @@ from znvis.camera_trajectories import ZoomingTrajectory
 
 
 class ZoomingTrajectoryTester(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         """

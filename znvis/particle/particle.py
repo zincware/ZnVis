@@ -21,7 +21,6 @@ Summary
 Module for the particle parent class
 """
 
-import typing
 from dataclasses import dataclass
 
 import numpy as np
@@ -68,11 +67,11 @@ class Particle:
 
     name: str
     mesh: Mesh = None
-    position: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    velocity: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    force: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    director: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    mesh_list: typing.List[Mesh] = None
+    position: np.ndarray | list[np.ndarray] = None
+    velocity: np.ndarray | list[np.ndarray] = None
+    force: np.ndarray | list[np.ndarray] = None
+    director: np.ndarray | list[np.ndarray] = None
+    mesh_list: list[Mesh] = None
     static: bool = False
     smoothing: bool = False
 

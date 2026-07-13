@@ -1,5 +1,5 @@
 ![PyTest](https://github.com/zincware/ZnVis/actions/workflows/pytest.yaml/badge.svg)
-[![code-style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![zincware](https://img.shields.io/badge/Powered%20by-zincware-darkcyan)](https://github.com/zincware)
 
 

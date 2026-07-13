@@ -61,9 +61,9 @@ class Visualizer(BaseVisualizer):
 
     def __init__(
         self,
-        particles: typing.List[znvis.Particle],
-        vector_field: typing.List[znvis.VectorField] | None = None,
-        output_folder: typing.Union[str, pathlib.Path] = "./",
+        particles: list[znvis.Particle],
+        vector_field: list[znvis.VectorField] | None = None,
+        output_folder: str | pathlib.Path = "./",
         frame_rate: int = 24,
         number_of_steps: int | None = None,
         keep_frames: bool = True,
@@ -525,14 +525,14 @@ class Visualizer(BaseVisualizer):
             visualizer = self.vis
 
         if initial:
-            for i, item in enumerate(self.vector_field):
+            for item in self.vector_field:
                 visualizer.add_geometry(
                     item.name,
                     self._get_mesh_for_item(item, self.counter),
                     item.mesh.o3d_material,
                 )
         else:
-            for i, item in enumerate(self.vector_field):
+            for item in self.vector_field:
                 if not item.static:
                     visualizer.remove_geometry(item.name)
                     visualizer.add_geometry(

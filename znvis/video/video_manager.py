@@ -23,7 +23,6 @@ Video management utilities for ZnVis.
 
 import pathlib
 import re
-from typing import List, Union
 
 import cv2
 from rich.progress import track
@@ -56,7 +55,7 @@ class VideoManager:
         "apng": "apng",  # Animated PNG (not widely supported)
     }
 
-    def __init__(self, output_folder: Union[str, pathlib.Path], frame_rate: int = 60):
+    def __init__(self, output_folder: str | pathlib.Path, frame_rate: int = 60):
         """
         Initialize the VideoManager.
 
@@ -71,7 +70,7 @@ class VideoManager:
         self.frame_rate = frame_rate
 
     @classmethod
-    def get_supported_formats(cls) -> List[str]:
+    def get_supported_formats(cls) -> list[str]:
         """
         Get list of supported video formats.
 
@@ -136,7 +135,7 @@ class VideoManager:
 
     def create_video_from_frames(
         self,
-        frame_folder: Union[str, pathlib.Path],
+        frame_folder: str | pathlib.Path,
         video_name: str = "ZnVis-Video",
         video_format: str = "mp4",
         keep_frames: bool = True,
@@ -226,7 +225,7 @@ class VideoManager:
                     continue
                 video.write(frame)
         except Exception as e:
-            raise RuntimeError(f"Error while writing video frames: {e}")
+            raise RuntimeError(f"Error while writing video frames: {e}") from e
         finally:
             video.release()
             cv2.destroyAllWindows()
@@ -249,7 +248,7 @@ class VideoManager:
             print(f"Temporary frames deleted in: {frame_folder}")
         return output_path
 
-    def get_video_info(self, video_path: Union[str, pathlib.Path]) -> dict:
+    def get_video_info(self, video_path: str | pathlib.Path) -> dict:
         """
         Get information about an existing video file.
         This is used in the testing environment.

@@ -84,8 +84,7 @@ class TestDifferentShapes:
         ]
 
         particle_list = []
-        for name, mesh in zip(names, meshs):
-
+        for name, mesh in zip(names, meshs, strict=True):
             trajectory = np.random.uniform(-10, 10, (10, 10, 3))
             material = vis.Material(
                 colour=np.random.uniform(0, 255, (3)) / 255, alpha=0.9

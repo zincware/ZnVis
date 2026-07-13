@@ -47,12 +47,14 @@ tests that cover any new behaviour.
 
 ## Code style
 
-Code is formatted with [black](https://github.com/psf/black) and
-[isort](https://pycqa.github.io/isort/), and linted with
-[flake8](https://flake8.pycqa.org/). These run automatically through
-`pre-commit`; you can also run them manually:
+Code is linted and formatted with [ruff](https://docs.astral.sh/ruff/), which
+replaces black, isort, and flake8. It runs automatically through `pre-commit`;
+you can also run it manually:
 
 ```sh
+ruff check --fix .    # lint and auto-fix
+ruff format .         # format
+
 pre-commit run --all-files
 ```
 

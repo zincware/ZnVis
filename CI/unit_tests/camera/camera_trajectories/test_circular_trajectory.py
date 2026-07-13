@@ -10,7 +10,6 @@ from znvis.camera_trajectories import CircularTrajectory
 
 
 class CircularTrajectoryTester(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         """

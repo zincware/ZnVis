@@ -191,8 +191,7 @@ class BaseCamera:
         up_norm = np.linalg.norm(up)
         if up_norm < 1e-7:
             logger.warning(
-                "The 'up' vector is a zero vector. "
-                "Falling back to default [0, 1, 0]."
+                "The 'up' vector is a zero vector. Falling back to default [0, 1, 0]."
             )
             up = np.array([0.0, 1.0, 0.0])
         else:
@@ -310,8 +309,7 @@ class BaseCamera:
             return True
         else:
             print(
-                "Couldn't find a valid view matrix in the camera object. "
-                "Using default."
+                "Couldn't find a valid view matrix in the camera object. Using default."
             )
             self.view_matrix = np.array(
                 [[1, 0, 0, -100], [0, 1, 0, -90], [0, 0, 1, -230], [0, 0, 0, 1]]

@@ -60,9 +60,9 @@ class HeadlessVisualizer(BaseVisualizer):
 
     def __init__(
         self,
-        particles: typing.List[znvis.Particle],
-        vector_field: typing.List[znvis.VectorField] | None = None,
-        output_folder: typing.Union[str, pathlib.Path] = "./",
+        particles: list[znvis.Particle],
+        vector_field: list[znvis.VectorField] | None = None,
+        output_folder: str | pathlib.Path = "./",
         frame_rate: int = 24,
         number_of_steps: int | None = None,
         keep_frames: bool = True,

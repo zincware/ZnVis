@@ -11,7 +11,6 @@ from znvis.cameras import TrajectoryCamera
 
 
 class TrajectoryCameraTester(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         """

@@ -21,7 +21,6 @@ Summary
 Module for the particle parent class
 """
 
-import typing
 from dataclasses import dataclass
 
 import numpy as np
@@ -59,9 +58,9 @@ class VectorField:
 
     name: str
     mesh: Arrow = None  # Should be an instance of the Arrow class
-    position: typing.Union[np.ndarray, list] = None
-    direction: typing.Union[np.ndarray, list] = None
-    mesh_list: typing.List[Arrow] = None
+    position: np.ndarray | list = None
+    direction: np.ndarray | list = None
+    mesh_list: list[Arrow] = None
     static: bool = False
     smoothing: bool = False
 
@@ -134,7 +133,7 @@ class VectorField:
             raise IndexError("The provided data has an incompatible shape.") from None
 
         if variable_particle_count:
-            for pos_arr, dir_arr in zip(self.position, self.direction):
+            for pos_arr, dir_arr in zip(self.position, self.direction, strict=True):
                 if np.isnan(pos_arr).any() or np.isnan(dir_arr).any():
                     raise ValueError("The provided data contains NaNs.")
         else:
@@ -143,9 +142,7 @@ class VectorField:
 
         for i in track(range(n_time_steps), description=f"Building {self.name} Mesh"):
             n_particles_i = (
-                len(self.position[i])
-                if variable_particle_count
-                else n_particles
+                len(self.position[i]) if variable_particle_count else n_particles
             )
             mesh = None
             for j in range(n_particles_i):

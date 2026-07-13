@@ -179,7 +179,7 @@ class TestParticle(unittest.TestCase):
         -------
         Tests if the ValueError is thrown.
         """
-        with self.assertRaises((ValueError)) as context:
+        with self.assertRaises(ValueError) as context:
             self.empty_particle.construct_mesh_list()
         # Check if error message is correct
         self.assertIn("The provided position array is empty.", str(context.exception))
@@ -196,7 +196,7 @@ class TestParticle(unittest.TestCase):
         -------
         Tests whether the list was created properly.
         """
-        with self.assertRaises((ValueError)) as context:
+        with self.assertRaises(ValueError) as context:
             self.nan_particle.construct_mesh_list()
         self.assertIn(
             "The provided position data contains at least one "
@@ -206,7 +206,7 @@ class TestParticle(unittest.TestCase):
 
         self.nan_particle.position = np.random.uniform(-5, 5, (2, 2, 3))
         self.nan_particle.director = np.full((2, 2, 3), np.nan)
-        with self.assertRaises((ValueError)) as context:
+        with self.assertRaises(ValueError) as context:
             self.nan_particle.construct_mesh_list()
         self.assertIn(
             "The provided director data contains at least one "

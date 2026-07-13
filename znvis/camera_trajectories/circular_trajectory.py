@@ -120,7 +120,6 @@ class CircularTrajectory(BaseTrajectory):
             return frame_index % self.frames_per_rotation
 
         elif self.loop and self.ping_pong:
-
             total_ping_pong_frames = 2 * self.frames_per_rotation
             frame_index = frame_index % total_ping_pong_frames
             if frame_index >= self.frames_per_rotation:

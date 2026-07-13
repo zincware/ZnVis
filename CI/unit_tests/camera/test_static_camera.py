@@ -10,7 +10,6 @@ from znvis.cameras.static_camera import StaticCamera
 
 
 class StaticCameraTester(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         """

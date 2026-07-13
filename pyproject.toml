@@ -35,10 +35,7 @@ dev = [
     "pytest",
     "coverage",
     "coveralls",
-    "black",
-    "isort",
-    "flake8",
-    "flake8-isort",
+    "ruff",
     "pre-commit",
 ]
 docs = [
@@ -54,8 +51,13 @@ docs = [
     "pandoc",
 ]
 
-[tool.black]
+[tool.ruff]
 line-length = 88
+target-version = "py311"
 
-[tool.isort]
-profile = "black"
+[tool.ruff.lint]
+# E/W: pycodestyle, F: pyflakes, I: isort, UP: pyupgrade, B: flake8-bugbear.
+select = ["E", "W", "F", "I", "UP", "B"]
+# E203/W503 conflict with the formatter; E402 is required for modules that must
+# set environment variables before importing heavy dependencies.
+ignore = ["E203", "E402"]
