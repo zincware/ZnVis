@@ -18,7 +18,9 @@ If you use this module please cite us with:
 
 Summary
 -------
-Tutorial script to visualize simple spheres over a random trajectory.
+Tutorial script showing how to export a scene. Run the script and press the
+"Export Scene" button in the visualizer window to write the current frame to an
+OBJ mesh file under ``./scenes``.
 """
 
 import numpy as np
@@ -27,7 +29,7 @@ import znvis as vis
 
 if __name__ == "__main__":
     """
-    Run the simple spheres example.
+    Run the export scene example.
     """
     material = vis.Material(colour=np.array([30, 144, 255]) / 255, alpha=0.9)
 
@@ -35,7 +37,6 @@ if __name__ == "__main__":
     trajectory = np.random.uniform(-10, 10, (100, 1, 3))
     mesh = vis.Sphere(
         radius=2.0,
-        colour=np.array([30, 144, 255]) / 255,
         resolution=10,
         material=material,
     )

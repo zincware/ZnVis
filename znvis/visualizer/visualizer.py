@@ -200,7 +200,7 @@ class Visualizer(BaseVisualizer):
         self.vis.add_action("Play", self._continuous_trajectory)
         self.vis.add_action(">>", self._update_particles)
         self.vis.add_action(">>>", self._toggle_play_speed)
-        self.vis.add_action("Toggle Direction", self._toogle_play_direction)
+        self.vis.add_action("Toggle Direction", self._toggle_play_direction)
         self.vis.add_action("Slow", self._toggle_slowmotion)
         self.vis.add_action("Restart", self._restart_trajectory)
         self.vis.add_action("Export Scene", self._export_scene)
@@ -826,7 +826,7 @@ class Visualizer(BaseVisualizer):
 
         visualizer.post_redraw()  # re-draw the window.
 
-    def _toogle_play_direction(self, visualizer=None):
+    def _toggle_play_direction(self, visualizer=None):
         """
         Reverts the direction of play.
 
@@ -914,7 +914,7 @@ class Visualizer(BaseVisualizer):
         """
         Output the current counter value.
         """
-        print(self.counter)
+        print(f"Current frame: {self.counter}")
 
     def _shutdown_cache_manager(self):
         """

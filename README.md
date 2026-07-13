@@ -91,3 +91,24 @@ Just like that, a visualization window (shown below) will pop up from which you 
 the trajectory and watch your RL agents rotate a rod.
 
 ![Visualizer Example](./readme_image.png)
+
+## Documentation
+
+Full documentation, including a user guide and API reference, is available at
+[znvis.readthedocs.io](https://znvis.readthedocs.io).
+
+## Contributing
+
+Contributions, bug reports, and feature requests are welcome! Please see
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to set up a development environment,
+run the tests, and open a pull request. Bugs and questions can be raised on the
+[issue tracker](https://github.com/zincware/ZnVis/issues).
+
+## License
+
+ZnVis is released under the [Eclipse Public License 2.0](LICENSE).
+
+## Citation
+
+If you use ZnVis in your research, please cite it using the metadata in
+[CITATION.cff](CITATION.cff).

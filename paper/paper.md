@@ -13,19 +13,22 @@ authors:
 affiliations:
   - name: Institute for Computational Physics, University of Stuttgart, Germany
     index: 1
-date: 3 April 2026
+date: 13 July 2026
 bibliography: paper.bib
 ---
 
 # Summary
 
-`ZnVis` is a Python package for the interactive three-dimensional visualisation
-of particle simulation data. It provides a high-level interface for rendering
-particle trajectories and vector fields directly from NumPy arrays, removing the
-need for intermediate file formats or external visualisation software. Built on
-the Open3D rendering engine [@Zhou2018], `ZnVis` supports a range of geometric
+`ZnVis` is a Python package for the three-dimensional visualisation of particle
+simulation data. It provides a high-level interface for rendering particle
+trajectories and vector fields directly from NumPy arrays, removing the need for
+intermediate file formats or external visualisation software. Built on the
+Open3D rendering engine [@Zhou2018], `ZnVis` supports a range of geometric
 primitives including spheres, cylinders, arrows, boxes, and custom mesh objects,
 with optional photorealistic rendering via the Mitsuba renderer [@Jakob2022].
+Trajectories can be explored interactively in a live window or rendered
+offscreen in parallel for the scripted, reproducible generation of images and
+animations on machines without a display, such as compute clusters.
 
 # Statement of Need
 
@@ -51,12 +54,19 @@ construction, scene management, and interactive playback. Key features include:
   scenes as OBJ mesh files.
 - Photorealistic rendering via Mitsuba with configurable materials (roughness,
   metallicity, reflectance).
+- Headless, parallel offscreen rendering for producing frames and animations
+  without an interactive display, together with programmable camera paths
+  (circular and zooming trajectories, keyframe and particle-following cameras)
+  for scripted fly-throughs.
+- Memory-efficient lazy construction and caching of per-frame meshes, enabling
+  the visualisation of long trajectories that would not fit in memory if
+  rendered eagerly.
 - A library of built-in mesh primitives (sphere, cylinder, cone, box, arrow,
   torus, tetrahedron, octahedron, icosahedron, Mobius loop) alongside support
   for custom mesh objects loaded from file.
 
-`ZnVis` has been used in research on reinforcement learning for active matter
-systems and is designed to integrate seamlessly with simulation frameworks such
-as SwarmRL.
+`ZnVis` has been used to visualise reinforcement-learning experiments on active
+matter systems and integrates with simulation frameworks such as SwarmRL
+[@Tovey2025].
 
 # References

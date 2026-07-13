@@ -389,9 +389,9 @@ class TestVisualizerPlaybackControls(unittest.TestCase):
         Test that the rewind toggle works.
         """
         self.assertFalse(self.vis.do_rewind)
-        self.vis._toogle_play_direction()
+        self.vis._toggle_play_direction()
         self.assertTrue(self.vis.do_rewind)
-        self.vis._toogle_play_direction()
+        self.vis._toggle_play_direction()
         self.assertFalse(self.vis.do_rewind)
 
     def test_restart_resets_counter(self):
