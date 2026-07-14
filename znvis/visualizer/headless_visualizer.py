@@ -18,7 +18,7 @@ If you use this module please cite us with:
 
 Summary
 -------
-Main visualizer class.
+Headless visualizer for offscreen, parallel rendering of trajectories.
 """
 
 import os
@@ -43,7 +43,11 @@ from znvis.visualizer.base_visualizer import BaseVisualizer, build_mesh_dict_for
 
 class HeadlessVisualizer(BaseVisualizer):
     """
-    Main class to perform visualization.
+    Render trajectories offscreen without an interactive window.
+
+    This visualizer renders frames in parallel worker processes using the
+    Mitsuba renderer, making it suitable for producing images and animations on
+    machines without a display, such as compute clusters.
 
     Attributes
     ----------
@@ -56,9 +60,9 @@ class HeadlessVisualizer(BaseVisualizer):
 
     def __init__(
         self,
-        particles: typing.List[znvis.Particle],
-        vector_field: typing.List[znvis.VectorField] | None = None,
-        output_folder: typing.Union[str, pathlib.Path] = "./",
+        particles: list[znvis.Particle],
+        vector_field: list[znvis.VectorField] | None = None,
+        output_folder: str | pathlib.Path = "./",
         frame_rate: int = 24,
         number_of_steps: int | None = None,
         keep_frames: bool = True,

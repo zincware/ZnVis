@@ -10,7 +10,6 @@ from znvis.camera_trajectories import BaseTrajectory
 
 
 class BaseTrajectoryTester(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         """

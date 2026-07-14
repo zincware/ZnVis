@@ -42,9 +42,10 @@ def rotation_matrix(current: np.ndarray, target: np.ndarray):
     if (abs(current - target)).sum() == 0.0:
         return np.eye(3)
     else:
-        a, b = (current / np.linalg.norm(current)).reshape(3), (
-            target / np.linalg.norm(target)
-        ).reshape(3)
+        a, b = (
+            (current / np.linalg.norm(current)).reshape(3),
+            (target / np.linalg.norm(target)).reshape(3),
+        )
         v = np.cross(a, b)
         c = np.dot(a, b)
         s = np.linalg.norm(v)

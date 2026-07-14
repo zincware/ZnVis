@@ -34,7 +34,7 @@ if __name__ == "__main__":
     trajectory = np.random.uniform(-100, 100, (100, 1000, 3))
     trajectory = []
     p_number = 1
-    for t in range(1000):
+    for _ in range(1000):
         trajectory.append(np.random.uniform(-100, 100, (p_number, 3)))
 
         p_number = np.random.randint(p_number, 5 * p_number)

@@ -61,9 +61,9 @@ class Visualizer(BaseVisualizer):
 
     def __init__(
         self,
-        particles: typing.List[znvis.Particle],
-        vector_field: typing.List[znvis.VectorField] | None = None,
-        output_folder: typing.Union[str, pathlib.Path] = "./",
+        particles: list[znvis.Particle],
+        vector_field: list[znvis.VectorField] | None = None,
+        output_folder: str | pathlib.Path = "./",
         frame_rate: int = 24,
         number_of_steps: int | None = None,
         keep_frames: bool = True,
@@ -200,7 +200,7 @@ class Visualizer(BaseVisualizer):
         self.vis.add_action("Play", self._continuous_trajectory)
         self.vis.add_action(">>", self._update_particles)
         self.vis.add_action(">>>", self._toggle_play_speed)
-        self.vis.add_action("Toggle Direction", self._toogle_play_direction)
+        self.vis.add_action("Toggle Direction", self._toggle_play_direction)
         self.vis.add_action("Slow", self._toggle_slowmotion)
         self.vis.add_action("Restart", self._restart_trajectory)
         self.vis.add_action("Export Scene", self._export_scene)
@@ -317,7 +317,7 @@ class Visualizer(BaseVisualizer):
         """
         Export the current visualization scene.
 
-        Parameters or texture in ("albedo", "normal", "ao", "metallic", "roughness"):
+        Parameters
         ----------
         vis : Visualizer
                 The active visualizer.
@@ -329,21 +329,14 @@ class Visualizer(BaseVisualizer):
         old_state = self.interrupt  # get old state
         self.interrupt = 0  # stop live feed if running.
         created_mesh = False
-        for i, item in enumerate(self.particles):
-            if item.static:
-                if i == 0 and not created_mesh:
-                    mesh = self._get_mesh_for_item(item, 0)
-                    created_mesh = True
-                elif i == 0 and created_mesh:
-                    mesh += self._get_mesh_for_item(item, 0)
-                else:
-                    continue
-
-            if i == 0 and not created_mesh:
-                mesh = self._get_mesh_for_item(item, self.counter)
+        for item in self.particles:
+            # _get_mesh_for_item resolves the static case internally.
+            timestep_mesh = self._get_mesh_for_item(item, self.counter)
+            if not created_mesh:
+                mesh = timestep_mesh
                 created_mesh = True
             else:
-                mesh += self._get_mesh_for_item(item, self.counter)
+                mesh += timestep_mesh
 
         self.scene_folder.mkdir(parents=True, exist_ok=True)
         o3d.io.write_triangle_mesh(
@@ -532,14 +525,14 @@ class Visualizer(BaseVisualizer):
             visualizer = self.vis
 
         if initial:
-            for i, item in enumerate(self.vector_field):
+            for item in self.vector_field:
                 visualizer.add_geometry(
                     item.name,
                     self._get_mesh_for_item(item, self.counter),
                     item.mesh.o3d_material,
                 )
         else:
-            for i, item in enumerate(self.vector_field):
+            for item in self.vector_field:
                 if not item.static:
                     visualizer.remove_geometry(item.name)
                     visualizer.add_geometry(
@@ -833,7 +826,7 @@ class Visualizer(BaseVisualizer):
 
         visualizer.post_redraw()  # re-draw the window.
 
-    def _toogle_play_direction(self, visualizer=None):
+    def _toggle_play_direction(self, visualizer=None):
         """
         Reverts the direction of play.
 
@@ -871,10 +864,11 @@ class Visualizer(BaseVisualizer):
         Toggle the play speed from 1 to 2 to 4 to 8 and back to 1.
 
         """
+        # Switching direction from rewind resets to forward playback at 1x.
         if self.do_rewind is True:
+            self.do_rewind = False
             self.play_speed = 1
-
-        self.do_rewind = False
+            return
 
         if self.play_speed == 1:
             self.play_speed = 2
@@ -920,7 +914,7 @@ class Visualizer(BaseVisualizer):
         """
         Output the current counter value.
         """
-        print(self.counter)
+        print(f"Current frame: {self.counter}")
 
     def _shutdown_cache_manager(self):
         """

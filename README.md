@@ -1,5 +1,5 @@
 ![PyTest](https://github.com/zincware/ZnVis/actions/workflows/pytest.yaml/badge.svg)
-[![code-style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![zincware](https://img.shields.io/badge/Powered%20by-zincware-darkcyan)](https://github.com/zincware)
 
 
@@ -14,26 +14,34 @@ ZnVis works both from a Python script and in Jupyter!
 ZnVis can currently perform the following tasks:
 
 * Visualize simulations and trajectories
-* Create spherical and cylindrical mesh's for visualization
+* Create spherical, cylindrical, and many other mesh types for visualization
 * Handle custom mesh objects
+* Support time-varying particle counts
 * Export png stills from the visualizer
-* Export scences as `.obj` files.
+* Export scenes as `.obj` files
+* Photorealistic rendering via Mitsuba
 
 ## Installation
 
-ZnVis is a purely Python package hosted on PyPi.
-It can therefore be installed using pip with:
+ZnVis is a purely Python package hosted on PyPI.
+It can be installed using pip:
 
 ```sh
 pip install znvis
 ```
 
+Or with [uv](https://docs.astral.sh/uv/):
+
+```sh
+uv add znvis
+```
+
 If you prefer to access the source code, run the following from a terminal:
 
 ```sh
-   git clone https://github.com/zincware/ZnVis.git
-   cd ZnVis
-   pip install .
+git clone https://github.com/zincware/ZnVis.git
+cd ZnVis
+pip install .
 ```
 
 Once complete, you will be able to start using the visualizer by importing it as:
@@ -44,9 +52,9 @@ import znvis
 
 ## How does it work?
 
-ZnVis is essentially a convenience wrapper of the 
+ZnVis is essentially a convenience wrapper of the
 [Open3D](https://github.com/isl-org/Open3D) project with a focus on mesh visualization.
-The idea came out of wanting a simple way of visualizing particle trajectories from 
+The idea came out of wanting a simple way of visualizing particle trajectories from
 numpy arrays directly from a simulation script.
 
 Below we show an example script from a reinforcement learning experiment built using
@@ -68,18 +76,39 @@ rod_positions = positions[:, 10:, :]
 
 # Create free colloid mesh
 colloid_mesh = vis.Sphere(radius=2.14, colour=np.array([30, 144, 255]) / 255, resolution=10)
-colloid_particle = vis.Particle(name="Colloid", mesh=mesh, position=colloid_positions)
+colloid_particle = vis.Particle(name="Colloid", mesh=colloid_mesh, position=colloid_positions)
 
 # Create rod colloid mesh
 rod_mesh = vis.Sphere(radius=2.14, colour=np.array([255, 140, 0]) / 255, resolution=10)
-rod_particle = vis.Particle(name="Rod", mesh=mesh, position=rod_positions)
+rod_particle = vis.Particle(name="Rod", mesh=rod_mesh, position=rod_positions)
 
 # Run the visualizer
 visualizer = vis.Visualizer(particles=[colloid_particle, rod_particle], frame_rate=80)
 visualizer.run_visualization()
 ```
 
-Just like that, a visualization window (shown below) will pop up from which you can play 
+Just like that, a visualization window (shown below) will pop up from which you can play
 the trajectory and watch your RL agents rotate a rod.
 
 ![Visualizer Example](./readme_image.png)
+
+## Documentation
+
+Full documentation, including a user guide and API reference, is available at
+[znvis.readthedocs.io](https://znvis.readthedocs.io).
+
+## Contributing
+
+Contributions, bug reports, and feature requests are welcome! Please see
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to set up a development environment,
+run the tests, and open a pull request. Bugs and questions can be raised on the
+[issue tracker](https://github.com/zincware/ZnVis/issues).
+
+## License
+
+ZnVis is released under the [Eclipse Public License 2.0](LICENSE).
+
+## Citation
+
+If you use ZnVis in your research, please cite it using the metadata in
+[CITATION.cff](CITATION.cff).

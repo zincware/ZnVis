@@ -272,7 +272,7 @@ def render_frames_parallel(
             parallel_render_workers, available_gpu_devices
         )
     except RuntimeError as e:
-        raise RuntimeError(f"Parallel rendering requirements failed: {e}")
+        raise RuntimeError(f"Parallel rendering requirements failed: {e}") from e
 
     if parallel_render_workers == 1:
         raise ValueError(

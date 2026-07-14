@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ZnVis"
+version = "2.0.4"
+description = "Visualization of particle trajectories."
+readme = "README.md"
+license = "EPL-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "zincwarecode", email = "tovey.samuel@gmail.com" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Eclipse Public License 2.0 (EPL-2.0)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "open3d",
+    "numpy",
+    "rich",
+    "opencv-python",
+    "mitsuba",
+]
+
+[project.urls]
+Homepage = "https://github.com/zincware/ZnVis"
+Repository = "https://github.com/zincware/ZnVis"
+Documentation = "https://znvis.readthedocs.io"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "coverage",
+    "coveralls",
+    "ruff",
+    "pre-commit",
+]
+docs = [
+    "numpydoc",
+    "Sphinx>=4.3",
+    "sphinx_rtd_theme",
+    "sphinx-copybutton",
+    "sphinxcontrib-bibtex",
+    "pybtex",
+    "nbsphinx",
+    "nbsphinx-link",
+    "IPython",
+    "pandoc",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+# E/W: pycodestyle, F: pyflakes, I: isort, UP: pyupgrade, B: flake8-bugbear.
+select = ["E", "W", "F", "I", "UP", "B"]
+# E203/W503 conflict with the formatter; E402 is required for modules that must
+# set environment variables before importing heavy dependencies.
+ignore = ["E203", "E402"]

@@ -22,7 +22,6 @@ Module for the KeyframeCamera class.
 """
 
 import pathlib
-from typing import Optional
 
 import numpy as np
 
@@ -48,7 +47,7 @@ class KeyframeCamera(BaseCamera):
     def __init__(
         self,
         view_matrices_path: pathlib.Path | None = None,
-        number_of_frames: Optional[int] = None,
+        number_of_frames: int | None = None,
         import_view_matrices: bool = False,
     ) -> None:
         """
@@ -131,7 +130,6 @@ class KeyframeCamera(BaseCamera):
         current view matrix from the view matrix dictionary.
         """
         if frame_index in self.view_matrices_dictionary.keys():
-
             self.view_matrices_dictionary.pop(frame_index)
             print(f"Removed view matrix for frame {frame_index}")
             print(
