@@ -112,6 +112,15 @@ class TestDifferentShapes:
             vis.Particle(name="Custom", mesh=mesh, position=trajectory, static=True)
         )
 
+        trajectory = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        particle_list.append(
+            vis.Particle(
+                name="single",
+                mesh=vis.Sphere(radius=1.0),
+                position=trajectory,
+            )
+        )
+
         # Create a bounding box
         bounding_box = vis.BoundingBox(
             center=np.array([0, 0, 0]),

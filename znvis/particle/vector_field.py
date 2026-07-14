@@ -122,6 +122,15 @@ class VectorField:
             if variable_particle_count:
                 n_time_steps = len(self.position)
             elif not self.static:
+                if self.position.ndim not in (2, 3) or self.direction.ndim not in (
+                    2,
+                    3,
+                ):
+                    raise IndexError("The provided data has an incompatible shape.")
+                if self.position.ndim == 2:
+                    self.position = self.position[:, np.newaxis, :]
+                if self.direction.ndim == 2:
+                    self.direction = self.direction[:, np.newaxis, :]
                 n_particles = int(self.position.shape[1])
                 n_time_steps = int(self.position.shape[0])
             else:

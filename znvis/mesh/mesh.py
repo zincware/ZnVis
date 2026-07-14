@@ -100,7 +100,13 @@ class Mesh:
         """
         mesh = self.create_mesh()
         mesh.compute_vertex_normals()
-        mesh.translate(starting_position.astype(float))
+        starting_position = np.asarray(starting_position, dtype=float).reshape(-1)
+        if starting_position.size != 3:
+            raise ValueError(
+                "starting_position must describe exactly one 3D point, got "
+                f"shape {starting_position.shape}."
+            )
+        mesh.translate(starting_position)
         if starting_orientation is not None:
             matrix = rotation_matrix(self.base_direction, starting_orientation)
             mesh.rotate(matrix)

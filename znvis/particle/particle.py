@@ -134,8 +134,20 @@ class Particle:
                     "-------\nWARNING: The provided director array is empty."
                     "Setting to None.\n-------",
                 )
+            if not self.static and self.position.ndim not in (2, 3):
+                raise IndexError("The provided data has an incompatible shape.")
+            if (
+                not self.static
+                and self.director is not None
+                and self.director.ndim not in (2, 3)
+            ):
+                raise IndexError("The provided data has an incompatible shape.")
             # Static case differentiation
             if not self.static:
+                if self.position.ndim == 2:
+                    self.position = self.position[:, np.newaxis, :]
+                if self.director is not None and self.director.ndim == 2:
+                    self.director = self.director[:, np.newaxis, :]
                 n_time_steps = self.position.shape[0]
                 self.position = [self.position[i] for i in range(n_time_steps)]
                 if self.director is not None:
@@ -196,9 +208,11 @@ class Particle:
         for frame_index in track(
             range(n_time_steps), description=f"Building {self.name} Mesh"
         ):
-            frame_pos = self.position[frame_index]
+            frame_pos = np.atleast_2d(self.position[frame_index])
             frame_dir = (
-                self.director[frame_index] if self.director is not None else None
+                np.atleast_2d(self.director[frame_index])
+                if self.director is not None
+                else None
             )
             n_particles = frame_pos.shape[0]
             meshes = []
@@ -248,6 +262,10 @@ class Particle:
             frame_pos = frame_pos[idx]
             if frame_dir is not None:
                 frame_dir = frame_dir[idx]
+
+        frame_pos = np.atleast_2d(frame_pos)
+        if frame_dir is not None:
+            frame_dir = np.atleast_2d(frame_dir)
 
         n_particles = frame_pos.shape[0]
         meshes = []
