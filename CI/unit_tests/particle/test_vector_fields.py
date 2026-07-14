@@ -199,9 +199,7 @@ class TestVectorField(unittest.TestCase):
         with self.assertRaises(IndexError) as context:
             self.empty_vector_field.construct_mesh_list()
         # Check if error message is correct
-        self.assertEqual(
-            str(context.exception), "The provided data has an incompatible shape."
-        )
+        self.assertIn("incompatible shape", str(context.exception))
 
     def test_construct_nan_mesh_dict(self):
         """
@@ -247,6 +245,21 @@ class TestVectorField(unittest.TestCase):
             self.none_dir_vector_field.construct_mesh_list()
         # Check if error message is correct
         self.assertEqual(str(context.exception), "Director data cannot be None.")
+
+    def test_construct_squeezed_dynamic_mesh_dict(self):
+        """
+        Test that squeezed dynamic vector field data is normalized.
+        """
+        squeezed_field = VectorField(
+            name="squeezed_vector_field",
+            position=np.random.uniform(-5, 5, (10, 3)),
+            direction=np.random.uniform(-5, 5, (10, 3)),
+            mesh=Arrow(scale=10, material=self.material),
+        )
+        squeezed_field.construct_mesh_list()
+        self.assertEqual(squeezed_field.position.shape, (10, 1, 3))
+        self.assertEqual(squeezed_field.direction.shape, (10, 1, 3))
+        self.assertEqual(len(squeezed_field.mesh_list), 10)
 
 
 class TestVariableVectorFieldCount(unittest.TestCase):

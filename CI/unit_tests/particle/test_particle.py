@@ -214,6 +214,21 @@ class TestParticle(unittest.TestCase):
             str(context.exception),
         )
 
+    def test_construct_squeezed_dynamic_mesh_list(self):
+        """
+        Test that squeezed dynamic particle data is normalized.
+        """
+        squeezed_particle = Particle(
+            name="squeezed_particle",
+            position=np.random.uniform(-5, 5, (10, 3)),
+            director=np.random.uniform(-5, 5, (10, 3)),
+            mesh=Sphere(),
+        )
+        squeezed_particle.construct_mesh_list()
+        self.assertEqual(np.asarray(squeezed_particle.position).shape, (10, 1, 3))
+        self.assertEqual(np.asarray(squeezed_particle.director).shape, (10, 1, 3))
+        self.assertEqual(len(squeezed_particle.mesh_list), 10)
+
 
 class TestVariableParticleCount(unittest.TestCase):
     """
