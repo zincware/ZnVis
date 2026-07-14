@@ -21,6 +21,7 @@ Summary
 Mitsuba rendering module.
 """
 
+import copy
 import os
 
 import mitsuba as mi
@@ -81,8 +82,10 @@ class Mitsuba:
             Set this to False if you want to use a custom camera which is
             defined in the scene_dict.
         """
+        # Copy the default so that separate Mitsuba instances do not share and
+        # mutate the same module-level dict when meshes are added at render time.
         if scene_dict is None:
-            scene_dict = default_scene_dict
+            scene_dict = copy.deepcopy(default_scene_dict)
         self.scene_dict = scene_dict
         self.update_camera = update_camera
 
@@ -153,7 +156,6 @@ class Mitsuba:
             material = mesh_objects[mesh_name]["material"]
 
             # Convert to a tensor mesh.
-            # print(mesh_objects[mesh_name]["mesh"].material)
             mesh = o3d.t.geometry.TriangleMesh.from_legacy(
                 mesh_objects[mesh_name]["mesh"]
             )

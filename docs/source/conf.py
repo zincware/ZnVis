@@ -1,5 +1,5 @@
 """
-Conf file for the PyRND docs.
+Conf file for the ZnVis docs.
 """
 
 import os
@@ -15,12 +15,12 @@ html_static_path = []
 
 # -- Experiment information ---------------------------------------------------
 
-project = "ZnRND"
+project = "ZnVis"
 copyright = "2021, Zincwarecode"
 author = "Zincwarecode"
 
 # The full version, including alpha/beta/rc tags
-release = "2021"
+release = "2.0.4"
 
 master_doc = "index"
 

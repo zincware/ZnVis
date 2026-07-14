@@ -22,6 +22,8 @@ Summary
 init file for the main ZnVis package.
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
 from znvis import cameras, rendering
 from znvis.bounding_objects.bounding_box import BoundingBox
 from znvis.material.material import Material
@@ -40,6 +42,12 @@ from znvis.particle.particle import Particle
 from znvis.particle.vector_field import VectorField
 from znvis.visualizer.headless_visualizer import HeadlessVisualizer
 from znvis.visualizer.visualizer import Visualizer
+
+try:
+    __version__ = version("znvis")
+except PackageNotFoundError:
+    # Package is not installed (e.g. running from a source checkout).
+    __version__ = "0.0.0"
 
 __all__ = [
     Particle.__name__,

@@ -10,7 +10,6 @@ from znvis.cameras import ParticleFollowingCamera
 
 
 class ParticleFollowingCameraTester(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         """

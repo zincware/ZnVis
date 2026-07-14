@@ -114,7 +114,7 @@ class ParticleFollowingCamera(BaseCamera):
         if up_norm == 0.0:
             raise ValueError(
                 '"camera_up_vector" must be non-zero. '
-                f"Error occured for frame index {frame_index}."
+                f"Error occurred for frame index {frame_index}."
             )
         up = up_vec / up_norm
 

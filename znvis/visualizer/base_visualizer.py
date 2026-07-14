@@ -32,8 +32,8 @@ from znvis.video import VideoManager
 
 
 def build_mesh_dict_for_frame(
-    particles: typing.List[znvis.Particle],
-    vector_field: typing.List[znvis.VectorField] | None,
+    particles: list[znvis.Particle],
+    vector_field: list[znvis.VectorField] | None,
     frame_index: int,
 ) -> dict:
     """
@@ -123,9 +123,9 @@ class BaseVisualizer:
 
     def __init__(
         self,
-        particles: typing.List[znvis.Particle],
-        vector_field: typing.List[znvis.VectorField] | None = None,
-        output_folder: typing.Union[str, pathlib.Path] = "./",
+        particles: list[znvis.Particle],
+        vector_field: list[znvis.VectorField] | None = None,
+        output_folder: str | pathlib.Path = "./",
         frame_rate: int = 60,
         number_of_steps: int | None = None,
         keep_frames: bool = True,

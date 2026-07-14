@@ -21,7 +21,6 @@ Summary
 Module for the particle parent class
 """
 
-import typing
 from dataclasses import dataclass
 
 import numpy as np
@@ -68,11 +67,11 @@ class Particle:
 
     name: str
     mesh: Mesh = None
-    position: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    velocity: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    force: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    director: typing.Union[np.ndarray, typing.List[np.ndarray]] = None
-    mesh_list: typing.List[Mesh] = None
+    position: np.ndarray | list[np.ndarray] = None
+    velocity: np.ndarray | list[np.ndarray] = None
+    force: np.ndarray | list[np.ndarray] = None
+    director: np.ndarray | list[np.ndarray] = None
+    mesh_list: list[Mesh] = None
     static: bool = False
     smoothing: bool = False
 
@@ -110,7 +109,11 @@ class Particle:
         Constructor the mesh list for the class.
 
         The mesh list is a list of mesh objects for each
-        time step in the parsed trajectory.
+        time step in the parsed trajectory. Position data can be either
+        a numpy array of shape (n_confs, n_particles, n_dims) for a fixed
+        particle count, or a list of arrays where each array has shape
+        (n_particles_i, n_dims) to support a variable number of particles
+        per time step.
 
         Returns
         -------

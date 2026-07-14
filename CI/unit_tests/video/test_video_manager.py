@@ -116,7 +116,7 @@ class TestVideoManager(unittest.TestCase):
         self.assertEqual(sorted(actual_formats), sorted(supported_formats))
 
     def test_bad_path(self):
-        with self.assertRaises((RuntimeError)) as context:
+        with self.assertRaises(RuntimeError) as context:
             self.bad_path_manager.create_video_from_frames(
                 frame_folder=self.path_to_bad_dir,
                 video_name="this_should_not_work",

@@ -11,7 +11,6 @@ from znvis.cameras import KeyframeCamera
 
 
 class KeyframeCameraTester(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         """

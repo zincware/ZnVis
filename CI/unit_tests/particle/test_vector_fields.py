@@ -247,3 +247,68 @@ class TestVectorField(unittest.TestCase):
             self.none_dir_vector_field.construct_mesh_list()
         # Check if error message is correct
         self.assertEqual(str(context.exception), "Director data cannot be None.")
+
+
+class TestVariableVectorFieldCount(unittest.TestCase):
+    """
+    Test class for vector fields with a variable number of vectors per time step.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """
+        Prepare vector fields with list-of-arrays data.
+        """
+        cls.positions = [
+            np.random.uniform(-5, 5, (2, 3)),
+            np.random.uniform(-5, 5, (5, 3)),
+            np.random.uniform(-5, 5, (3, 3)),
+        ]
+        cls.directions = [
+            np.random.uniform(-1, 1, (2, 3)),
+            np.random.uniform(-1, 1, (5, 3)),
+            np.random.uniform(-1, 1, (3, 3)),
+        ]
+        cls.vector_field = VectorField(
+            name="variable_vf",
+            position=cls.positions,
+            mesh=Arrow(scale=10),
+            direction=cls.directions,
+        )
+
+    def test_variable_count_initialization(self):
+        """
+        Test that a vector field with list data initializes correctly.
+        """
+        self.assertEqual(self.vector_field.name, "variable_vf")
+        self.assertIsInstance(self.vector_field.position, list)
+        self.assertEqual(len(self.vector_field.position), 3)
+
+    def test_variable_count_mesh_list(self):
+        """
+        Test that construct_mesh_list produces the correct number of meshes.
+        """
+        self.vector_field.construct_mesh_list()
+        self.assertEqual(len(self.vector_field.mesh_list), 3)
+
+    def test_variable_count_nan_check(self):
+        """
+        Test that NaN detection works for list-based data.
+        """
+        nan_positions = [
+            np.random.uniform(-5, 5, (2, 3)),
+            np.full((3, 3), np.nan),
+        ]
+        nan_directions = [
+            np.random.uniform(-1, 1, (2, 3)),
+            np.random.uniform(-1, 1, (3, 3)),
+        ]
+        nan_vf = VectorField(
+            name="nan_variable_vf",
+            position=nan_positions,
+            mesh=Arrow(scale=10),
+            direction=nan_directions,
+        )
+        with self.assertRaises(ValueError) as context:
+            nan_vf.construct_mesh_list()
+        self.assertEqual(str(context.exception), "The provided data contains NaNs.")

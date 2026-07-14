@@ -179,7 +179,7 @@ class TestParticle(unittest.TestCase):
         -------
         Tests if the ValueError is thrown.
         """
-        with self.assertRaises((ValueError)) as context:
+        with self.assertRaises(ValueError) as context:
             self.empty_particle.construct_mesh_list()
         # Check if error message is correct
         self.assertIn("The provided position array is empty.", str(context.exception))
@@ -196,7 +196,7 @@ class TestParticle(unittest.TestCase):
         -------
         Tests whether the list was created properly.
         """
-        with self.assertRaises((ValueError)) as context:
+        with self.assertRaises(ValueError) as context:
             self.nan_particle.construct_mesh_list()
         self.assertIn(
             "The provided position data contains at least one "
@@ -206,10 +206,89 @@ class TestParticle(unittest.TestCase):
 
         self.nan_particle.position = np.random.uniform(-5, 5, (2, 2, 3))
         self.nan_particle.director = np.full((2, 2, 3), np.nan)
-        with self.assertRaises((ValueError)) as context:
+        with self.assertRaises(ValueError) as context:
             self.nan_particle.construct_mesh_list()
         self.assertIn(
             "The provided director data contains at least one "
             "NaN value at time step 0.",
+            str(context.exception),
+        )
+
+
+class TestVariableParticleCount(unittest.TestCase):
+    """
+    Test class for particles with a variable number of meshes per time step.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """
+        Prepare particles with list-of-arrays position data.
+        """
+        cls.trajectory = [
+            np.random.uniform(-5, 5, (2, 3)),
+            np.random.uniform(-5, 5, (5, 3)),
+            np.random.uniform(-5, 5, (3, 3)),
+        ]
+        cls.particle = Particle(
+            name="variable_particle",
+            position=cls.trajectory,
+            mesh=Sphere(),
+        )
+
+        cls.trajectory_with_director = [
+            np.random.uniform(-5, 5, (2, 3)),
+            np.random.uniform(-5, 5, (4, 3)),
+        ]
+        cls.director_list = [
+            np.random.uniform(-1, 1, (2, 3)),
+            np.random.uniform(-1, 1, (4, 3)),
+        ]
+        cls.particle_with_director = Particle(
+            name="variable_with_director",
+            position=cls.trajectory_with_director,
+            mesh=Sphere(),
+            director=cls.director_list,
+        )
+
+    def test_variable_count_initialization(self):
+        """
+        Test that a particle with list position data initializes correctly.
+        """
+        self.assertEqual(self.particle.name, "variable_particle")
+        self.assertIsInstance(self.particle.position, list)
+        self.assertEqual(len(self.particle.position), 3)
+
+    def test_variable_count_mesh_list(self):
+        """
+        Test that construct_mesh_list produces the correct number of meshes.
+        """
+        self.particle.construct_mesh_list()
+        self.assertEqual(len(self.particle.mesh_list), 3)
+
+    def test_variable_count_with_director(self):
+        """
+        Test variable particle count with director data.
+        """
+        self.particle_with_director.construct_mesh_list()
+        self.assertEqual(len(self.particle_with_director.mesh_list), 2)
+
+    def test_variable_count_nan_check(self):
+        """
+        Test that NaN detection works for list-based position data.
+        """
+        nan_trajectory = [
+            np.random.uniform(-5, 5, (2, 3)),
+            np.full((3, 3), np.nan),
+        ]
+        nan_particle = Particle(
+            name="nan_variable",
+            position=nan_trajectory,
+            mesh=Sphere(),
+        )
+        with self.assertRaises(ValueError) as context:
+            nan_particle.construct_mesh_list()
+        self.assertIn(
+            "NaN value at time step 1",
             str(context.exception),
         )
